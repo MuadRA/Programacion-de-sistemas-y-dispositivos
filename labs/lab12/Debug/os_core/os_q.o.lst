@@ -1,0 +1,2516 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"os_q.c"
+  21              	.Ltext0:
+  22              		.file 1 "../os_core/os_q.c"
+ 1662              		.align	2
+ 1663              		.global	OSQAccept
+ 1665              	OSQAccept:
+ 1666              	.LFB0:
+   1:../os_core/os_q.c **** /*
+   2:../os_core/os_q.c **** ***************************************************************************************************
+   3:../os_core/os_q.c **** *                                                uC/OS-II
+   4:../os_core/os_q.c **** *                                          The Real-Time Kernel
+   5:../os_core/os_q.c **** *                                        MESSAGE QUEUE MANAGEMENT
+   6:../os_core/os_q.c **** *
+   7:../os_core/os_q.c **** *                          (c) Copyright 1992-2003, Jean J. Labrosse, Weston, FL
+   8:../os_core/os_q.c **** *                                           All Rights Reserved
+   9:../os_core/os_q.c **** *
+  10:../os_core/os_q.c **** * File    : OS_Q.C
+  11:../os_core/os_q.c **** * By      : Jean J. Labrosse
+  12:../os_core/os_q.c **** * Version : V2.76
+  13:../os_core/os_q.c **** ***************************************************************************************************
+  14:../os_core/os_q.c **** */
+  15:../os_core/os_q.c **** 
+  16:../os_core/os_q.c **** #ifndef  OS_MASTER_FILE
+  17:../os_core/os_q.c **** #include "ucos_ii.h"
+  18:../os_core/os_q.c **** #endif
+  19:../os_core/os_q.c **** 
+  20:../os_core/os_q.c **** #if (OS_Q_EN > 0) && (OS_MAX_QS > 0)
+  21:../os_core/os_q.c **** /*
+  22:../os_core/os_q.c **** ***************************************************************************************************
+  23:../os_core/os_q.c **** *                                      ACCEPT MESSAGE FROM QUEUE
+  24:../os_core/os_q.c **** *
+  25:../os_core/os_q.c **** * Description: This function checks the queue to see if a message is available.  Unlike OSQPend(),
+  26:../os_core/os_q.c **** *              OSQAccept() does not suspend the calling task if a message is not available.
+  27:../os_core/os_q.c **** *
+  28:../os_core/os_q.c **** * Arguments  : pevent        is a pointer to the event control block
+  29:../os_core/os_q.c **** *
+  30:../os_core/os_q.c **** *              err           is a pointer to where an error message will be deposited.  Possible er
+  31:../os_core/os_q.c **** *                            messages are:
+  32:../os_core/os_q.c **** *
+  33:../os_core/os_q.c **** *                            OS_NO_ERR           The call was successful and your task received a
+  34:../os_core/os_q.c **** *                                                message.
+  35:../os_core/os_q.c **** *                            OS_ERR_EVENT_TYPE   You didn't pass a pointer to a queue
+  36:../os_core/os_q.c **** *                            OS_ERR_PEVENT_NULL  If 'pevent' is a NULL pointer
+  37:../os_core/os_q.c **** *                            OS_Q_EMPTY          The queue did not contain any messages
+  38:../os_core/os_q.c **** *
+  39:../os_core/os_q.c **** * Returns    : != (void *)0  is the message in the queue if one is available.  The message is remov
+  40:../os_core/os_q.c **** *                            from the so the next time OSQAccept() is called, the queue will contai
+  41:../os_core/os_q.c **** *                            one less entry.
+  42:../os_core/os_q.c **** *              == (void *)0  if you received a NULL pointer message
+  43:../os_core/os_q.c **** *                            if the queue is empty or,
+  44:../os_core/os_q.c **** *                            if 'pevent' is a NULL pointer or,
+  45:../os_core/os_q.c **** *                            if you passed an invalid event type
+  46:../os_core/os_q.c **** *
+  47:../os_core/os_q.c **** * Note(s)    : As of V2.60, you can now pass NULL pointers through queues.  Because of this, the ar
+  48:../os_core/os_q.c **** *              'err' has been added to the API to tell you about the outcome of the call.
+  49:../os_core/os_q.c **** ***************************************************************************************************
+  50:../os_core/os_q.c **** */
+  51:../os_core/os_q.c **** 
+  52:../os_core/os_q.c **** #if OS_Q_ACCEPT_EN > 0
+  53:../os_core/os_q.c **** void  *OSQAccept (OS_EVENT *pevent, INT8U *err)
+  54:../os_core/os_q.c **** {
+ 1667              		.loc 1 54 0
+ 1668              		.cfi_startproc
+ 1669              		@ Function supports interworking.
+ 1670              		@ args = 0, pretend = 0, frame = 16
+ 1671              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1672 0000 0DC0A0E1 		mov	ip, sp
+ 1673              	.LCFI0:
+ 1674              		.cfi_def_cfa_register 12
+ 1675 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1676 0008 04B04CE2 		sub	fp, ip, #4
+ 1677              		.cfi_offset 14, -8
+ 1678              		.cfi_offset 13, -12
+ 1679              		.cfi_offset 11, -16
+ 1680              	.LCFI1:
+ 1681              		.cfi_def_cfa 11, 4
+ 1682 000c 10D04DE2 		sub	sp, sp, #16
+ 1683 0010 18000BE5 		str	r0, [fp, #-24]
+ 1684 0014 1C100BE5 		str	r1, [fp, #-28]
+  55:../os_core/os_q.c ****     void      *msg;
+  56:../os_core/os_q.c ****     OS_Q      *pq;
+  57:../os_core/os_q.c **** #if OS_CRITICAL_METHOD == 3                      /* Allocate storage for CPU status register       
+  58:../os_core/os_q.c ****     OS_CPU_SR  cpu_sr;
+  59:../os_core/os_q.c **** 
+  60:../os_core/os_q.c **** 
+  61:../os_core/os_q.c **** 
+  62:../os_core/os_q.c ****     cpu_sr = 0;                                  /* Prevent compiler warning                       
+  63:../os_core/os_q.c **** #endif    
+  64:../os_core/os_q.c **** #if OS_ARG_CHK_EN > 0
+  65:../os_core/os_q.c ****     if (pevent == (OS_EVENT *)0) {               /* Validate 'pevent'                              
+ 1685              		.loc 1 65 0
+ 1686 0018 18301BE5 		ldr	r3, [fp, #-24]
+ 1687 001c 000053E3 		cmp	r3, #0
+ 1688 0020 0400001A 		bne	.L2
+  66:../os_core/os_q.c ****         *err = OS_ERR_PEVENT_NULL;
+ 1689              		.loc 1 66 0
+ 1690 0024 1C301BE5 		ldr	r3, [fp, #-28]
+ 1691 0028 0420A0E3 		mov	r2, #4
+ 1692 002c 0020C3E5 		strb	r2, [r3, #0]
+  67:../os_core/os_q.c ****         return ((void *)0);
+ 1693              		.loc 1 67 0
+ 1694 0030 0030A0E3 		mov	r3, #0
+ 1695 0034 370000EA 		b	.L3
+ 1696              	.L2:
+  68:../os_core/os_q.c ****     }
+  69:../os_core/os_q.c **** #endif
+  70:../os_core/os_q.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_Q) {/* Validate event block type                      
+ 1697              		.loc 1 70 0
+ 1698 0038 18301BE5 		ldr	r3, [fp, #-24]
+ 1699 003c 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1700 0040 020053E3 		cmp	r3, #2
+ 1701 0044 0400000A 		beq	.L4
+  71:../os_core/os_q.c ****         *err = OS_ERR_EVENT_TYPE;
+ 1702              		.loc 1 71 0
+ 1703 0048 1C301BE5 		ldr	r3, [fp, #-28]
+ 1704 004c 0120A0E3 		mov	r2, #1
+ 1705 0050 0020C3E5 		strb	r2, [r3, #0]
+  72:../os_core/os_q.c ****         return ((void *)0);
+ 1706              		.loc 1 72 0
+ 1707 0054 0030A0E3 		mov	r3, #0
+ 1708 0058 2E0000EA 		b	.L3
+ 1709              	.L4:
+  73:../os_core/os_q.c ****     }
+  74:../os_core/os_q.c ****     OS_ENTER_CRITICAL();
+ 1710              		.loc 1 74 0
+ 1711              	@ 74 "../os_core/os_q.c" 1
+ 1712 005c 00000FE1 		mrs   r0, cpsr
+ 1713              	@ 0 "" 2
+ 1714              	@ 74 "../os_core/os_q.c" 1
+ 1715 0060 04002DE5 		stmfd sp!, {r0}
+ 1716              	@ 0 "" 2
+ 1717              	@ 74 "../os_core/os_q.c" 1
+ 1718 0064 C00080E3 		orr   r0, r0, #0b11000000
+ 1719              	@ 0 "" 2
+ 1720              	@ 74 "../os_core/os_q.c" 1
+ 1721 0068 00F021E1 		msr   cpsr_c, r0
+ 1722              	@ 0 "" 2
+  75:../os_core/os_q.c ****     pq = (OS_Q *)pevent->OSEventPtr;             /* Point at queue control block                   
+ 1723              		.loc 1 75 0
+ 1724 006c 18301BE5 		ldr	r3, [fp, #-24]
+ 1725 0070 043093E5 		ldr	r3, [r3, #4]
+ 1726 0074 14300BE5 		str	r3, [fp, #-20]
+  76:../os_core/os_q.c ****     if (pq->OSQEntries > 0) {                    /* See if any messages in the queue               
+ 1727              		.loc 1 76 0
+ 1728 0078 14301BE5 		ldr	r3, [fp, #-20]
+ 1729 007c B631D3E1 		ldrh	r3, [r3, #22]
+ 1730 0080 000053E3 		cmp	r3, #0
+ 1731 0084 1B00000A 		beq	.L5
+  77:../os_core/os_q.c ****         msg = *pq->OSQOut++;                     /* Yes, extract oldest message from the queue     
+ 1732              		.loc 1 77 0
+ 1733 0088 14301BE5 		ldr	r3, [fp, #-20]
+ 1734 008c 103093E5 		ldr	r3, [r3, #16]
+ 1735 0090 002093E5 		ldr	r2, [r3, #0]
+ 1736 0094 10200BE5 		str	r2, [fp, #-16]
+ 1737 0098 042083E2 		add	r2, r3, #4
+ 1738 009c 14301BE5 		ldr	r3, [fp, #-20]
+ 1739 00a0 102083E5 		str	r2, [r3, #16]
+  78:../os_core/os_q.c ****         pq->OSQEntries--;                        /* Update the number of entries in the queue      
+ 1740              		.loc 1 78 0
+ 1741 00a4 14301BE5 		ldr	r3, [fp, #-20]
+ 1742 00a8 B631D3E1 		ldrh	r3, [r3, #22]
+ 1743 00ac 013043E2 		sub	r3, r3, #1
+ 1744 00b0 0338A0E1 		mov	r3, r3, asl #16
+ 1745 00b4 2328A0E1 		mov	r2, r3, lsr #16
+ 1746 00b8 14301BE5 		ldr	r3, [fp, #-20]
+ 1747 00bc B621C3E1 		strh	r2, [r3, #22]	@ movhi
+  79:../os_core/os_q.c ****         if (pq->OSQOut == pq->OSQEnd) {          /* Wrap OUT pointer if we are at the end of the qu
+ 1748              		.loc 1 79 0
+ 1749 00c0 14301BE5 		ldr	r3, [fp, #-20]
+ 1750 00c4 102093E5 		ldr	r2, [r3, #16]
+ 1751 00c8 14301BE5 		ldr	r3, [fp, #-20]
+ 1752 00cc 083093E5 		ldr	r3, [r3, #8]
+ 1753 00d0 030052E1 		cmp	r2, r3
+ 1754 00d4 0300001A 		bne	.L6
+  80:../os_core/os_q.c ****             pq->OSQOut = pq->OSQStart;
+ 1755              		.loc 1 80 0
+ 1756 00d8 14301BE5 		ldr	r3, [fp, #-20]
+ 1757 00dc 042093E5 		ldr	r2, [r3, #4]
+ 1758 00e0 14301BE5 		ldr	r3, [fp, #-20]
+ 1759 00e4 102083E5 		str	r2, [r3, #16]
+ 1760              	.L6:
+  81:../os_core/os_q.c ****         }
+  82:../os_core/os_q.c ****         *err = OS_NO_ERR;
+ 1761              		.loc 1 82 0
+ 1762 00e8 1C301BE5 		ldr	r3, [fp, #-28]
+ 1763 00ec 0020A0E3 		mov	r2, #0
+ 1764 00f0 0020C3E5 		strb	r2, [r3, #0]
+ 1765 00f4 040000EA 		b	.L7
+ 1766              	.L5:
+  83:../os_core/os_q.c ****     } else {
+  84:../os_core/os_q.c ****         *err = OS_Q_EMPTY;
+ 1767              		.loc 1 84 0
+ 1768 00f8 1C301BE5 		ldr	r3, [fp, #-28]
+ 1769 00fc 1F20A0E3 		mov	r2, #31
+ 1770 0100 0020C3E5 		strb	r2, [r3, #0]
+  85:../os_core/os_q.c ****         msg  = (void *)0;                        /* Queue is empty                                 
+ 1771              		.loc 1 85 0
+ 1772 0104 0030A0E3 		mov	r3, #0
+ 1773 0108 10300BE5 		str	r3, [fp, #-16]
+ 1774              	.L7:
+  86:../os_core/os_q.c ****     }
+  87:../os_core/os_q.c ****     OS_EXIT_CRITICAL();
+ 1775              		.loc 1 87 0
+ 1776              	@ 87 "../os_core/os_q.c" 1
+ 1777 010c 04009DE4 		ldmfd sp!, {r0}
+ 1778              	@ 0 "" 2
+ 1779              	@ 87 "../os_core/os_q.c" 1
+ 1780 0110 00F021E1 		msr   cpsr_c, r0
+ 1781              	@ 0 "" 2
+  88:../os_core/os_q.c ****     return (msg);                                /* Return message received (or NULL)              
+ 1782              		.loc 1 88 0
+ 1783 0114 10301BE5 		ldr	r3, [fp, #-16]
+ 1784              	.L3:
+  89:../os_core/os_q.c **** }
+ 1785              		.loc 1 89 0
+ 1786 0118 0300A0E1 		mov	r0, r3
+ 1787 011c 0CD04BE2 		sub	sp, fp, #12
+ 1788 0120 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1789 0124 1EFF2FE1 		bx	lr
+ 1790              		.cfi_endproc
+ 1791              	.LFE0:
+ 1793              		.align	2
+ 1794              		.global	OSQCreate
+ 1796              	OSQCreate:
+ 1797              	.LFB1:
+  90:../os_core/os_q.c **** #endif
+  91:../os_core/os_q.c **** /*$PAGE*/
+  92:../os_core/os_q.c **** /*
+  93:../os_core/os_q.c **** ***************************************************************************************************
+  94:../os_core/os_q.c **** *                                        CREATE A MESSAGE QUEUE
+  95:../os_core/os_q.c **** *
+  96:../os_core/os_q.c **** * Description: This function creates a message queue if free event control blocks are available.
+  97:../os_core/os_q.c **** *
+  98:../os_core/os_q.c **** * Arguments  : start         is a pointer to the base address of the message queue storage area.  T
+  99:../os_core/os_q.c **** *                            storage area MUST be declared as an array of pointers to 'void' as fol
+ 100:../os_core/os_q.c **** *
+ 101:../os_core/os_q.c **** *                            void *MessageStorage[size]
+ 102:../os_core/os_q.c **** *
+ 103:../os_core/os_q.c **** *              size          is the number of elements in the storage area
+ 104:../os_core/os_q.c **** *
+ 105:../os_core/os_q.c **** * Returns    : != (OS_EVENT *)0  is a pointer to the event control clock (OS_EVENT) associated with
+ 106:../os_core/os_q.c **** *                                created queue
+ 107:../os_core/os_q.c **** *              == (OS_EVENT *)0  if no event control blocks were available or an error was detected
+ 108:../os_core/os_q.c **** ***************************************************************************************************
+ 109:../os_core/os_q.c **** */
+ 110:../os_core/os_q.c **** 
+ 111:../os_core/os_q.c **** OS_EVENT  *OSQCreate (void **start, INT16U size)
+ 112:../os_core/os_q.c **** {
+ 1798              		.loc 1 112 0
+ 1799              		.cfi_startproc
+ 1800              		@ Function supports interworking.
+ 1801              		@ args = 0, pretend = 0, frame = 16
+ 1802              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1803 0128 0DC0A0E1 		mov	ip, sp
+ 1804              	.LCFI2:
+ 1805              		.cfi_def_cfa_register 12
+ 1806 012c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1807 0130 04B04CE2 		sub	fp, ip, #4
+ 1808              		.cfi_offset 14, -8
+ 1809              		.cfi_offset 13, -12
+ 1810              		.cfi_offset 11, -16
+ 1811              	.LCFI3:
+ 1812              		.cfi_def_cfa 11, 4
+ 1813 0134 10D04DE2 		sub	sp, sp, #16
+ 1814 0138 18000BE5 		str	r0, [fp, #-24]
+ 1815 013c 0130A0E1 		mov	r3, r1
+ 1816 0140 BA314BE1 		strh	r3, [fp, #-26]	@ movhi
+ 113:../os_core/os_q.c ****     OS_EVENT  *pevent;
+ 114:../os_core/os_q.c ****     OS_Q      *pq;
+ 115:../os_core/os_q.c **** #if OS_CRITICAL_METHOD == 3                      /* Allocate storage for CPU status register       
+ 116:../os_core/os_q.c ****     OS_CPU_SR  cpu_sr;
+ 117:../os_core/os_q.c **** 
+ 118:../os_core/os_q.c **** 
+ 119:../os_core/os_q.c **** 
+ 120:../os_core/os_q.c ****     cpu_sr = 0;                                  /* Prevent compiler warning                       
+ 121:../os_core/os_q.c **** #endif    
+ 122:../os_core/os_q.c ****     if (OSIntNesting > 0) {                      /* See if called from ISR ...                     
+ 1817              		.loc 1 122 0
+ 1818 0144 88319FE5 		ldr	r3, .L14
+ 1819 0148 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1820 014c 000053E3 		cmp	r3, #0
+ 1821 0150 0100000A 		beq	.L9
+ 123:../os_core/os_q.c ****         return ((OS_EVENT *)0);                  /* ... can't CREATE from an ISR                   
+ 1822              		.loc 1 123 0
+ 1823 0154 0030A0E3 		mov	r3, #0
+ 1824 0158 590000EA 		b	.L10
+ 1825              	.L9:
+ 124:../os_core/os_q.c ****     }
+ 125:../os_core/os_q.c ****     OS_ENTER_CRITICAL();
+ 1826              		.loc 1 125 0
+ 1827              	@ 125 "../os_core/os_q.c" 1
+ 1828 015c 00000FE1 		mrs   r0, cpsr
+ 1829              	@ 0 "" 2
+ 1830              	@ 125 "../os_core/os_q.c" 1
+ 1831 0160 04002DE5 		stmfd sp!, {r0}
+ 1832              	@ 0 "" 2
+ 1833              	@ 125 "../os_core/os_q.c" 1
+ 1834 0164 C00080E3 		orr   r0, r0, #0b11000000
+ 1835              	@ 0 "" 2
+ 1836              	@ 125 "../os_core/os_q.c" 1
+ 1837 0168 00F021E1 		msr   cpsr_c, r0
+ 1838              	@ 0 "" 2
+ 126:../os_core/os_q.c ****     pevent = OSEventFreeList;                    /* Get next free event control block              
+ 1839              		.loc 1 126 0
+ 1840 016c 64319FE5 		ldr	r3, .L14+4
+ 1841 0170 003093E5 		ldr	r3, [r3, #0]
+ 1842 0174 10300BE5 		str	r3, [fp, #-16]
+ 127:../os_core/os_q.c ****     if (OSEventFreeList != (OS_EVENT *)0) {      /* See if pool of free ECB pool was empty         
+ 1843              		.loc 1 127 0
+ 1844 0178 58319FE5 		ldr	r3, .L14+4
+ 1845 017c 003093E5 		ldr	r3, [r3, #0]
+ 1846 0180 000053E3 		cmp	r3, #0
+ 1847 0184 0500000A 		beq	.L11
+ 128:../os_core/os_q.c ****         OSEventFreeList = (OS_EVENT *)OSEventFreeList->OSEventPtr;
+ 1848              		.loc 1 128 0
+ 1849 0188 48319FE5 		ldr	r3, .L14+4
+ 1850 018c 003093E5 		ldr	r3, [r3, #0]
+ 1851 0190 043093E5 		ldr	r3, [r3, #4]
+ 1852 0194 0320A0E1 		mov	r2, r3
+ 1853 0198 38319FE5 		ldr	r3, .L14+4
+ 1854 019c 002083E5 		str	r2, [r3, #0]
+ 1855              	.L11:
+ 129:../os_core/os_q.c ****     }
+ 130:../os_core/os_q.c ****     OS_EXIT_CRITICAL();
+ 1856              		.loc 1 130 0
+ 1857              	@ 130 "../os_core/os_q.c" 1
+ 1858 01a0 04009DE4 		ldmfd sp!, {r0}
+ 1859              	@ 0 "" 2
+ 1860              	@ 130 "../os_core/os_q.c" 1
+ 1861 01a4 00F021E1 		msr   cpsr_c, r0
+ 1862              	@ 0 "" 2
+ 131:../os_core/os_q.c ****     if (pevent != (OS_EVENT *)0) {               /* See if we have an event control block          
+ 1863              		.loc 1 131 0
+ 1864 01a8 10301BE5 		ldr	r3, [fp, #-16]
+ 1865 01ac 000053E3 		cmp	r3, #0
+ 1866 01b0 4200000A 		beq	.L12
+ 132:../os_core/os_q.c ****         OS_ENTER_CRITICAL();
+ 1867              		.loc 1 132 0
+ 1868              	@ 132 "../os_core/os_q.c" 1
+ 1869 01b4 00000FE1 		mrs   r0, cpsr
+ 1870              	@ 0 "" 2
+ 1871              	@ 132 "../os_core/os_q.c" 1
+ 1872 01b8 04002DE5 		stmfd sp!, {r0}
+ 1873              	@ 0 "" 2
+ 1874              	@ 132 "../os_core/os_q.c" 1
+ 1875 01bc C00080E3 		orr   r0, r0, #0b11000000
+ 1876              	@ 0 "" 2
+ 1877              	@ 132 "../os_core/os_q.c" 1
+ 1878 01c0 00F021E1 		msr   cpsr_c, r0
+ 1879              	@ 0 "" 2
+ 133:../os_core/os_q.c ****         pq = OSQFreeList;                        /* Get a free queue control block                 
+ 1880              		.loc 1 133 0
+ 1881 01c4 10319FE5 		ldr	r3, .L14+8
+ 1882 01c8 003093E5 		ldr	r3, [r3, #0]
+ 1883 01cc 14300BE5 		str	r3, [fp, #-20]
+ 134:../os_core/os_q.c ****         if (pq != (OS_Q *)0) {                   /* Were we able to get a queue control block ?    
+ 1884              		.loc 1 134 0
+ 1885 01d0 14301BE5 		ldr	r3, [fp, #-20]
+ 1886 01d4 000053E3 		cmp	r3, #0
+ 1887 01d8 2D00000A 		beq	.L13
+ 135:../os_core/os_q.c ****             OSQFreeList            = OSQFreeList->OSQPtr; /* Yes, Adjust free list pointer to next 
+ 1888              		.loc 1 135 0
+ 1889 01dc F8309FE5 		ldr	r3, .L14+8
+ 1890 01e0 003093E5 		ldr	r3, [r3, #0]
+ 1891 01e4 002093E5 		ldr	r2, [r3, #0]
+ 1892 01e8 EC309FE5 		ldr	r3, .L14+8
+ 1893 01ec 002083E5 		str	r2, [r3, #0]
+ 136:../os_core/os_q.c ****             OS_EXIT_CRITICAL();
+ 1894              		.loc 1 136 0
+ 1895              	@ 136 "../os_core/os_q.c" 1
+ 1896 01f0 04009DE4 		ldmfd sp!, {r0}
+ 1897              	@ 0 "" 2
+ 1898              	@ 136 "../os_core/os_q.c" 1
+ 1899 01f4 00F021E1 		msr   cpsr_c, r0
+ 1900              	@ 0 "" 2
+ 137:../os_core/os_q.c ****             pq->OSQStart           = start;               /*      Initialize the queue             
+ 1901              		.loc 1 137 0
+ 1902 01f8 14301BE5 		ldr	r3, [fp, #-20]
+ 1903 01fc 18201BE5 		ldr	r2, [fp, #-24]
+ 1904 0200 042083E5 		str	r2, [r3, #4]
+ 138:../os_core/os_q.c ****             pq->OSQEnd             = &start[size];
+ 1905              		.loc 1 138 0
+ 1906 0204 BA315BE1 		ldrh	r3, [fp, #-26]
+ 1907 0208 0331A0E1 		mov	r3, r3, asl #2
+ 1908 020c 18201BE5 		ldr	r2, [fp, #-24]
+ 1909 0210 032082E0 		add	r2, r2, r3
+ 1910 0214 14301BE5 		ldr	r3, [fp, #-20]
+ 1911 0218 082083E5 		str	r2, [r3, #8]
+ 139:../os_core/os_q.c ****             pq->OSQIn              = start;
+ 1912              		.loc 1 139 0
+ 1913 021c 14301BE5 		ldr	r3, [fp, #-20]
+ 1914 0220 18201BE5 		ldr	r2, [fp, #-24]
+ 1915 0224 0C2083E5 		str	r2, [r3, #12]
+ 140:../os_core/os_q.c ****             pq->OSQOut             = start;
+ 1916              		.loc 1 140 0
+ 1917 0228 14301BE5 		ldr	r3, [fp, #-20]
+ 1918 022c 18201BE5 		ldr	r2, [fp, #-24]
+ 1919 0230 102083E5 		str	r2, [r3, #16]
+ 141:../os_core/os_q.c ****             pq->OSQSize            = size;
+ 1920              		.loc 1 141 0
+ 1921 0234 14301BE5 		ldr	r3, [fp, #-20]
+ 1922 0238 BA215BE1 		ldrh	r2, [fp, #-26]	@ movhi
+ 1923 023c B421C3E1 		strh	r2, [r3, #20]	@ movhi
+ 142:../os_core/os_q.c ****             pq->OSQEntries         = 0;
+ 1924              		.loc 1 142 0
+ 1925 0240 14301BE5 		ldr	r3, [fp, #-20]
+ 1926 0244 0020A0E3 		mov	r2, #0
+ 1927 0248 B621C3E1 		strh	r2, [r3, #22]	@ movhi
+ 143:../os_core/os_q.c ****             pevent->OSEventType    = OS_EVENT_TYPE_Q;
+ 1928              		.loc 1 143 0
+ 1929 024c 10301BE5 		ldr	r3, [fp, #-16]
+ 1930 0250 0220A0E3 		mov	r2, #2
+ 1931 0254 0020C3E5 		strb	r2, [r3, #0]
+ 144:../os_core/os_q.c ****             pevent->OSEventCnt     = 0;
+ 1932              		.loc 1 144 0
+ 1933 0258 10301BE5 		ldr	r3, [fp, #-16]
+ 1934 025c 0020A0E3 		mov	r2, #0
+ 1935 0260 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 145:../os_core/os_q.c ****             pevent->OSEventPtr     = pq;
+ 1936              		.loc 1 145 0
+ 1937 0264 10301BE5 		ldr	r3, [fp, #-16]
+ 1938 0268 14201BE5 		ldr	r2, [fp, #-20]
+ 1939 026c 042083E5 		str	r2, [r3, #4]
+ 146:../os_core/os_q.c **** #if OS_EVENT_NAME_SIZE > 1
+ 147:../os_core/os_q.c ****             pevent->OSEventName[0] = '?';                  /* Unknown name                         
+ 1940              		.loc 1 147 0
+ 1941 0270 10301BE5 		ldr	r3, [fp, #-16]
+ 1942 0274 3F20A0E3 		mov	r2, #63
+ 1943 0278 1020C3E5 		strb	r2, [r3, #16]
+ 148:../os_core/os_q.c ****             pevent->OSEventName[1] = OS_ASCII_NUL;
+ 1944              		.loc 1 148 0
+ 1945 027c 10301BE5 		ldr	r3, [fp, #-16]
+ 1946 0280 0020A0E3 		mov	r2, #0
+ 1947 0284 1120C3E5 		strb	r2, [r3, #17]
+ 149:../os_core/os_q.c **** #endif
+ 150:../os_core/os_q.c ****             OS_EventWaitListInit(pevent);                 /*      Initalize the wait list          
+ 1948              		.loc 1 150 0
+ 1949 0288 10001BE5 		ldr	r0, [fp, #-16]
+ 1950 028c FEFFFFEB 		bl	OS_EventWaitListInit
+ 1951 0290 0A0000EA 		b	.L12
+ 1952              	.L13:
+ 151:../os_core/os_q.c ****         } else {
+ 152:../os_core/os_q.c ****             pevent->OSEventPtr = (void *)OSEventFreeList; /* No,  Return event control block on err
+ 1953              		.loc 1 152 0
+ 1954 0294 3C309FE5 		ldr	r3, .L14+4
+ 1955 0298 002093E5 		ldr	r2, [r3, #0]
+ 1956 029c 10301BE5 		ldr	r3, [fp, #-16]
+ 1957 02a0 042083E5 		str	r2, [r3, #4]
+ 153:../os_core/os_q.c ****             OSEventFreeList    = pevent;
+ 1958              		.loc 1 153 0
+ 1959 02a4 2C309FE5 		ldr	r3, .L14+4
+ 1960 02a8 10201BE5 		ldr	r2, [fp, #-16]
+ 1961 02ac 002083E5 		str	r2, [r3, #0]
+ 154:../os_core/os_q.c ****             OS_EXIT_CRITICAL();
+ 1962              		.loc 1 154 0
+ 1963              	@ 154 "../os_core/os_q.c" 1
+ 1964 02b0 04009DE4 		ldmfd sp!, {r0}
+ 1965              	@ 0 "" 2
+ 1966              	@ 154 "../os_core/os_q.c" 1
+ 1967 02b4 00F021E1 		msr   cpsr_c, r0
+ 1968              	@ 0 "" 2
+ 155:../os_core/os_q.c ****             pevent = (OS_EVENT *)0;
+ 1969              		.loc 1 155 0
+ 1970 02b8 0030A0E3 		mov	r3, #0
+ 1971 02bc 10300BE5 		str	r3, [fp, #-16]
+ 1972              	.L12:
+ 156:../os_core/os_q.c ****         }
+ 157:../os_core/os_q.c ****     }
+ 158:../os_core/os_q.c ****     return (pevent);
+ 1973              		.loc 1 158 0
+ 1974 02c0 10301BE5 		ldr	r3, [fp, #-16]
+ 1975              	.L10:
+ 159:../os_core/os_q.c **** }
+ 1976              		.loc 1 159 0
+ 1977 02c4 0300A0E1 		mov	r0, r3
+ 1978 02c8 0CD04BE2 		sub	sp, fp, #12
+ 1979 02cc 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1980 02d0 1EFF2FE1 		bx	lr
+ 1981              	.L15:
+ 1982              		.align	2
+ 1983              	.L14:
+ 1984 02d4 00000000 		.word	OSIntNesting
+ 1985 02d8 00000000 		.word	OSEventFreeList
+ 1986 02dc 00000000 		.word	OSQFreeList
+ 1987              		.cfi_endproc
+ 1988              	.LFE1:
+ 1990              		.align	2
+ 1991              		.global	OSQDel
+ 1993              	OSQDel:
+ 1994              	.LFB2:
+ 160:../os_core/os_q.c **** /*$PAGE*/
+ 161:../os_core/os_q.c **** /*
+ 162:../os_core/os_q.c **** ***************************************************************************************************
+ 163:../os_core/os_q.c **** *                                        DELETE A MESSAGE QUEUE
+ 164:../os_core/os_q.c **** *
+ 165:../os_core/os_q.c **** * Description: This function deletes a message queue and readies all tasks pending on the queue.
+ 166:../os_core/os_q.c **** *
+ 167:../os_core/os_q.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired
+ 168:../os_core/os_q.c **** *                            queue.
+ 169:../os_core/os_q.c **** *
+ 170:../os_core/os_q.c **** *              opt           determines delete options as follows:
+ 171:../os_core/os_q.c **** *                            opt == OS_DEL_NO_PEND   Delete the queue ONLY if no task pending
+ 172:../os_core/os_q.c **** *                            opt == OS_DEL_ALWAYS    Deletes the queue even if tasks are waiting.
+ 173:../os_core/os_q.c **** *                                                    In this case, all the tasks pending will be re
+ 174:../os_core/os_q.c **** *
+ 175:../os_core/os_q.c **** *              err           is a pointer to an error code that can contain one of the following va
+ 176:../os_core/os_q.c **** *                            OS_NO_ERR               The call was successful and the queue was dele
+ 177:../os_core/os_q.c **** *                            OS_ERR_DEL_ISR          If you tried to delete the queue from an ISR
+ 178:../os_core/os_q.c **** *                            OS_ERR_INVALID_OPT      An invalid option was specified
+ 179:../os_core/os_q.c **** *                            OS_ERR_TASK_WAITING     One or more tasks were waiting on the queue
+ 180:../os_core/os_q.c **** *                            OS_ERR_EVENT_TYPE       If you didn't pass a pointer to a queue
+ 181:../os_core/os_q.c **** *                            OS_ERR_PEVENT_NULL      If 'pevent' is a NULL pointer.
+ 182:../os_core/os_q.c **** *
+ 183:../os_core/os_q.c **** * Returns    : pevent        upon error
+ 184:../os_core/os_q.c **** *              (OS_EVENT *)0 if the queue was successfully deleted.
+ 185:../os_core/os_q.c **** *
+ 186:../os_core/os_q.c **** * Note(s)    : 1) This function must be used with care.  Tasks that would normally expect the prese
+ 187:../os_core/os_q.c **** *                 the queue MUST check the return code of OSQPend().
+ 188:../os_core/os_q.c **** *              2) OSQAccept() callers will not know that the intended queue has been deleted unless
+ 189:../os_core/os_q.c **** *                 they check 'pevent' to see that it's a NULL pointer.
+ 190:../os_core/os_q.c **** *              3) This call can potentially disable interrupts for a long time.  The interrupt disa
+ 191:../os_core/os_q.c **** *                 time is directly proportional to the number of tasks waiting on the queue.
+ 192:../os_core/os_q.c **** *              4) Because ALL tasks pending on the queue will be readied, you MUST be careful in
+ 193:../os_core/os_q.c **** *                 applications where the queue is used for mutual exclusion because the resource(s)
+ 194:../os_core/os_q.c **** *                 will no longer be guarded by the queue.
+ 195:../os_core/os_q.c **** *              5) If the storage for the message queue was allocated dynamically (i.e. using a mall
+ 196:../os_core/os_q.c **** *                 type call) then your application MUST release the memory storage by call the coun
+ 197:../os_core/os_q.c **** *                 call of the dynamic allocation scheme used.  If the queue storage was created sta
+ 198:../os_core/os_q.c **** *                 then, the storage can be reused.
+ 199:../os_core/os_q.c **** ***************************************************************************************************
+ 200:../os_core/os_q.c **** */
+ 201:../os_core/os_q.c **** 
+ 202:../os_core/os_q.c **** #if OS_Q_DEL_EN > 0
+ 203:../os_core/os_q.c **** OS_EVENT  *OSQDel (OS_EVENT *pevent, INT8U opt, INT8U *err)
+ 204:../os_core/os_q.c **** {
+ 1995              		.loc 1 204 0
+ 1996              		.cfi_startproc
+ 1997              		@ Function supports interworking.
+ 1998              		@ args = 0, pretend = 0, frame = 24
+ 1999              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2000 02e0 0DC0A0E1 		mov	ip, sp
+ 2001              	.LCFI4:
+ 2002              		.cfi_def_cfa_register 12
+ 2003 02e4 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2004 02e8 04B04CE2 		sub	fp, ip, #4
+ 2005              		.cfi_offset 14, -8
+ 2006              		.cfi_offset 13, -12
+ 2007              		.cfi_offset 11, -16
+ 2008              	.LCFI5:
+ 2009              		.cfi_def_cfa 11, 4
+ 2010 02ec 18D04DE2 		sub	sp, sp, #24
+ 2011 02f0 18000BE5 		str	r0, [fp, #-24]
+ 2012 02f4 0130A0E1 		mov	r3, r1
+ 2013 02f8 20200BE5 		str	r2, [fp, #-32]
+ 2014 02fc 19304BE5 		strb	r3, [fp, #-25]
+ 205:../os_core/os_q.c ****     BOOLEAN    tasks_waiting;
+ 206:../os_core/os_q.c ****     OS_Q      *pq;
+ 207:../os_core/os_q.c **** #if OS_CRITICAL_METHOD == 3                                /* Allocate storage for CPU status regis
+ 208:../os_core/os_q.c ****     OS_CPU_SR  cpu_sr;
+ 209:../os_core/os_q.c **** 
+ 210:../os_core/os_q.c **** 
+ 211:../os_core/os_q.c **** 
+ 212:../os_core/os_q.c ****     cpu_sr = 0;                                            /* Prevent compiler warning             
+ 213:../os_core/os_q.c **** #endif    
+ 214:../os_core/os_q.c ****     if (OSIntNesting > 0) {                                /* See if called from ISR ...           
+ 2015              		.loc 1 214 0
+ 2016 0300 54329FE5 		ldr	r3, .L32
+ 2017 0304 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2018 0308 000053E3 		cmp	r3, #0
+ 2019 030c 0400000A 		beq	.L17
+ 215:../os_core/os_q.c ****         *err = OS_ERR_DEL_ISR;                             /* ... can't DELETE from an ISR         
+ 2020              		.loc 1 215 0
+ 2021 0310 20301BE5 		ldr	r3, [fp, #-32]
+ 2022 0314 7320E0E3 		mvn	r2, #115
+ 2023 0318 0020C3E5 		strb	r2, [r3, #0]
+ 216:../os_core/os_q.c ****         return (pevent);
+ 2024              		.loc 1 216 0
+ 2025 031c 18301BE5 		ldr	r3, [fp, #-24]
+ 2026 0320 890000EA 		b	.L18
+ 2027              	.L17:
+ 217:../os_core/os_q.c ****     }
+ 218:../os_core/os_q.c **** #if OS_ARG_CHK_EN > 0
+ 219:../os_core/os_q.c ****     if (pevent == (OS_EVENT *)0) {                         /* Validate 'pevent'                    
+ 2028              		.loc 1 219 0
+ 2029 0324 18301BE5 		ldr	r3, [fp, #-24]
+ 2030 0328 000053E3 		cmp	r3, #0
+ 2031 032c 0400001A 		bne	.L19
+ 220:../os_core/os_q.c ****         *err = OS_ERR_PEVENT_NULL;
+ 2032              		.loc 1 220 0
+ 2033 0330 20301BE5 		ldr	r3, [fp, #-32]
+ 2034 0334 0420A0E3 		mov	r2, #4
+ 2035 0338 0020C3E5 		strb	r2, [r3, #0]
+ 221:../os_core/os_q.c ****         return (pevent);
+ 2036              		.loc 1 221 0
+ 2037 033c 18301BE5 		ldr	r3, [fp, #-24]
+ 2038 0340 810000EA 		b	.L18
+ 2039              	.L19:
+ 222:../os_core/os_q.c ****     }
+ 223:../os_core/os_q.c **** #endif
+ 224:../os_core/os_q.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_Q) {          /* Validate event block type            
+ 2040              		.loc 1 224 0
+ 2041 0344 18301BE5 		ldr	r3, [fp, #-24]
+ 2042 0348 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2043 034c 020053E3 		cmp	r3, #2
+ 2044 0350 0400000A 		beq	.L20
+ 225:../os_core/os_q.c ****         *err = OS_ERR_EVENT_TYPE;
+ 2045              		.loc 1 225 0
+ 2046 0354 20301BE5 		ldr	r3, [fp, #-32]
+ 2047 0358 0120A0E3 		mov	r2, #1
+ 2048 035c 0020C3E5 		strb	r2, [r3, #0]
+ 226:../os_core/os_q.c ****         return (pevent);
+ 2049              		.loc 1 226 0
+ 2050 0360 18301BE5 		ldr	r3, [fp, #-24]
+ 2051 0364 780000EA 		b	.L18
+ 2052              	.L20:
+ 227:../os_core/os_q.c ****     }
+ 228:../os_core/os_q.c ****     OS_ENTER_CRITICAL();
+ 2053              		.loc 1 228 0
+ 2054              	@ 228 "../os_core/os_q.c" 1
+ 2055 0368 00000FE1 		mrs   r0, cpsr
+ 2056              	@ 0 "" 2
+ 2057              	@ 228 "../os_core/os_q.c" 1
+ 2058 036c 04002DE5 		stmfd sp!, {r0}
+ 2059              	@ 0 "" 2
+ 2060              	@ 228 "../os_core/os_q.c" 1
+ 2061 0370 C00080E3 		orr   r0, r0, #0b11000000
+ 2062              	@ 0 "" 2
+ 2063              	@ 228 "../os_core/os_q.c" 1
+ 2064 0374 00F021E1 		msr   cpsr_c, r0
+ 2065              	@ 0 "" 2
+ 229:../os_core/os_q.c ****     if (pevent->OSEventGrp != 0x00) {                      /* See if any tasks waiting on queue    
+ 2066              		.loc 1 229 0
+ 2067 0378 18301BE5 		ldr	r3, [fp, #-24]
+ 2068 037c 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2069 0380 000053E3 		cmp	r3, #0
+ 2070 0384 0200000A 		beq	.L21
+ 230:../os_core/os_q.c ****         tasks_waiting = TRUE;                              /* Yes                                  
+ 2071              		.loc 1 230 0
+ 2072 0388 0130A0E3 		mov	r3, #1
+ 2073 038c 0D304BE5 		strb	r3, [fp, #-13]
+ 2074 0390 010000EA 		b	.L22
+ 2075              	.L21:
+ 231:../os_core/os_q.c ****     } else {
+ 232:../os_core/os_q.c ****         tasks_waiting = FALSE;                             /* No                                   
+ 2076              		.loc 1 232 0
+ 2077 0394 0030A0E3 		mov	r3, #0
+ 2078 0398 0D304BE5 		strb	r3, [fp, #-13]
+ 2079              	.L22:
+ 233:../os_core/os_q.c ****     }
+ 234:../os_core/os_q.c ****     switch (opt) {
+ 2080              		.loc 1 234 0
+ 2081 039c 19305BE5 		ldrb	r3, [fp, #-25]	@ zero_extendqisi2
+ 2082 03a0 000053E3 		cmp	r3, #0
+ 2083 03a4 0200000A 		beq	.L24
+ 2084 03a8 010053E3 		cmp	r3, #1
+ 2085 03ac 3300000A 		beq	.L31
+ 2086 03b0 5F0000EA 		b	.L30
+ 2087              	.L24:
+ 235:../os_core/os_q.c ****         case OS_DEL_NO_PEND:                               /* Delete queue only if no task waiting 
+ 236:../os_core/os_q.c ****              if (tasks_waiting == FALSE) {
+ 2088              		.loc 1 236 0
+ 2089 03b4 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2090 03b8 000053E3 		cmp	r3, #0
+ 2091 03bc 2300001A 		bne	.L26
+ 237:../os_core/os_q.c **** #if OS_EVENT_NAME_SIZE > 1
+ 238:../os_core/os_q.c ****                  pevent->OSEventName[0] = '?';             /* Unknown name                         
+ 2092              		.loc 1 238 0
+ 2093 03c0 18301BE5 		ldr	r3, [fp, #-24]
+ 2094 03c4 3F20A0E3 		mov	r2, #63
+ 2095 03c8 1020C3E5 		strb	r2, [r3, #16]
+ 239:../os_core/os_q.c ****                  pevent->OSEventName[1] = OS_ASCII_NUL;
+ 2096              		.loc 1 239 0
+ 2097 03cc 18301BE5 		ldr	r3, [fp, #-24]
+ 2098 03d0 0020A0E3 		mov	r2, #0
+ 2099 03d4 1120C3E5 		strb	r2, [r3, #17]
+ 240:../os_core/os_q.c **** #endif
+ 241:../os_core/os_q.c ****                  pq                     = (OS_Q *)pevent->OSEventPtr;  /* Return OS_Q to free list 
+ 2100              		.loc 1 241 0
+ 2101 03d8 18301BE5 		ldr	r3, [fp, #-24]
+ 2102 03dc 043093E5 		ldr	r3, [r3, #4]
+ 2103 03e0 14300BE5 		str	r3, [fp, #-20]
+ 242:../os_core/os_q.c ****                  pq->OSQPtr             = OSQFreeList;
+ 2104              		.loc 1 242 0
+ 2105 03e4 74319FE5 		ldr	r3, .L32+4
+ 2106 03e8 002093E5 		ldr	r2, [r3, #0]
+ 2107 03ec 14301BE5 		ldr	r3, [fp, #-20]
+ 2108 03f0 002083E5 		str	r2, [r3, #0]
+ 243:../os_core/os_q.c ****                  OSQFreeList            = pq;
+ 2109              		.loc 1 243 0
+ 2110 03f4 64319FE5 		ldr	r3, .L32+4
+ 2111 03f8 14201BE5 		ldr	r2, [fp, #-20]
+ 2112 03fc 002083E5 		str	r2, [r3, #0]
+ 244:../os_core/os_q.c ****                  pevent->OSEventType    = OS_EVENT_TYPE_UNUSED;
+ 2113              		.loc 1 244 0
+ 2114 0400 18301BE5 		ldr	r3, [fp, #-24]
+ 2115 0404 0020A0E3 		mov	r2, #0
+ 2116 0408 0020C3E5 		strb	r2, [r3, #0]
+ 245:../os_core/os_q.c ****                  pevent->OSEventPtr     = OSEventFreeList; /* Return Event Control Block to free li
+ 2117              		.loc 1 245 0
+ 2118 040c 50319FE5 		ldr	r3, .L32+8
+ 2119 0410 002093E5 		ldr	r2, [r3, #0]
+ 2120 0414 18301BE5 		ldr	r3, [fp, #-24]
+ 2121 0418 042083E5 		str	r2, [r3, #4]
+ 246:../os_core/os_q.c ****                  pevent->OSEventCnt     = 0;
+ 2122              		.loc 1 246 0
+ 2123 041c 18301BE5 		ldr	r3, [fp, #-24]
+ 2124 0420 0020A0E3 		mov	r2, #0
+ 2125 0424 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 247:../os_core/os_q.c ****                  OSEventFreeList        = pevent;          /* Get next free event control block    
+ 2126              		.loc 1 247 0
+ 2127 0428 34319FE5 		ldr	r3, .L32+8
+ 2128 042c 18201BE5 		ldr	r2, [fp, #-24]
+ 2129 0430 002083E5 		str	r2, [r3, #0]
+ 248:../os_core/os_q.c ****                  OS_EXIT_CRITICAL();
+ 2130              		.loc 1 248 0
+ 2131              	@ 248 "../os_core/os_q.c" 1
+ 2132 0434 04009DE4 		ldmfd sp!, {r0}
+ 2133              	@ 0 "" 2
+ 2134              	@ 248 "../os_core/os_q.c" 1
+ 2135 0438 00F021E1 		msr   cpsr_c, r0
+ 2136              	@ 0 "" 2
+ 249:../os_core/os_q.c ****                  *err                   = OS_NO_ERR;
+ 2137              		.loc 1 249 0
+ 2138 043c 20301BE5 		ldr	r3, [fp, #-32]
+ 2139 0440 0020A0E3 		mov	r2, #0
+ 2140 0444 0020C3E5 		strb	r2, [r3, #0]
+ 250:../os_core/os_q.c ****                  return ((OS_EVENT *)0);                   /* Queue has been deleted               
+ 2141              		.loc 1 250 0
+ 2142 0448 0030A0E3 		mov	r3, #0
+ 2143 044c 3E0000EA 		b	.L18
+ 2144              	.L26:
+ 251:../os_core/os_q.c ****              } else {
+ 252:../os_core/os_q.c ****                  OS_EXIT_CRITICAL();
+ 2145              		.loc 1 252 0
+ 2146              	@ 252 "../os_core/os_q.c" 1
+ 2147 0450 04009DE4 		ldmfd sp!, {r0}
+ 2148              	@ 0 "" 2
+ 2149              	@ 252 "../os_core/os_q.c" 1
+ 2150 0454 00F021E1 		msr   cpsr_c, r0
+ 2151              	@ 0 "" 2
+ 253:../os_core/os_q.c ****                  *err                   = OS_ERR_TASK_WAITING;
+ 2152              		.loc 1 253 0
+ 2153 0458 20301BE5 		ldr	r3, [fp, #-32]
+ 2154 045c 0820A0E3 		mov	r2, #8
+ 2155 0460 0020C3E5 		strb	r2, [r3, #0]
+ 254:../os_core/os_q.c ****                  return (pevent);
+ 2156              		.loc 1 254 0
+ 2157 0464 18301BE5 		ldr	r3, [fp, #-24]
+ 2158 0468 370000EA 		b	.L18
+ 2159              	.L28:
+ 255:../os_core/os_q.c ****              }
+ 256:../os_core/os_q.c **** 
+ 257:../os_core/os_q.c ****         case OS_DEL_ALWAYS:                                /* Always delete the queue              
+ 258:../os_core/os_q.c ****              while (pevent->OSEventGrp != 0x00) {          /* Ready ALL tasks waiting for queue    
+ 259:../os_core/os_q.c ****                  (void)OS_EventTaskRdy(pevent, (void *)0, OS_STAT_Q);
+ 2160              		.loc 1 259 0
+ 2161 046c 18001BE5 		ldr	r0, [fp, #-24]
+ 2162 0470 0010A0E3 		mov	r1, #0
+ 2163 0474 0420A0E3 		mov	r2, #4
+ 2164 0478 FEFFFFEB 		bl	OS_EventTaskRdy
+ 2165 047c 000000EA 		b	.L27
+ 2166              	.L31:
+ 258:../os_core/os_q.c ****              while (pevent->OSEventGrp != 0x00) {          /* Ready ALL tasks waiting for queue    
+ 2167              		.loc 1 258 0
+ 2168 0480 0000A0E1 		mov	r0, r0	@ nop
+ 2169              	.L27:
+ 258:../os_core/os_q.c ****              while (pevent->OSEventGrp != 0x00) {          /* Ready ALL tasks waiting for queue    
+ 2170              		.loc 1 258 0 is_stmt 0 discriminator 1
+ 2171 0484 18301BE5 		ldr	r3, [fp, #-24]
+ 2172 0488 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2173 048c 000053E3 		cmp	r3, #0
+ 2174 0490 F5FFFF1A 		bne	.L28
+ 260:../os_core/os_q.c ****              }
+ 261:../os_core/os_q.c **** #if OS_EVENT_NAME_SIZE > 1
+ 262:../os_core/os_q.c ****              pevent->OSEventName[0] = '?';                 /* Unknown name                         
+ 2175              		.loc 1 262 0 is_stmt 1
+ 2176 0494 18301BE5 		ldr	r3, [fp, #-24]
+ 2177 0498 3F20A0E3 		mov	r2, #63
+ 2178 049c 1020C3E5 		strb	r2, [r3, #16]
+ 263:../os_core/os_q.c ****              pevent->OSEventName[1] = OS_ASCII_NUL;
+ 2179              		.loc 1 263 0
+ 2180 04a0 18301BE5 		ldr	r3, [fp, #-24]
+ 2181 04a4 0020A0E3 		mov	r2, #0
+ 2182 04a8 1120C3E5 		strb	r2, [r3, #17]
+ 264:../os_core/os_q.c **** #endif
+ 265:../os_core/os_q.c ****              pq                     = (OS_Q *)pevent->OSEventPtr;   /* Return OS_Q to free list    
+ 2183              		.loc 1 265 0
+ 2184 04ac 18301BE5 		ldr	r3, [fp, #-24]
+ 2185 04b0 043093E5 		ldr	r3, [r3, #4]
+ 2186 04b4 14300BE5 		str	r3, [fp, #-20]
+ 266:../os_core/os_q.c ****              pq->OSQPtr             = OSQFreeList;
+ 2187              		.loc 1 266 0
+ 2188 04b8 A0309FE5 		ldr	r3, .L32+4
+ 2189 04bc 002093E5 		ldr	r2, [r3, #0]
+ 2190 04c0 14301BE5 		ldr	r3, [fp, #-20]
+ 2191 04c4 002083E5 		str	r2, [r3, #0]
+ 267:../os_core/os_q.c ****              OSQFreeList            = pq;
+ 2192              		.loc 1 267 0
+ 2193 04c8 90309FE5 		ldr	r3, .L32+4
+ 2194 04cc 14201BE5 		ldr	r2, [fp, #-20]
+ 2195 04d0 002083E5 		str	r2, [r3, #0]
+ 268:../os_core/os_q.c ****              pevent->OSEventType    = OS_EVENT_TYPE_UNUSED;
+ 2196              		.loc 1 268 0
+ 2197 04d4 18301BE5 		ldr	r3, [fp, #-24]
+ 2198 04d8 0020A0E3 		mov	r2, #0
+ 2199 04dc 0020C3E5 		strb	r2, [r3, #0]
+ 269:../os_core/os_q.c ****              pevent->OSEventPtr     = OSEventFreeList;     /* Return Event Control Block to free li
+ 2200              		.loc 1 269 0
+ 2201 04e0 7C309FE5 		ldr	r3, .L32+8
+ 2202 04e4 002093E5 		ldr	r2, [r3, #0]
+ 2203 04e8 18301BE5 		ldr	r3, [fp, #-24]
+ 2204 04ec 042083E5 		str	r2, [r3, #4]
+ 270:../os_core/os_q.c ****              pevent->OSEventCnt     = 0;
+ 2205              		.loc 1 270 0
+ 2206 04f0 18301BE5 		ldr	r3, [fp, #-24]
+ 2207 04f4 0020A0E3 		mov	r2, #0
+ 2208 04f8 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 271:../os_core/os_q.c ****              OSEventFreeList        = pevent;              /* Get next free event control block    
+ 2209              		.loc 1 271 0
+ 2210 04fc 60309FE5 		ldr	r3, .L32+8
+ 2211 0500 18201BE5 		ldr	r2, [fp, #-24]
+ 2212 0504 002083E5 		str	r2, [r3, #0]
+ 272:../os_core/os_q.c ****              OS_EXIT_CRITICAL();
+ 2213              		.loc 1 272 0
+ 2214              	@ 272 "../os_core/os_q.c" 1
+ 2215 0508 04009DE4 		ldmfd sp!, {r0}
+ 2216              	@ 0 "" 2
+ 2217              	@ 272 "../os_core/os_q.c" 1
+ 2218 050c 00F021E1 		msr   cpsr_c, r0
+ 2219              	@ 0 "" 2
+ 273:../os_core/os_q.c ****              if (tasks_waiting == TRUE) {                  /* Reschedule only if task(s) were waiti
+ 2220              		.loc 1 273 0
+ 2221 0510 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2222 0514 010053E3 		cmp	r3, #1
+ 2223 0518 0000001A 		bne	.L29
+ 274:../os_core/os_q.c ****                  OS_Sched();                               /* Find highest priority task ready to r
+ 2224              		.loc 1 274 0
+ 2225 051c FEFFFFEB 		bl	OS_Sched
+ 2226              	.L29:
+ 275:../os_core/os_q.c ****              }
+ 276:../os_core/os_q.c ****              *err = OS_NO_ERR;
+ 2227              		.loc 1 276 0
+ 2228 0520 20301BE5 		ldr	r3, [fp, #-32]
+ 2229 0524 0020A0E3 		mov	r2, #0
+ 2230 0528 0020C3E5 		strb	r2, [r3, #0]
+ 277:../os_core/os_q.c ****              return ((OS_EVENT *)0);                       /* Queue has been deleted               
+ 2231              		.loc 1 277 0
+ 2232 052c 0030A0E3 		mov	r3, #0
+ 2233 0530 050000EA 		b	.L18
+ 2234              	.L30:
+ 278:../os_core/os_q.c **** 
+ 279:../os_core/os_q.c ****         default:
+ 280:../os_core/os_q.c ****              OS_EXIT_CRITICAL();
+ 2235              		.loc 1 280 0
+ 2236              	@ 280 "../os_core/os_q.c" 1
+ 2237 0534 04009DE4 		ldmfd sp!, {r0}
+ 2238              	@ 0 "" 2
+ 2239              	@ 280 "../os_core/os_q.c" 1
+ 2240 0538 00F021E1 		msr   cpsr_c, r0
+ 2241              	@ 0 "" 2
+ 281:../os_core/os_q.c ****              *err = OS_ERR_INVALID_OPT;
+ 2242              		.loc 1 281 0
+ 2243 053c 20301BE5 		ldr	r3, [fp, #-32]
+ 2244 0540 0720A0E3 		mov	r2, #7
+ 2245 0544 0020C3E5 		strb	r2, [r3, #0]
+ 282:../os_core/os_q.c ****              return (pevent);
+ 2246              		.loc 1 282 0
+ 2247 0548 18301BE5 		ldr	r3, [fp, #-24]
+ 2248              	.L18:
+ 283:../os_core/os_q.c ****     }
+ 284:../os_core/os_q.c **** }
+ 2249              		.loc 1 284 0
+ 2250 054c 0300A0E1 		mov	r0, r3
+ 2251 0550 0CD04BE2 		sub	sp, fp, #12
+ 2252 0554 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2253 0558 1EFF2FE1 		bx	lr
+ 2254              	.L33:
+ 2255              		.align	2
+ 2256              	.L32:
+ 2257 055c 00000000 		.word	OSIntNesting
+ 2258 0560 00000000 		.word	OSQFreeList
+ 2259 0564 00000000 		.word	OSEventFreeList
+ 2260              		.cfi_endproc
+ 2261              	.LFE2:
+ 2263              		.align	2
+ 2264              		.global	OSQFlush
+ 2266              	OSQFlush:
+ 2267              	.LFB3:
+ 285:../os_core/os_q.c **** #endif
+ 286:../os_core/os_q.c **** 
+ 287:../os_core/os_q.c **** /*$PAGE*/
+ 288:../os_core/os_q.c **** /*
+ 289:../os_core/os_q.c **** ***************************************************************************************************
+ 290:../os_core/os_q.c **** *                                             FLUSH QUEUE
+ 291:../os_core/os_q.c **** *
+ 292:../os_core/os_q.c **** * Description : This function is used to flush the contents of the message queue.
+ 293:../os_core/os_q.c **** *
+ 294:../os_core/os_q.c **** * Arguments   : none
+ 295:../os_core/os_q.c **** *
+ 296:../os_core/os_q.c **** * Returns     : OS_NO_ERR           upon success
+ 297:../os_core/os_q.c **** *               OS_ERR_EVENT_TYPE   If you didn't pass a pointer to a queue
+ 298:../os_core/os_q.c **** *               OS_ERR_PEVENT_NULL  If 'pevent' is a NULL pointer
+ 299:../os_core/os_q.c **** *
+ 300:../os_core/os_q.c **** * WARNING     : You should use this function with great care because, when to flush the queue, you 
+ 301:../os_core/os_q.c **** *               the references to what the queue entries are pointing to and thus, you could cause
+ 302:../os_core/os_q.c **** *               'memory leaks'.  In other words, the data you are pointing to that's being referenc
+ 303:../os_core/os_q.c **** *               by the queue entries should, most likely, need to be de-allocated (i.e. freed).
+ 304:../os_core/os_q.c **** ***************************************************************************************************
+ 305:../os_core/os_q.c **** */
+ 306:../os_core/os_q.c **** 
+ 307:../os_core/os_q.c **** #if OS_Q_FLUSH_EN > 0
+ 308:../os_core/os_q.c **** INT8U  OSQFlush (OS_EVENT *pevent)
+ 309:../os_core/os_q.c **** {
+ 2268              		.loc 1 309 0
+ 2269              		.cfi_startproc
+ 2270              		@ Function supports interworking.
+ 2271              		@ args = 0, pretend = 0, frame = 16
+ 2272              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2273 0568 0DC0A0E1 		mov	ip, sp
+ 2274              	.LCFI6:
+ 2275              		.cfi_def_cfa_register 12
+ 2276 056c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2277 0570 04B04CE2 		sub	fp, ip, #4
+ 2278              		.cfi_offset 14, -8
+ 2279              		.cfi_offset 13, -12
+ 2280              		.cfi_offset 11, -16
+ 2281              	.LCFI7:
+ 2282              		.cfi_def_cfa 11, 4
+ 2283 0574 10D04DE2 		sub	sp, sp, #16
+ 2284 0578 18000BE5 		str	r0, [fp, #-24]
+ 310:../os_core/os_q.c ****     OS_Q      *pq;
+ 311:../os_core/os_q.c **** #if OS_CRITICAL_METHOD == 3                           /* Allocate storage for CPU status register  
+ 312:../os_core/os_q.c ****     OS_CPU_SR  cpu_sr;
+ 313:../os_core/os_q.c **** 
+ 314:../os_core/os_q.c **** 
+ 315:../os_core/os_q.c **** 
+ 316:../os_core/os_q.c ****     cpu_sr = 0;                                       /* Prevent compiler warning                  
+ 317:../os_core/os_q.c **** #endif    
+ 318:../os_core/os_q.c **** #if OS_ARG_CHK_EN > 0
+ 319:../os_core/os_q.c ****     if (pevent == (OS_EVENT *)0) {                    /* Validate 'pevent'                         
+ 2285              		.loc 1 319 0
+ 2286 057c 18301BE5 		ldr	r3, [fp, #-24]
+ 2287 0580 000053E3 		cmp	r3, #0
+ 2288 0584 0100001A 		bne	.L35
+ 320:../os_core/os_q.c ****         return (OS_ERR_PEVENT_NULL);
+ 2289              		.loc 1 320 0
+ 2290 0588 0430A0E3 		mov	r3, #4
+ 2291 058c 1A0000EA 		b	.L36
+ 2292              	.L35:
+ 321:../os_core/os_q.c ****     }
+ 322:../os_core/os_q.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_Q) {     /* Validate event block type                 
+ 2293              		.loc 1 322 0
+ 2294 0590 18301BE5 		ldr	r3, [fp, #-24]
+ 2295 0594 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2296 0598 020053E3 		cmp	r3, #2
+ 2297 059c 0100000A 		beq	.L37
+ 323:../os_core/os_q.c ****         return (OS_ERR_EVENT_TYPE);
+ 2298              		.loc 1 323 0
+ 2299 05a0 0130A0E3 		mov	r3, #1
+ 2300 05a4 140000EA 		b	.L36
+ 2301              	.L37:
+ 324:../os_core/os_q.c ****     }
+ 325:../os_core/os_q.c **** #endif
+ 326:../os_core/os_q.c ****     OS_ENTER_CRITICAL();
+ 2302              		.loc 1 326 0
+ 2303              	@ 326 "../os_core/os_q.c" 1
+ 2304 05a8 00000FE1 		mrs   r0, cpsr
+ 2305              	@ 0 "" 2
+ 2306              	@ 326 "../os_core/os_q.c" 1
+ 2307 05ac 04002DE5 		stmfd sp!, {r0}
+ 2308              	@ 0 "" 2
+ 2309              	@ 326 "../os_core/os_q.c" 1
+ 2310 05b0 C00080E3 		orr   r0, r0, #0b11000000
+ 2311              	@ 0 "" 2
+ 2312              	@ 326 "../os_core/os_q.c" 1
+ 2313 05b4 00F021E1 		msr   cpsr_c, r0
+ 2314              	@ 0 "" 2
+ 327:../os_core/os_q.c ****     pq             = (OS_Q *)pevent->OSEventPtr;      /* Point to queue storage structure          
+ 2315              		.loc 1 327 0
+ 2316 05b8 18301BE5 		ldr	r3, [fp, #-24]
+ 2317 05bc 043093E5 		ldr	r3, [r3, #4]
+ 2318 05c0 10300BE5 		str	r3, [fp, #-16]
+ 328:../os_core/os_q.c ****     pq->OSQIn      = pq->OSQStart;
+ 2319              		.loc 1 328 0
+ 2320 05c4 10301BE5 		ldr	r3, [fp, #-16]
+ 2321 05c8 042093E5 		ldr	r2, [r3, #4]
+ 2322 05cc 10301BE5 		ldr	r3, [fp, #-16]
+ 2323 05d0 0C2083E5 		str	r2, [r3, #12]
+ 329:../os_core/os_q.c ****     pq->OSQOut     = pq->OSQStart;
+ 2324              		.loc 1 329 0
+ 2325 05d4 10301BE5 		ldr	r3, [fp, #-16]
+ 2326 05d8 042093E5 		ldr	r2, [r3, #4]
+ 2327 05dc 10301BE5 		ldr	r3, [fp, #-16]
+ 2328 05e0 102083E5 		str	r2, [r3, #16]
+ 330:../os_core/os_q.c ****     pq->OSQEntries = 0;
+ 2329              		.loc 1 330 0
+ 2330 05e4 10301BE5 		ldr	r3, [fp, #-16]
+ 2331 05e8 0020A0E3 		mov	r2, #0
+ 2332 05ec B621C3E1 		strh	r2, [r3, #22]	@ movhi
+ 331:../os_core/os_q.c ****     OS_EXIT_CRITICAL();
+ 2333              		.loc 1 331 0
+ 2334              	@ 331 "../os_core/os_q.c" 1
+ 2335 05f0 04009DE4 		ldmfd sp!, {r0}
+ 2336              	@ 0 "" 2
+ 2337              	@ 331 "../os_core/os_q.c" 1
+ 2338 05f4 00F021E1 		msr   cpsr_c, r0
+ 2339              	@ 0 "" 2
+ 332:../os_core/os_q.c ****     return (OS_NO_ERR);
+ 2340              		.loc 1 332 0
+ 2341 05f8 0030A0E3 		mov	r3, #0
+ 2342              	.L36:
+ 333:../os_core/os_q.c **** }
+ 2343              		.loc 1 333 0
+ 2344 05fc 0300A0E1 		mov	r0, r3
+ 2345 0600 0CD04BE2 		sub	sp, fp, #12
+ 2346 0604 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2347 0608 1EFF2FE1 		bx	lr
+ 2348              		.cfi_endproc
+ 2349              	.LFE3:
+ 2351              		.align	2
+ 2352              		.global	OSQPend
+ 2354              	OSQPend:
+ 2355              	.LFB4:
+ 334:../os_core/os_q.c **** #endif
+ 335:../os_core/os_q.c **** 
+ 336:../os_core/os_q.c **** /*$PAGE*/
+ 337:../os_core/os_q.c **** /*
+ 338:../os_core/os_q.c **** ***************************************************************************************************
+ 339:../os_core/os_q.c **** *                                     PEND ON A QUEUE FOR A MESSAGE
+ 340:../os_core/os_q.c **** *
+ 341:../os_core/os_q.c **** * Description: This function waits for a message to be sent to a queue
+ 342:../os_core/os_q.c **** *
+ 343:../os_core/os_q.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired qu
+ 344:../os_core/os_q.c **** *
+ 345:../os_core/os_q.c **** *              timeout       is an optional timeout period (in clock ticks).  If non-zero, your tas
+ 346:../os_core/os_q.c **** *                            wait for a message to arrive at the queue up to the amount of time
+ 347:../os_core/os_q.c **** *                            specified by this argument.  If you specify 0, however, your task will
+ 348:../os_core/os_q.c **** *                            forever at the specified queue or, until a message arrives.
+ 349:../os_core/os_q.c **** *
+ 350:../os_core/os_q.c **** *              err           is a pointer to where an error message will be deposited.  Possible er
+ 351:../os_core/os_q.c **** *                            messages are:
+ 352:../os_core/os_q.c **** *
+ 353:../os_core/os_q.c **** *                            OS_NO_ERR           The call was successful and your task received a
+ 354:../os_core/os_q.c **** *                                                message.
+ 355:../os_core/os_q.c **** *                            OS_TIMEOUT          A message was not received within the specified ti
+ 356:../os_core/os_q.c **** *                            OS_ERR_EVENT_TYPE   You didn't pass a pointer to a queue
+ 357:../os_core/os_q.c **** *                            OS_ERR_PEVENT_NULL  If 'pevent' is a NULL pointer
+ 358:../os_core/os_q.c **** *                            OS_ERR_PEND_ISR     If you called this function from an ISR and the re
+ 359:../os_core/os_q.c **** *                                                would lead to a suspension.
+ 360:../os_core/os_q.c **** *
+ 361:../os_core/os_q.c **** * Returns    : != (void *)0  is a pointer to the message received
+ 362:../os_core/os_q.c **** *              == (void *)0  if you received a NULL pointer message or,
+ 363:../os_core/os_q.c **** *                            if no message was received or,
+ 364:../os_core/os_q.c **** *                            if 'pevent' is a NULL pointer or,
+ 365:../os_core/os_q.c **** *                            if you didn't pass a pointer to a queue.
+ 366:../os_core/os_q.c **** *
+ 367:../os_core/os_q.c **** * Note(s)    : As of V2.60, this function allows you to receive NULL pointer messages.
+ 368:../os_core/os_q.c **** ***************************************************************************************************
+ 369:../os_core/os_q.c **** */
+ 370:../os_core/os_q.c **** 
+ 371:../os_core/os_q.c **** void  *OSQPend (OS_EVENT *pevent, INT16U timeout, INT8U *err)
+ 372:../os_core/os_q.c **** {
+ 2356              		.loc 1 372 0
+ 2357              		.cfi_startproc
+ 2358              		@ Function supports interworking.
+ 2359              		@ args = 0, pretend = 0, frame = 24
+ 2360              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2361 060c 0DC0A0E1 		mov	ip, sp
+ 2362              	.LCFI8:
+ 2363              		.cfi_def_cfa_register 12
+ 2364 0610 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2365 0614 04B04CE2 		sub	fp, ip, #4
+ 2366              		.cfi_offset 14, -8
+ 2367              		.cfi_offset 13, -12
+ 2368              		.cfi_offset 11, -16
+ 2369              	.LCFI9:
+ 2370              		.cfi_def_cfa 11, 4
+ 2371 0618 18D04DE2 		sub	sp, sp, #24
+ 2372 061c 18000BE5 		str	r0, [fp, #-24]
+ 2373 0620 0130A0E1 		mov	r3, r1
+ 2374 0624 20200BE5 		str	r2, [fp, #-32]
+ 2375 0628 BA314BE1 		strh	r3, [fp, #-26]	@ movhi
+ 373:../os_core/os_q.c ****     void      *msg;
+ 374:../os_core/os_q.c ****     OS_Q      *pq;
+ 375:../os_core/os_q.c **** #if OS_CRITICAL_METHOD == 3                      /* Allocate storage for CPU status register       
+ 376:../os_core/os_q.c ****     OS_CPU_SR  cpu_sr;
+ 377:../os_core/os_q.c **** 
+ 378:../os_core/os_q.c **** 
+ 379:../os_core/os_q.c **** 
+ 380:../os_core/os_q.c ****     cpu_sr = 0;                                  /* Prevent compiler warning                       
+ 381:../os_core/os_q.c **** #endif    
+ 382:../os_core/os_q.c ****     if (OSIntNesting > 0) {                      /* See if called from ISR ...                     
+ 2376              		.loc 1 382 0
+ 2377 062c 0C329FE5 		ldr	r3, .L46
+ 2378 0630 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2379 0634 000053E3 		cmp	r3, #0
+ 2380 0638 0400000A 		beq	.L39
+ 383:../os_core/os_q.c ****         *err = OS_ERR_PEND_ISR;                  /* ... can't PEND from an ISR                     
+ 2381              		.loc 1 383 0
+ 2382 063c 20301BE5 		ldr	r3, [fp, #-32]
+ 2383 0640 0220A0E3 		mov	r2, #2
+ 2384 0644 0020C3E5 		strb	r2, [r3, #0]
+ 384:../os_core/os_q.c ****         return ((void *)0);
+ 2385              		.loc 1 384 0
+ 2386 0648 0030A0E3 		mov	r3, #0
+ 2387 064c 770000EA 		b	.L40
+ 2388              	.L39:
+ 385:../os_core/os_q.c ****     }
+ 386:../os_core/os_q.c **** #if OS_ARG_CHK_EN > 0
+ 387:../os_core/os_q.c ****     if (pevent == (OS_EVENT *)0) {               /* Validate 'pevent'                              
+ 2389              		.loc 1 387 0
+ 2390 0650 18301BE5 		ldr	r3, [fp, #-24]
+ 2391 0654 000053E3 		cmp	r3, #0
+ 2392 0658 0400001A 		bne	.L41
+ 388:../os_core/os_q.c ****         *err = OS_ERR_PEVENT_NULL;
+ 2393              		.loc 1 388 0
+ 2394 065c 20301BE5 		ldr	r3, [fp, #-32]
+ 2395 0660 0420A0E3 		mov	r2, #4
+ 2396 0664 0020C3E5 		strb	r2, [r3, #0]
+ 389:../os_core/os_q.c ****         return ((void *)0);
+ 2397              		.loc 1 389 0
+ 2398 0668 0030A0E3 		mov	r3, #0
+ 2399 066c 6F0000EA 		b	.L40
+ 2400              	.L41:
+ 390:../os_core/os_q.c ****     }
+ 391:../os_core/os_q.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_Q) {/* Validate event block type                      
+ 2401              		.loc 1 391 0
+ 2402 0670 18301BE5 		ldr	r3, [fp, #-24]
+ 2403 0674 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2404 0678 020053E3 		cmp	r3, #2
+ 2405 067c 0400000A 		beq	.L42
+ 392:../os_core/os_q.c ****         *err = OS_ERR_EVENT_TYPE;
+ 2406              		.loc 1 392 0
+ 2407 0680 20301BE5 		ldr	r3, [fp, #-32]
+ 2408 0684 0120A0E3 		mov	r2, #1
+ 2409 0688 0020C3E5 		strb	r2, [r3, #0]
+ 393:../os_core/os_q.c ****         return ((void *)0);
+ 2410              		.loc 1 393 0
+ 2411 068c 0030A0E3 		mov	r3, #0
+ 2412 0690 660000EA 		b	.L40
+ 2413              	.L42:
+ 394:../os_core/os_q.c ****     }
+ 395:../os_core/os_q.c **** #endif
+ 396:../os_core/os_q.c ****     OS_ENTER_CRITICAL();
+ 2414              		.loc 1 396 0
+ 2415              	@ 396 "../os_core/os_q.c" 1
+ 2416 0694 00000FE1 		mrs   r0, cpsr
+ 2417              	@ 0 "" 2
+ 2418              	@ 396 "../os_core/os_q.c" 1
+ 2419 0698 04002DE5 		stmfd sp!, {r0}
+ 2420              	@ 0 "" 2
+ 2421              	@ 396 "../os_core/os_q.c" 1
+ 2422 069c C00080E3 		orr   r0, r0, #0b11000000
+ 2423              	@ 0 "" 2
+ 2424              	@ 396 "../os_core/os_q.c" 1
+ 2425 06a0 00F021E1 		msr   cpsr_c, r0
+ 2426              	@ 0 "" 2
+ 397:../os_core/os_q.c ****     pq = (OS_Q *)pevent->OSEventPtr;             /* Point at queue control block                   
+ 2427              		.loc 1 397 0
+ 2428 06a4 18301BE5 		ldr	r3, [fp, #-24]
+ 2429 06a8 043093E5 		ldr	r3, [r3, #4]
+ 2430 06ac 10300BE5 		str	r3, [fp, #-16]
+ 398:../os_core/os_q.c ****     if (pq->OSQEntries > 0) {                    /* See if any messages in the queue               
+ 2431              		.loc 1 398 0
+ 2432 06b0 10301BE5 		ldr	r3, [fp, #-16]
+ 2433 06b4 B631D3E1 		ldrh	r3, [r3, #22]
+ 2434 06b8 000053E3 		cmp	r3, #0
+ 2435 06bc 1E00000A 		beq	.L43
+ 399:../os_core/os_q.c ****         msg = *pq->OSQOut++;                     /* Yes, extract oldest message from the queue     
+ 2436              		.loc 1 399 0
+ 2437 06c0 10301BE5 		ldr	r3, [fp, #-16]
+ 2438 06c4 103093E5 		ldr	r3, [r3, #16]
+ 2439 06c8 002093E5 		ldr	r2, [r3, #0]
+ 2440 06cc 14200BE5 		str	r2, [fp, #-20]
+ 2441 06d0 042083E2 		add	r2, r3, #4
+ 2442 06d4 10301BE5 		ldr	r3, [fp, #-16]
+ 2443 06d8 102083E5 		str	r2, [r3, #16]
+ 400:../os_core/os_q.c ****         pq->OSQEntries--;                        /* Update the number of entries in the queue      
+ 2444              		.loc 1 400 0
+ 2445 06dc 10301BE5 		ldr	r3, [fp, #-16]
+ 2446 06e0 B631D3E1 		ldrh	r3, [r3, #22]
+ 2447 06e4 013043E2 		sub	r3, r3, #1
+ 2448 06e8 0338A0E1 		mov	r3, r3, asl #16
+ 2449 06ec 2328A0E1 		mov	r2, r3, lsr #16
+ 2450 06f0 10301BE5 		ldr	r3, [fp, #-16]
+ 2451 06f4 B621C3E1 		strh	r2, [r3, #22]	@ movhi
+ 401:../os_core/os_q.c ****         if (pq->OSQOut == pq->OSQEnd) {          /* Wrap OUT pointer if we are at the end of the qu
+ 2452              		.loc 1 401 0
+ 2453 06f8 10301BE5 		ldr	r3, [fp, #-16]
+ 2454 06fc 102093E5 		ldr	r2, [r3, #16]
+ 2455 0700 10301BE5 		ldr	r3, [fp, #-16]
+ 2456 0704 083093E5 		ldr	r3, [r3, #8]
+ 2457 0708 030052E1 		cmp	r2, r3
+ 2458 070c 0300001A 		bne	.L44
+ 402:../os_core/os_q.c ****             pq->OSQOut = pq->OSQStart;
+ 2459              		.loc 1 402 0
+ 2460 0710 10301BE5 		ldr	r3, [fp, #-16]
+ 2461 0714 042093E5 		ldr	r2, [r3, #4]
+ 2462 0718 10301BE5 		ldr	r3, [fp, #-16]
+ 2463 071c 102083E5 		str	r2, [r3, #16]
+ 2464              	.L44:
+ 403:../os_core/os_q.c ****         }
+ 404:../os_core/os_q.c ****         OS_EXIT_CRITICAL();
+ 2465              		.loc 1 404 0
+ 2466              	@ 404 "../os_core/os_q.c" 1
+ 2467 0720 04009DE4 		ldmfd sp!, {r0}
+ 2468              	@ 0 "" 2
+ 2469              	@ 404 "../os_core/os_q.c" 1
+ 2470 0724 00F021E1 		msr   cpsr_c, r0
+ 2471              	@ 0 "" 2
+ 405:../os_core/os_q.c ****         *err = OS_NO_ERR;
+ 2472              		.loc 1 405 0
+ 2473 0728 20301BE5 		ldr	r3, [fp, #-32]
+ 2474 072c 0020A0E3 		mov	r2, #0
+ 2475 0730 0020C3E5 		strb	r2, [r3, #0]
+ 406:../os_core/os_q.c ****         return (msg);                            /* Return message received                        
+ 2476              		.loc 1 406 0
+ 2477 0734 14301BE5 		ldr	r3, [fp, #-20]
+ 2478 0738 3C0000EA 		b	.L40
+ 2479              	.L43:
+ 407:../os_core/os_q.c ****     }
+ 408:../os_core/os_q.c ****     OSTCBCur->OSTCBStat   |= OS_STAT_Q;          /* Task will have to pend for a message to be post
+ 2480              		.loc 1 408 0
+ 2481 073c 00319FE5 		ldr	r3, .L46+4
+ 2482 0740 003093E5 		ldr	r3, [r3, #0]
+ 2483 0744 F8209FE5 		ldr	r2, .L46+4
+ 2484 0748 002092E5 		ldr	r2, [r2, #0]
+ 2485 074c 2C20D2E5 		ldrb	r2, [r2, #44]	@ zero_extendqisi2
+ 2486 0750 042082E3 		orr	r2, r2, #4
+ 2487 0754 FF2002E2 		and	r2, r2, #255
+ 2488 0758 2C20C3E5 		strb	r2, [r3, #44]
+ 409:../os_core/os_q.c ****     OSTCBCur->OSTCBPendTO  = FALSE;
+ 2489              		.loc 1 409 0
+ 2490 075c E0309FE5 		ldr	r3, .L46+4
+ 2491 0760 003093E5 		ldr	r3, [r3, #0]
+ 2492 0764 0020A0E3 		mov	r2, #0
+ 2493 0768 2D20C3E5 		strb	r2, [r3, #45]
+ 410:../os_core/os_q.c ****     OSTCBCur->OSTCBDly     = timeout;            /* Load timeout into TCB                          
+ 2494              		.loc 1 410 0
+ 2495 076c D0309FE5 		ldr	r3, .L46+4
+ 2496 0770 003093E5 		ldr	r3, [r3, #0]
+ 2497 0774 BA215BE1 		ldrh	r2, [fp, #-26]	@ movhi
+ 2498 0778 BA22C3E1 		strh	r2, [r3, #42]	@ movhi
+ 411:../os_core/os_q.c ****     OS_EventTaskWait(pevent);                    /* Suspend task until event or timeout occurs     
+ 2499              		.loc 1 411 0
+ 2500 077c 18001BE5 		ldr	r0, [fp, #-24]
+ 2501 0780 FEFFFFEB 		bl	OS_EventTaskWait
+ 412:../os_core/os_q.c ****     OS_EXIT_CRITICAL();
+ 2502              		.loc 1 412 0
+ 2503              	@ 412 "../os_core/os_q.c" 1
+ 2504 0784 04009DE4 		ldmfd sp!, {r0}
+ 2505              	@ 0 "" 2
+ 2506              	@ 412 "../os_core/os_q.c" 1
+ 2507 0788 00F021E1 		msr   cpsr_c, r0
+ 2508              	@ 0 "" 2
+ 413:../os_core/os_q.c ****     OS_Sched();                                  /* Find next highest priority task ready to run   
+ 2509              		.loc 1 413 0
+ 2510 078c FEFFFFEB 		bl	OS_Sched
+ 414:../os_core/os_q.c ****     OS_ENTER_CRITICAL();
+ 2511              		.loc 1 414 0
+ 2512              	@ 414 "../os_core/os_q.c" 1
+ 2513 0790 00000FE1 		mrs   r0, cpsr
+ 2514              	@ 0 "" 2
+ 2515              	@ 414 "../os_core/os_q.c" 1
+ 2516 0794 04002DE5 		stmfd sp!, {r0}
+ 2517              	@ 0 "" 2
+ 2518              	@ 414 "../os_core/os_q.c" 1
+ 2519 0798 C00080E3 		orr   r0, r0, #0b11000000
+ 2520              	@ 0 "" 2
+ 2521              	@ 414 "../os_core/os_q.c" 1
+ 2522 079c 00F021E1 		msr   cpsr_c, r0
+ 2523              	@ 0 "" 2
+ 415:../os_core/os_q.c ****     if (OSTCBCur->OSTCBPendTO == TRUE) {         /* Was task readied because of a timeout?         
+ 2524              		.loc 1 415 0
+ 2525 07a0 9C309FE5 		ldr	r3, .L46+4
+ 2526 07a4 003093E5 		ldr	r3, [r3, #0]
+ 2527 07a8 2D30D3E5 		ldrb	r3, [r3, #45]	@ zero_extendqisi2
+ 2528 07ac 010053E3 		cmp	r3, #1
+ 2529 07b0 0800001A 		bne	.L45
+ 416:../os_core/os_q.c ****         OS_EventTO(pevent);                      /* Yes                                            
+ 2530              		.loc 1 416 0
+ 2531 07b4 18001BE5 		ldr	r0, [fp, #-24]
+ 2532 07b8 FEFFFFEB 		bl	OS_EventTO
+ 417:../os_core/os_q.c ****         OS_EXIT_CRITICAL();
+ 2533              		.loc 1 417 0
+ 2534              	@ 417 "../os_core/os_q.c" 1
+ 2535 07bc 04009DE4 		ldmfd sp!, {r0}
+ 2536              	@ 0 "" 2
+ 2537              	@ 417 "../os_core/os_q.c" 1
+ 2538 07c0 00F021E1 		msr   cpsr_c, r0
+ 2539              	@ 0 "" 2
+ 418:../os_core/os_q.c ****         *err = OS_TIMEOUT;                       /*     Indicate a timeout occured                 
+ 2540              		.loc 1 418 0
+ 2541 07c4 20301BE5 		ldr	r3, [fp, #-32]
+ 2542 07c8 0A20A0E3 		mov	r2, #10
+ 2543 07cc 0020C3E5 		strb	r2, [r3, #0]
+ 419:../os_core/os_q.c ****         return ((void *)0);                      /*     No message received                        
+ 2544              		.loc 1 419 0
+ 2545 07d0 0030A0E3 		mov	r3, #0
+ 2546 07d4 150000EA 		b	.L40
+ 2547              	.L45:
+ 420:../os_core/os_q.c ****     }
+ 421:../os_core/os_q.c ****     msg                     = OSTCBCur->OSTCBMsg;/* No, Extract message from TCB (Put there by QPos
+ 2548              		.loc 1 421 0
+ 2549 07d8 64309FE5 		ldr	r3, .L46+4
+ 2550 07dc 003093E5 		ldr	r3, [r3, #0]
+ 2551 07e0 203093E5 		ldr	r3, [r3, #32]
+ 2552 07e4 14300BE5 		str	r3, [fp, #-20]
+ 422:../os_core/os_q.c ****     OSTCBCur->OSTCBMsg      = (void *)0;
+ 2553              		.loc 1 422 0
+ 2554 07e8 54309FE5 		ldr	r3, .L46+4
+ 2555 07ec 003093E5 		ldr	r3, [r3, #0]
+ 2556 07f0 0020A0E3 		mov	r2, #0
+ 2557 07f4 202083E5 		str	r2, [r3, #32]
+ 423:../os_core/os_q.c ****     OSTCBCur->OSTCBStat     = OS_STAT_RDY;
+ 2558              		.loc 1 423 0
+ 2559 07f8 44309FE5 		ldr	r3, .L46+4
+ 2560 07fc 003093E5 		ldr	r3, [r3, #0]
+ 2561 0800 0020A0E3 		mov	r2, #0
+ 2562 0804 2C20C3E5 		strb	r2, [r3, #44]
+ 424:../os_core/os_q.c ****     OSTCBCur->OSTCBEventPtr = (OS_EVENT *)0;     /*     No longer waiting for event                
+ 2563              		.loc 1 424 0
+ 2564 0808 34309FE5 		ldr	r3, .L46+4
+ 2565 080c 003093E5 		ldr	r3, [r3, #0]
+ 2566 0810 0020A0E3 		mov	r2, #0
+ 2567 0814 1C2083E5 		str	r2, [r3, #28]
+ 425:../os_core/os_q.c ****     OS_EXIT_CRITICAL();
+ 2568              		.loc 1 425 0
+ 2569              	@ 425 "../os_core/os_q.c" 1
+ 2570 0818 04009DE4 		ldmfd sp!, {r0}
+ 2571              	@ 0 "" 2
+ 2572              	@ 425 "../os_core/os_q.c" 1
+ 2573 081c 00F021E1 		msr   cpsr_c, r0
+ 2574              	@ 0 "" 2
+ 426:../os_core/os_q.c ****     *err                    = OS_NO_ERR;
+ 2575              		.loc 1 426 0
+ 2576 0820 20301BE5 		ldr	r3, [fp, #-32]
+ 2577 0824 0020A0E3 		mov	r2, #0
+ 2578 0828 0020C3E5 		strb	r2, [r3, #0]
+ 427:../os_core/os_q.c ****     return (msg);                                /*     Return message received                    
+ 2579              		.loc 1 427 0
+ 2580 082c 14301BE5 		ldr	r3, [fp, #-20]
+ 2581              	.L40:
+ 428:../os_core/os_q.c **** }
+ 2582              		.loc 1 428 0
+ 2583 0830 0300A0E1 		mov	r0, r3
+ 2584 0834 0CD04BE2 		sub	sp, fp, #12
+ 2585 0838 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2586 083c 1EFF2FE1 		bx	lr
+ 2587              	.L47:
+ 2588              		.align	2
+ 2589              	.L46:
+ 2590 0840 00000000 		.word	OSIntNesting
+ 2591 0844 00000000 		.word	OSTCBCur
+ 2592              		.cfi_endproc
+ 2593              	.LFE4:
+ 2595              		.align	2
+ 2596              		.global	OSQPost
+ 2598              	OSQPost:
+ 2599              	.LFB5:
+ 429:../os_core/os_q.c **** /*$PAGE*/
+ 430:../os_core/os_q.c **** /*
+ 431:../os_core/os_q.c **** ***************************************************************************************************
+ 432:../os_core/os_q.c **** *                                        POST MESSAGE TO A QUEUE
+ 433:../os_core/os_q.c **** *
+ 434:../os_core/os_q.c **** * Description: This function sends a message to a queue
+ 435:../os_core/os_q.c **** *
+ 436:../os_core/os_q.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired qu
+ 437:../os_core/os_q.c **** *
+ 438:../os_core/os_q.c **** *              msg           is a pointer to the message to send.
+ 439:../os_core/os_q.c **** *
+ 440:../os_core/os_q.c **** * Returns    : OS_NO_ERR             The call was successful and the message was sent
+ 441:../os_core/os_q.c **** *              OS_Q_FULL             If the queue cannot accept any more messages because it is ful
+ 442:../os_core/os_q.c **** *              OS_ERR_EVENT_TYPE     If you didn't pass a pointer to a queue.
+ 443:../os_core/os_q.c **** *              OS_ERR_PEVENT_NULL    If 'pevent' is a NULL pointer
+ 444:../os_core/os_q.c **** *
+ 445:../os_core/os_q.c **** * Note(s)    : As of V2.60, this function allows you to send NULL pointer messages.
+ 446:../os_core/os_q.c **** ***************************************************************************************************
+ 447:../os_core/os_q.c **** */
+ 448:../os_core/os_q.c **** 
+ 449:../os_core/os_q.c **** #if OS_Q_POST_EN > 0
+ 450:../os_core/os_q.c **** INT8U  OSQPost (OS_EVENT *pevent, void *msg)
+ 451:../os_core/os_q.c **** {
+ 2600              		.loc 1 451 0
+ 2601              		.cfi_startproc
+ 2602              		@ Function supports interworking.
+ 2603              		@ args = 0, pretend = 0, frame = 16
+ 2604              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2605 0848 0DC0A0E1 		mov	ip, sp
+ 2606              	.LCFI10:
+ 2607              		.cfi_def_cfa_register 12
+ 2608 084c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2609 0850 04B04CE2 		sub	fp, ip, #4
+ 2610              		.cfi_offset 14, -8
+ 2611              		.cfi_offset 13, -12
+ 2612              		.cfi_offset 11, -16
+ 2613              	.LCFI11:
+ 2614              		.cfi_def_cfa 11, 4
+ 2615 0854 10D04DE2 		sub	sp, sp, #16
+ 2616 0858 18000BE5 		str	r0, [fp, #-24]
+ 2617 085c 1C100BE5 		str	r1, [fp, #-28]
+ 452:../os_core/os_q.c ****     OS_Q      *pq;
+ 453:../os_core/os_q.c **** #if OS_CRITICAL_METHOD == 3                            /* Allocate storage for CPU status register 
+ 454:../os_core/os_q.c ****     OS_CPU_SR  cpu_sr;
+ 455:../os_core/os_q.c **** 
+ 456:../os_core/os_q.c **** 
+ 457:../os_core/os_q.c **** 
+ 458:../os_core/os_q.c ****     cpu_sr = 0;                                        /* Prevent compiler warning                 
+ 459:../os_core/os_q.c **** #endif    
+ 460:../os_core/os_q.c **** #if OS_ARG_CHK_EN > 0
+ 461:../os_core/os_q.c ****     if (pevent == (OS_EVENT *)0) {                     /* Validate 'pevent'                        
+ 2618              		.loc 1 461 0
+ 2619 0860 18301BE5 		ldr	r3, [fp, #-24]
+ 2620 0864 000053E3 		cmp	r3, #0
+ 2621 0868 0100001A 		bne	.L49
+ 462:../os_core/os_q.c ****         return (OS_ERR_PEVENT_NULL);
+ 2622              		.loc 1 462 0
+ 2623 086c 0430A0E3 		mov	r3, #4
+ 2624 0870 3E0000EA 		b	.L50
+ 2625              	.L49:
+ 463:../os_core/os_q.c ****     }
+ 464:../os_core/os_q.c **** #endif
+ 465:../os_core/os_q.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_Q) {      /* Validate event block type                
+ 2626              		.loc 1 465 0
+ 2627 0874 18301BE5 		ldr	r3, [fp, #-24]
+ 2628 0878 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2629 087c 020053E3 		cmp	r3, #2
+ 2630 0880 0100000A 		beq	.L51
+ 466:../os_core/os_q.c ****         return (OS_ERR_EVENT_TYPE);
+ 2631              		.loc 1 466 0
+ 2632 0884 0130A0E3 		mov	r3, #1
+ 2633 0888 380000EA 		b	.L50
+ 2634              	.L51:
+ 467:../os_core/os_q.c ****     }
+ 468:../os_core/os_q.c ****     OS_ENTER_CRITICAL();
+ 2635              		.loc 1 468 0
+ 2636              	@ 468 "../os_core/os_q.c" 1
+ 2637 088c 00000FE1 		mrs   r0, cpsr
+ 2638              	@ 0 "" 2
+ 2639              	@ 468 "../os_core/os_q.c" 1
+ 2640 0890 04002DE5 		stmfd sp!, {r0}
+ 2641              	@ 0 "" 2
+ 2642              	@ 468 "../os_core/os_q.c" 1
+ 2643 0894 C00080E3 		orr   r0, r0, #0b11000000
+ 2644              	@ 0 "" 2
+ 2645              	@ 468 "../os_core/os_q.c" 1
+ 2646 0898 00F021E1 		msr   cpsr_c, r0
+ 2647              	@ 0 "" 2
+ 469:../os_core/os_q.c ****     if (pevent->OSEventGrp != 0x00) {                  /* See if any task pending on queue         
+ 2648              		.loc 1 469 0
+ 2649 089c 18301BE5 		ldr	r3, [fp, #-24]
+ 2650 08a0 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2651 08a4 000053E3 		cmp	r3, #0
+ 2652 08a8 0800000A 		beq	.L52
+ 470:../os_core/os_q.c ****         (void)OS_EventTaskRdy(pevent, msg, OS_STAT_Q); /* Ready highest priority task waiting on ev
+ 2653              		.loc 1 470 0
+ 2654 08ac 18001BE5 		ldr	r0, [fp, #-24]
+ 2655 08b0 1C101BE5 		ldr	r1, [fp, #-28]
+ 2656 08b4 0420A0E3 		mov	r2, #4
+ 2657 08b8 FEFFFFEB 		bl	OS_EventTaskRdy
+ 471:../os_core/os_q.c ****         OS_EXIT_CRITICAL();
+ 2658              		.loc 1 471 0
+ 2659              	@ 471 "../os_core/os_q.c" 1
+ 2660 08bc 04009DE4 		ldmfd sp!, {r0}
+ 2661              	@ 0 "" 2
+ 2662              	@ 471 "../os_core/os_q.c" 1
+ 2663 08c0 00F021E1 		msr   cpsr_c, r0
+ 2664              	@ 0 "" 2
+ 472:../os_core/os_q.c ****         OS_Sched();                                    /* Find highest priority task ready to run  
+ 2665              		.loc 1 472 0
+ 2666 08c4 FEFFFFEB 		bl	OS_Sched
+ 473:../os_core/os_q.c ****         return (OS_NO_ERR);
+ 2667              		.loc 1 473 0
+ 2668 08c8 0030A0E3 		mov	r3, #0
+ 2669 08cc 270000EA 		b	.L50
+ 2670              	.L52:
+ 474:../os_core/os_q.c ****     }
+ 475:../os_core/os_q.c ****     pq = (OS_Q *)pevent->OSEventPtr;                   /* Point to queue control block             
+ 2671              		.loc 1 475 0
+ 2672 08d0 18301BE5 		ldr	r3, [fp, #-24]
+ 2673 08d4 043093E5 		ldr	r3, [r3, #4]
+ 2674 08d8 10300BE5 		str	r3, [fp, #-16]
+ 476:../os_core/os_q.c ****     if (pq->OSQEntries >= pq->OSQSize) {               /* Make sure queue is not full              
+ 2675              		.loc 1 476 0
+ 2676 08dc 10301BE5 		ldr	r3, [fp, #-16]
+ 2677 08e0 B621D3E1 		ldrh	r2, [r3, #22]
+ 2678 08e4 10301BE5 		ldr	r3, [fp, #-16]
+ 2679 08e8 B431D3E1 		ldrh	r3, [r3, #20]
+ 2680 08ec 030052E1 		cmp	r2, r3
+ 2681 08f0 0300003A 		bcc	.L53
+ 477:../os_core/os_q.c ****         OS_EXIT_CRITICAL();
+ 2682              		.loc 1 477 0
+ 2683              	@ 477 "../os_core/os_q.c" 1
+ 2684 08f4 04009DE4 		ldmfd sp!, {r0}
+ 2685              	@ 0 "" 2
+ 2686              	@ 477 "../os_core/os_q.c" 1
+ 2687 08f8 00F021E1 		msr   cpsr_c, r0
+ 2688              	@ 0 "" 2
+ 478:../os_core/os_q.c ****         return (OS_Q_FULL);
+ 2689              		.loc 1 478 0
+ 2690 08fc 1E30A0E3 		mov	r3, #30
+ 2691 0900 1A0000EA 		b	.L50
+ 2692              	.L53:
+ 479:../os_core/os_q.c ****     }
+ 480:../os_core/os_q.c ****     *pq->OSQIn++ = msg;                                /* Insert message into queue                
+ 2693              		.loc 1 480 0
+ 2694 0904 10301BE5 		ldr	r3, [fp, #-16]
+ 2695 0908 0C3093E5 		ldr	r3, [r3, #12]
+ 2696 090c 1C201BE5 		ldr	r2, [fp, #-28]
+ 2697 0910 002083E5 		str	r2, [r3, #0]
+ 2698 0914 042083E2 		add	r2, r3, #4
+ 2699 0918 10301BE5 		ldr	r3, [fp, #-16]
+ 2700 091c 0C2083E5 		str	r2, [r3, #12]
+ 481:../os_core/os_q.c ****     pq->OSQEntries++;                                  /* Update the nbr of entries in the queue   
+ 2701              		.loc 1 481 0
+ 2702 0920 10301BE5 		ldr	r3, [fp, #-16]
+ 2703 0924 B631D3E1 		ldrh	r3, [r3, #22]
+ 2704 0928 013083E2 		add	r3, r3, #1
+ 2705 092c 0338A0E1 		mov	r3, r3, asl #16
+ 2706 0930 2328A0E1 		mov	r2, r3, lsr #16
+ 2707 0934 10301BE5 		ldr	r3, [fp, #-16]
+ 2708 0938 B621C3E1 		strh	r2, [r3, #22]	@ movhi
+ 482:../os_core/os_q.c ****     if (pq->OSQIn == pq->OSQEnd) {                     /* Wrap IN ptr if we are at end of queue    
+ 2709              		.loc 1 482 0
+ 2710 093c 10301BE5 		ldr	r3, [fp, #-16]
+ 2711 0940 0C2093E5 		ldr	r2, [r3, #12]
+ 2712 0944 10301BE5 		ldr	r3, [fp, #-16]
+ 2713 0948 083093E5 		ldr	r3, [r3, #8]
+ 2714 094c 030052E1 		cmp	r2, r3
+ 2715 0950 0300001A 		bne	.L54
+ 483:../os_core/os_q.c ****         pq->OSQIn = pq->OSQStart;
+ 2716              		.loc 1 483 0
+ 2717 0954 10301BE5 		ldr	r3, [fp, #-16]
+ 2718 0958 042093E5 		ldr	r2, [r3, #4]
+ 2719 095c 10301BE5 		ldr	r3, [fp, #-16]
+ 2720 0960 0C2083E5 		str	r2, [r3, #12]
+ 2721              	.L54:
+ 484:../os_core/os_q.c ****     }
+ 485:../os_core/os_q.c ****     OS_EXIT_CRITICAL();
+ 2722              		.loc 1 485 0
+ 2723              	@ 485 "../os_core/os_q.c" 1
+ 2724 0964 04009DE4 		ldmfd sp!, {r0}
+ 2725              	@ 0 "" 2
+ 2726              	@ 485 "../os_core/os_q.c" 1
+ 2727 0968 00F021E1 		msr   cpsr_c, r0
+ 2728              	@ 0 "" 2
+ 486:../os_core/os_q.c ****     return (OS_NO_ERR);
+ 2729              		.loc 1 486 0
+ 2730 096c 0030A0E3 		mov	r3, #0
+ 2731              	.L50:
+ 487:../os_core/os_q.c **** }
+ 2732              		.loc 1 487 0
+ 2733 0970 0300A0E1 		mov	r0, r3
+ 2734 0974 0CD04BE2 		sub	sp, fp, #12
+ 2735 0978 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2736 097c 1EFF2FE1 		bx	lr
+ 2737              		.cfi_endproc
+ 2738              	.LFE5:
+ 2740              		.align	2
+ 2741              		.global	OSQPostFront
+ 2743              	OSQPostFront:
+ 2744              	.LFB6:
+ 488:../os_core/os_q.c **** #endif
+ 489:../os_core/os_q.c **** /*$PAGE*/
+ 490:../os_core/os_q.c **** /*
+ 491:../os_core/os_q.c **** ***************************************************************************************************
+ 492:../os_core/os_q.c **** *                                   POST MESSAGE TO THE FRONT OF A QUEUE
+ 493:../os_core/os_q.c **** *
+ 494:../os_core/os_q.c **** * Description: This function sends a message to a queue but unlike OSQPost(), the message is posted
+ 495:../os_core/os_q.c **** *              the front instead of the end of the queue.  Using OSQPostFront() allows you to send
+ 496:../os_core/os_q.c **** *              'priority' messages.
+ 497:../os_core/os_q.c **** *
+ 498:../os_core/os_q.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired qu
+ 499:../os_core/os_q.c **** *
+ 500:../os_core/os_q.c **** *              msg           is a pointer to the message to send.
+ 501:../os_core/os_q.c **** *
+ 502:../os_core/os_q.c **** * Returns    : OS_NO_ERR             The call was successful and the message was sent
+ 503:../os_core/os_q.c **** *              OS_Q_FULL             If the queue cannot accept any more messages because it is ful
+ 504:../os_core/os_q.c **** *              OS_ERR_EVENT_TYPE     If you didn't pass a pointer to a queue.
+ 505:../os_core/os_q.c **** *              OS_ERR_PEVENT_NULL    If 'pevent' is a NULL pointer
+ 506:../os_core/os_q.c **** *
+ 507:../os_core/os_q.c **** * Note(s)    : As of V2.60, this function allows you to send NULL pointer messages.
+ 508:../os_core/os_q.c **** ***************************************************************************************************
+ 509:../os_core/os_q.c **** */
+ 510:../os_core/os_q.c **** 
+ 511:../os_core/os_q.c **** #if OS_Q_POST_FRONT_EN > 0
+ 512:../os_core/os_q.c **** INT8U  OSQPostFront (OS_EVENT *pevent, void *msg)
+ 513:../os_core/os_q.c **** {
+ 2745              		.loc 1 513 0
+ 2746              		.cfi_startproc
+ 2747              		@ Function supports interworking.
+ 2748              		@ args = 0, pretend = 0, frame = 16
+ 2749              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2750 0980 0DC0A0E1 		mov	ip, sp
+ 2751              	.LCFI12:
+ 2752              		.cfi_def_cfa_register 12
+ 2753 0984 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2754 0988 04B04CE2 		sub	fp, ip, #4
+ 2755              		.cfi_offset 14, -8
+ 2756              		.cfi_offset 13, -12
+ 2757              		.cfi_offset 11, -16
+ 2758              	.LCFI13:
+ 2759              		.cfi_def_cfa 11, 4
+ 2760 098c 10D04DE2 		sub	sp, sp, #16
+ 2761 0990 18000BE5 		str	r0, [fp, #-24]
+ 2762 0994 1C100BE5 		str	r1, [fp, #-28]
+ 514:../os_core/os_q.c ****     OS_Q      *pq;
+ 515:../os_core/os_q.c **** #if OS_CRITICAL_METHOD == 3                           /* Allocate storage for CPU status register  
+ 516:../os_core/os_q.c ****     OS_CPU_SR  cpu_sr;
+ 517:../os_core/os_q.c **** 
+ 518:../os_core/os_q.c **** 
+ 519:../os_core/os_q.c **** 
+ 520:../os_core/os_q.c ****     cpu_sr = 0;                                       /* Prevent compiler warning                  
+ 521:../os_core/os_q.c **** #endif    
+ 522:../os_core/os_q.c **** #if OS_ARG_CHK_EN > 0
+ 523:../os_core/os_q.c ****     if (pevent == (OS_EVENT *)0) {                    /* Validate 'pevent'                         
+ 2763              		.loc 1 523 0
+ 2764 0998 18301BE5 		ldr	r3, [fp, #-24]
+ 2765 099c 000053E3 		cmp	r3, #0
+ 2766 09a0 0100001A 		bne	.L56
+ 524:../os_core/os_q.c ****         return (OS_ERR_PEVENT_NULL);
+ 2767              		.loc 1 524 0
+ 2768 09a4 0430A0E3 		mov	r3, #4
+ 2769 09a8 400000EA 		b	.L57
+ 2770              	.L56:
+ 525:../os_core/os_q.c ****     }
+ 526:../os_core/os_q.c **** #endif
+ 527:../os_core/os_q.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_Q) {     /* Validate event block type                 
+ 2771              		.loc 1 527 0
+ 2772 09ac 18301BE5 		ldr	r3, [fp, #-24]
+ 2773 09b0 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2774 09b4 020053E3 		cmp	r3, #2
+ 2775 09b8 0100000A 		beq	.L58
+ 528:../os_core/os_q.c ****         return (OS_ERR_EVENT_TYPE);
+ 2776              		.loc 1 528 0
+ 2777 09bc 0130A0E3 		mov	r3, #1
+ 2778 09c0 3A0000EA 		b	.L57
+ 2779              	.L58:
+ 529:../os_core/os_q.c ****     }
+ 530:../os_core/os_q.c ****     OS_ENTER_CRITICAL();
+ 2780              		.loc 1 530 0
+ 2781              	@ 530 "../os_core/os_q.c" 1
+ 2782 09c4 00000FE1 		mrs   r0, cpsr
+ 2783              	@ 0 "" 2
+ 2784              	@ 530 "../os_core/os_q.c" 1
+ 2785 09c8 04002DE5 		stmfd sp!, {r0}
+ 2786              	@ 0 "" 2
+ 2787              	@ 530 "../os_core/os_q.c" 1
+ 2788 09cc C00080E3 		orr   r0, r0, #0b11000000
+ 2789              	@ 0 "" 2
+ 2790              	@ 530 "../os_core/os_q.c" 1
+ 2791 09d0 00F021E1 		msr   cpsr_c, r0
+ 2792              	@ 0 "" 2
+ 531:../os_core/os_q.c ****     if (pevent->OSEventGrp != 0x00) {                 /* See if any task pending on queue          
+ 2793              		.loc 1 531 0
+ 2794 09d4 18301BE5 		ldr	r3, [fp, #-24]
+ 2795 09d8 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2796 09dc 000053E3 		cmp	r3, #0
+ 2797 09e0 0800000A 		beq	.L59
+ 532:../os_core/os_q.c ****         (void)OS_EventTaskRdy(pevent, msg, OS_STAT_Q);/* Ready highest priority task waiting on eve
+ 2798              		.loc 1 532 0
+ 2799 09e4 18001BE5 		ldr	r0, [fp, #-24]
+ 2800 09e8 1C101BE5 		ldr	r1, [fp, #-28]
+ 2801 09ec 0420A0E3 		mov	r2, #4
+ 2802 09f0 FEFFFFEB 		bl	OS_EventTaskRdy
+ 533:../os_core/os_q.c ****         OS_EXIT_CRITICAL();
+ 2803              		.loc 1 533 0
+ 2804              	@ 533 "../os_core/os_q.c" 1
+ 2805 09f4 04009DE4 		ldmfd sp!, {r0}
+ 2806              	@ 0 "" 2
+ 2807              	@ 533 "../os_core/os_q.c" 1
+ 2808 09f8 00F021E1 		msr   cpsr_c, r0
+ 2809              	@ 0 "" 2
+ 534:../os_core/os_q.c ****         OS_Sched();                                   /* Find highest priority task ready to run   
+ 2810              		.loc 1 534 0
+ 2811 09fc FEFFFFEB 		bl	OS_Sched
+ 535:../os_core/os_q.c ****         return (OS_NO_ERR);
+ 2812              		.loc 1 535 0
+ 2813 0a00 0030A0E3 		mov	r3, #0
+ 2814 0a04 290000EA 		b	.L57
+ 2815              	.L59:
+ 536:../os_core/os_q.c ****     }
+ 537:../os_core/os_q.c ****     pq = (OS_Q *)pevent->OSEventPtr;                  /* Point to queue control block              
+ 2816              		.loc 1 537 0
+ 2817 0a08 18301BE5 		ldr	r3, [fp, #-24]
+ 2818 0a0c 043093E5 		ldr	r3, [r3, #4]
+ 2819 0a10 10300BE5 		str	r3, [fp, #-16]
+ 538:../os_core/os_q.c ****     if (pq->OSQEntries >= pq->OSQSize) {              /* Make sure queue is not full               
+ 2820              		.loc 1 538 0
+ 2821 0a14 10301BE5 		ldr	r3, [fp, #-16]
+ 2822 0a18 B621D3E1 		ldrh	r2, [r3, #22]
+ 2823 0a1c 10301BE5 		ldr	r3, [fp, #-16]
+ 2824 0a20 B431D3E1 		ldrh	r3, [r3, #20]
+ 2825 0a24 030052E1 		cmp	r2, r3
+ 2826 0a28 0300003A 		bcc	.L60
+ 539:../os_core/os_q.c ****         OS_EXIT_CRITICAL();
+ 2827              		.loc 1 539 0
+ 2828              	@ 539 "../os_core/os_q.c" 1
+ 2829 0a2c 04009DE4 		ldmfd sp!, {r0}
+ 2830              	@ 0 "" 2
+ 2831              	@ 539 "../os_core/os_q.c" 1
+ 2832 0a30 00F021E1 		msr   cpsr_c, r0
+ 2833              	@ 0 "" 2
+ 540:../os_core/os_q.c ****         return (OS_Q_FULL);
+ 2834              		.loc 1 540 0
+ 2835 0a34 1E30A0E3 		mov	r3, #30
+ 2836 0a38 1C0000EA 		b	.L57
+ 2837              	.L60:
+ 541:../os_core/os_q.c ****     }
+ 542:../os_core/os_q.c ****     if (pq->OSQOut == pq->OSQStart) {                 /* Wrap OUT ptr if we are at the 1st queue en
+ 2838              		.loc 1 542 0
+ 2839 0a3c 10301BE5 		ldr	r3, [fp, #-16]
+ 2840 0a40 102093E5 		ldr	r2, [r3, #16]
+ 2841 0a44 10301BE5 		ldr	r3, [fp, #-16]
+ 2842 0a48 043093E5 		ldr	r3, [r3, #4]
+ 2843 0a4c 030052E1 		cmp	r2, r3
+ 2844 0a50 0300001A 		bne	.L61
+ 543:../os_core/os_q.c ****         pq->OSQOut = pq->OSQEnd;
+ 2845              		.loc 1 543 0
+ 2846 0a54 10301BE5 		ldr	r3, [fp, #-16]
+ 2847 0a58 082093E5 		ldr	r2, [r3, #8]
+ 2848 0a5c 10301BE5 		ldr	r3, [fp, #-16]
+ 2849 0a60 102083E5 		str	r2, [r3, #16]
+ 2850              	.L61:
+ 544:../os_core/os_q.c ****     }
+ 545:../os_core/os_q.c ****     pq->OSQOut--;
+ 2851              		.loc 1 545 0
+ 2852 0a64 10301BE5 		ldr	r3, [fp, #-16]
+ 2853 0a68 103093E5 		ldr	r3, [r3, #16]
+ 2854 0a6c 042043E2 		sub	r2, r3, #4
+ 2855 0a70 10301BE5 		ldr	r3, [fp, #-16]
+ 2856 0a74 102083E5 		str	r2, [r3, #16]
+ 546:../os_core/os_q.c ****     *pq->OSQOut = msg;                                /* Insert message into queue                 
+ 2857              		.loc 1 546 0
+ 2858 0a78 10301BE5 		ldr	r3, [fp, #-16]
+ 2859 0a7c 103093E5 		ldr	r3, [r3, #16]
+ 2860 0a80 1C201BE5 		ldr	r2, [fp, #-28]
+ 2861 0a84 002083E5 		str	r2, [r3, #0]
+ 547:../os_core/os_q.c ****     pq->OSQEntries++;                                 /* Update the nbr of entries in the queue    
+ 2862              		.loc 1 547 0
+ 2863 0a88 10301BE5 		ldr	r3, [fp, #-16]
+ 2864 0a8c B631D3E1 		ldrh	r3, [r3, #22]
+ 2865 0a90 013083E2 		add	r3, r3, #1
+ 2866 0a94 0338A0E1 		mov	r3, r3, asl #16
+ 2867 0a98 2328A0E1 		mov	r2, r3, lsr #16
+ 2868 0a9c 10301BE5 		ldr	r3, [fp, #-16]
+ 2869 0aa0 B621C3E1 		strh	r2, [r3, #22]	@ movhi
+ 548:../os_core/os_q.c ****     OS_EXIT_CRITICAL();
+ 2870              		.loc 1 548 0
+ 2871              	@ 548 "../os_core/os_q.c" 1
+ 2872 0aa4 04009DE4 		ldmfd sp!, {r0}
+ 2873              	@ 0 "" 2
+ 2874              	@ 548 "../os_core/os_q.c" 1
+ 2875 0aa8 00F021E1 		msr   cpsr_c, r0
+ 2876              	@ 0 "" 2
+ 549:../os_core/os_q.c ****     return (OS_NO_ERR);
+ 2877              		.loc 1 549 0
+ 2878 0aac 0030A0E3 		mov	r3, #0
+ 2879              	.L57:
+ 550:../os_core/os_q.c **** }
+ 2880              		.loc 1 550 0
+ 2881 0ab0 0300A0E1 		mov	r0, r3
+ 2882 0ab4 0CD04BE2 		sub	sp, fp, #12
+ 2883 0ab8 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2884 0abc 1EFF2FE1 		bx	lr
+ 2885              		.cfi_endproc
+ 2886              	.LFE6:
+ 2888              		.align	2
+ 2889              		.global	OSQPostOpt
+ 2891              	OSQPostOpt:
+ 2892              	.LFB7:
+ 551:../os_core/os_q.c **** #endif
+ 552:../os_core/os_q.c **** /*$PAGE*/
+ 553:../os_core/os_q.c **** /*
+ 554:../os_core/os_q.c **** ***************************************************************************************************
+ 555:../os_core/os_q.c **** *                                        POST MESSAGE TO A QUEUE
+ 556:../os_core/os_q.c **** *
+ 557:../os_core/os_q.c **** * Description: This function sends a message to a queue.  This call has been added to reduce code s
+ 558:../os_core/os_q.c **** *              since it can replace both OSQPost() and OSQPostFront().  Also, this function adds th
+ 559:../os_core/os_q.c **** *              capability to broadcast a message to ALL tasks waiting on the message queue.
+ 560:../os_core/os_q.c **** *
+ 561:../os_core/os_q.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired qu
+ 562:../os_core/os_q.c **** *
+ 563:../os_core/os_q.c **** *              msg           is a pointer to the message to send.
+ 564:../os_core/os_q.c **** *
+ 565:../os_core/os_q.c **** *              opt           determines the type of POST performed:
+ 566:../os_core/os_q.c **** *                            OS_POST_OPT_NONE         POST to a single waiting task
+ 567:../os_core/os_q.c **** *                                                     (Identical to OSQPost())
+ 568:../os_core/os_q.c **** *                            OS_POST_OPT_BROADCAST    POST to ALL tasks that are waiting on the que
+ 569:../os_core/os_q.c **** *                            OS_POST_OPT_FRONT        POST as LIFO (Simulates OSQPostFront())
+ 570:../os_core/os_q.c **** *
+ 571:../os_core/os_q.c **** *                            Below is a list of ALL the possible combination of these flags:
+ 572:../os_core/os_q.c **** *
+ 573:../os_core/os_q.c **** *                                 1) OS_POST_OPT_NONE
+ 574:../os_core/os_q.c **** *                                    identical to OSQPost()
+ 575:../os_core/os_q.c **** *
+ 576:../os_core/os_q.c **** *                                 2) OS_POST_OPT_FRONT
+ 577:../os_core/os_q.c **** *                                    identical to OSQPostFront()
+ 578:../os_core/os_q.c **** *
+ 579:../os_core/os_q.c **** *                                 3) OS_POST_OPT_BROADCAST
+ 580:../os_core/os_q.c **** *                                    identical to OSQPost() but will broadcast 'msg' to ALL waiting
+ 581:../os_core/os_q.c **** *
+ 582:../os_core/os_q.c **** *                                 4) OS_POST_OPT_FRONT + OS_POST_OPT_BROADCAST  is identical to
+ 583:../os_core/os_q.c **** *                                    OSQPostFront() except that will broadcast 'msg' to ALL waiting
+ 584:../os_core/os_q.c **** *
+ 585:../os_core/os_q.c **** * Returns    : OS_NO_ERR             The call was successful and the message was sent
+ 586:../os_core/os_q.c **** *              OS_Q_FULL             If the queue cannot accept any more messages because it is ful
+ 587:../os_core/os_q.c **** *              OS_ERR_EVENT_TYPE     If you didn't pass a pointer to a queue.
+ 588:../os_core/os_q.c **** *              OS_ERR_PEVENT_NULL    If 'pevent' is a NULL pointer
+ 589:../os_core/os_q.c **** *
+ 590:../os_core/os_q.c **** * Warning    : Interrupts can be disabled for a long time if you do a 'broadcast'.  In fact, the
+ 591:../os_core/os_q.c **** *              interrupt disable time is proportional to the number of tasks waiting on the queue.
+ 592:../os_core/os_q.c **** ***************************************************************************************************
+ 593:../os_core/os_q.c **** */
+ 594:../os_core/os_q.c **** 
+ 595:../os_core/os_q.c **** #if OS_Q_POST_OPT_EN > 0
+ 596:../os_core/os_q.c **** INT8U  OSQPostOpt (OS_EVENT *pevent, void *msg, INT8U opt)
+ 597:../os_core/os_q.c **** {
+ 2893              		.loc 1 597 0
+ 2894              		.cfi_startproc
+ 2895              		@ Function supports interworking.
+ 2896              		@ args = 0, pretend = 0, frame = 24
+ 2897              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2898 0ac0 0DC0A0E1 		mov	ip, sp
+ 2899              	.LCFI14:
+ 2900              		.cfi_def_cfa_register 12
+ 2901 0ac4 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2902 0ac8 04B04CE2 		sub	fp, ip, #4
+ 2903              		.cfi_offset 14, -8
+ 2904              		.cfi_offset 13, -12
+ 2905              		.cfi_offset 11, -16
+ 2906              	.LCFI15:
+ 2907              		.cfi_def_cfa 11, 4
+ 2908 0acc 18D04DE2 		sub	sp, sp, #24
+ 2909 0ad0 18000BE5 		str	r0, [fp, #-24]
+ 2910 0ad4 1C100BE5 		str	r1, [fp, #-28]
+ 2911 0ad8 0230A0E1 		mov	r3, r2
+ 2912 0adc 1D304BE5 		strb	r3, [fp, #-29]
+ 598:../os_core/os_q.c ****     OS_Q      *pq;
+ 599:../os_core/os_q.c **** #if OS_CRITICAL_METHOD == 3                           /* Allocate storage for CPU status register  
+ 600:../os_core/os_q.c ****     OS_CPU_SR  cpu_sr;
+ 601:../os_core/os_q.c ****                      
+ 602:../os_core/os_q.c **** 
+ 603:../os_core/os_q.c **** 
+ 604:../os_core/os_q.c ****     cpu_sr = 0;                                       /* Prevent compiler warning                  
+ 605:../os_core/os_q.c **** #endif    
+ 606:../os_core/os_q.c **** #if OS_ARG_CHK_EN > 0
+ 607:../os_core/os_q.c ****     if (pevent == (OS_EVENT *)0) {                    /* Validate 'pevent'                         
+ 2913              		.loc 1 607 0
+ 2914 0ae0 18301BE5 		ldr	r3, [fp, #-24]
+ 2915 0ae4 000053E3 		cmp	r3, #0
+ 2916 0ae8 0100001A 		bne	.L63
+ 608:../os_core/os_q.c ****         return (OS_ERR_PEVENT_NULL);
+ 2917              		.loc 1 608 0
+ 2918 0aec 0430A0E3 		mov	r3, #4
+ 2919 0af0 650000EA 		b	.L64
+ 2920              	.L63:
+ 609:../os_core/os_q.c ****     }
+ 610:../os_core/os_q.c **** #endif
+ 611:../os_core/os_q.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_Q) {     /* Validate event block type                 
+ 2921              		.loc 1 611 0
+ 2922 0af4 18301BE5 		ldr	r3, [fp, #-24]
+ 2923 0af8 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2924 0afc 020053E3 		cmp	r3, #2
+ 2925 0b00 0100000A 		beq	.L65
+ 612:../os_core/os_q.c ****         return (OS_ERR_EVENT_TYPE);
+ 2926              		.loc 1 612 0
+ 2927 0b04 0130A0E3 		mov	r3, #1
+ 2928 0b08 5F0000EA 		b	.L64
+ 2929              	.L65:
+ 613:../os_core/os_q.c ****     }
+ 614:../os_core/os_q.c ****     OS_ENTER_CRITICAL();
+ 2930              		.loc 1 614 0
+ 2931              	@ 614 "../os_core/os_q.c" 1
+ 2932 0b0c 00000FE1 		mrs   r0, cpsr
+ 2933              	@ 0 "" 2
+ 2934              	@ 614 "../os_core/os_q.c" 1
+ 2935 0b10 04002DE5 		stmfd sp!, {r0}
+ 2936              	@ 0 "" 2
+ 2937              	@ 614 "../os_core/os_q.c" 1
+ 2938 0b14 C00080E3 		orr   r0, r0, #0b11000000
+ 2939              	@ 0 "" 2
+ 2940              	@ 614 "../os_core/os_q.c" 1
+ 2941 0b18 00F021E1 		msr   cpsr_c, r0
+ 2942              	@ 0 "" 2
+ 615:../os_core/os_q.c ****     if (pevent->OSEventGrp != 0x00) {                 /* See if any task pending on queue          
+ 2943              		.loc 1 615 0
+ 2944 0b1c 18301BE5 		ldr	r3, [fp, #-24]
+ 2945 0b20 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2946 0b24 000053E3 		cmp	r3, #0
+ 2947 0b28 1700000A 		beq	.L66
+ 616:../os_core/os_q.c ****         if ((opt & OS_POST_OPT_BROADCAST) != 0x00) {  /* Do we need to post msg to ALL waiting task
+ 2948              		.loc 1 616 0
+ 2949 0b2c 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
+ 2950 0b30 013003E2 		and	r3, r3, #1
+ 2951 0b34 FF3003E2 		and	r3, r3, #255
+ 2952 0b38 000053E3 		cmp	r3, #0
+ 2953 0b3c 0900000A 		beq	.L67
+ 617:../os_core/os_q.c ****             while (pevent->OSEventGrp != 0x00) {      /* Yes, Post to ALL tasks waiting on queue   
+ 2954              		.loc 1 617 0
+ 2955 0b40 030000EA 		b	.L68
+ 2956              	.L69:
+ 618:../os_core/os_q.c ****                 (void)OS_EventTaskRdy(pevent, msg, OS_STAT_Q);
+ 2957              		.loc 1 618 0
+ 2958 0b44 18001BE5 		ldr	r0, [fp, #-24]
+ 2959 0b48 1C101BE5 		ldr	r1, [fp, #-28]
+ 2960 0b4c 0420A0E3 		mov	r2, #4
+ 2961 0b50 FEFFFFEB 		bl	OS_EventTaskRdy
+ 2962              	.L68:
+ 617:../os_core/os_q.c ****             while (pevent->OSEventGrp != 0x00) {      /* Yes, Post to ALL tasks waiting on queue   
+ 2963              		.loc 1 617 0 discriminator 1
+ 2964 0b54 18301BE5 		ldr	r3, [fp, #-24]
+ 2965 0b58 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2966 0b5c 000053E3 		cmp	r3, #0
+ 2967 0b60 F7FFFF1A 		bne	.L69
+ 617:../os_core/os_q.c ****             while (pevent->OSEventGrp != 0x00) {      /* Yes, Post to ALL tasks waiting on queue   
+ 2968              		.loc 1 617 0 is_stmt 0
+ 2969 0b64 030000EA 		b	.L70
+ 2970              	.L67:
+ 619:../os_core/os_q.c ****             }
+ 620:../os_core/os_q.c ****         } else {
+ 621:../os_core/os_q.c ****             (void)OS_EventTaskRdy(pevent, msg, OS_STAT_Q);  /* No,  Post to HPT waiting on queue   
+ 2971              		.loc 1 621 0 is_stmt 1
+ 2972 0b68 18001BE5 		ldr	r0, [fp, #-24]
+ 2973 0b6c 1C101BE5 		ldr	r1, [fp, #-28]
+ 2974 0b70 0420A0E3 		mov	r2, #4
+ 2975 0b74 FEFFFFEB 		bl	OS_EventTaskRdy
+ 2976              	.L70:
+ 622:../os_core/os_q.c ****         }
+ 623:../os_core/os_q.c ****         OS_EXIT_CRITICAL();
+ 2977              		.loc 1 623 0
+ 2978              	@ 623 "../os_core/os_q.c" 1
+ 2979 0b78 04009DE4 		ldmfd sp!, {r0}
+ 2980              	@ 0 "" 2
+ 2981              	@ 623 "../os_core/os_q.c" 1
+ 2982 0b7c 00F021E1 		msr   cpsr_c, r0
+ 2983              	@ 0 "" 2
+ 624:../os_core/os_q.c ****         OS_Sched();                                         /* Find highest priority task ready to 
+ 2984              		.loc 1 624 0
+ 2985 0b80 FEFFFFEB 		bl	OS_Sched
+ 625:../os_core/os_q.c ****         return (OS_NO_ERR);
+ 2986              		.loc 1 625 0
+ 2987 0b84 0030A0E3 		mov	r3, #0
+ 2988 0b88 3F0000EA 		b	.L64
+ 2989              	.L66:
+ 626:../os_core/os_q.c ****     }
+ 627:../os_core/os_q.c ****     pq = (OS_Q *)pevent->OSEventPtr;                  /* Point to queue control block              
+ 2990              		.loc 1 627 0
+ 2991 0b8c 18301BE5 		ldr	r3, [fp, #-24]
+ 2992 0b90 043093E5 		ldr	r3, [r3, #4]
+ 2993 0b94 10300BE5 		str	r3, [fp, #-16]
+ 628:../os_core/os_q.c ****     if (pq->OSQEntries >= pq->OSQSize) {              /* Make sure queue is not full               
+ 2994              		.loc 1 628 0
+ 2995 0b98 10301BE5 		ldr	r3, [fp, #-16]
+ 2996 0b9c B621D3E1 		ldrh	r2, [r3, #22]
+ 2997 0ba0 10301BE5 		ldr	r3, [fp, #-16]
+ 2998 0ba4 B431D3E1 		ldrh	r3, [r3, #20]
+ 2999 0ba8 030052E1 		cmp	r2, r3
+ 3000 0bac 0300003A 		bcc	.L71
+ 629:../os_core/os_q.c ****         OS_EXIT_CRITICAL();
+ 3001              		.loc 1 629 0
+ 3002              	@ 629 "../os_core/os_q.c" 1
+ 3003 0bb0 04009DE4 		ldmfd sp!, {r0}
+ 3004              	@ 0 "" 2
+ 3005              	@ 629 "../os_core/os_q.c" 1
+ 3006 0bb4 00F021E1 		msr   cpsr_c, r0
+ 3007              	@ 0 "" 2
+ 630:../os_core/os_q.c ****         return (OS_Q_FULL);
+ 3008              		.loc 1 630 0
+ 3009 0bb8 1E30A0E3 		mov	r3, #30
+ 3010 0bbc 320000EA 		b	.L64
+ 3011              	.L71:
+ 631:../os_core/os_q.c ****     }
+ 632:../os_core/os_q.c ****     if ((opt & OS_POST_OPT_FRONT) != 0x00) {          /* Do we post to the FRONT of the queue?     
+ 3012              		.loc 1 632 0
+ 3013 0bc0 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
+ 3014 0bc4 023003E2 		and	r3, r3, #2
+ 3015 0bc8 000053E3 		cmp	r3, #0
+ 3016 0bcc 1300000A 		beq	.L72
+ 633:../os_core/os_q.c ****         if (pq->OSQOut == pq->OSQStart) {             /* Yes, Post as LIFO, Wrap OUT pointer if we 
+ 3017              		.loc 1 633 0
+ 3018 0bd0 10301BE5 		ldr	r3, [fp, #-16]
+ 3019 0bd4 102093E5 		ldr	r2, [r3, #16]
+ 3020 0bd8 10301BE5 		ldr	r3, [fp, #-16]
+ 3021 0bdc 043093E5 		ldr	r3, [r3, #4]
+ 3022 0be0 030052E1 		cmp	r2, r3
+ 3023 0be4 0300001A 		bne	.L73
+ 634:../os_core/os_q.c ****             pq->OSQOut = pq->OSQEnd;                  /*      ... are at the 1st queue entry       
+ 3024              		.loc 1 634 0
+ 3025 0be8 10301BE5 		ldr	r3, [fp, #-16]
+ 3026 0bec 082093E5 		ldr	r2, [r3, #8]
+ 3027 0bf0 10301BE5 		ldr	r3, [fp, #-16]
+ 3028 0bf4 102083E5 		str	r2, [r3, #16]
+ 3029              	.L73:
+ 635:../os_core/os_q.c ****         }
+ 636:../os_core/os_q.c ****         pq->OSQOut--;
+ 3030              		.loc 1 636 0
+ 3031 0bf8 10301BE5 		ldr	r3, [fp, #-16]
+ 3032 0bfc 103093E5 		ldr	r3, [r3, #16]
+ 3033 0c00 042043E2 		sub	r2, r3, #4
+ 3034 0c04 10301BE5 		ldr	r3, [fp, #-16]
+ 3035 0c08 102083E5 		str	r2, [r3, #16]
+ 637:../os_core/os_q.c ****         *pq->OSQOut = msg;                            /*      Insert message into queue            
+ 3036              		.loc 1 637 0
+ 3037 0c0c 10301BE5 		ldr	r3, [fp, #-16]
+ 3038 0c10 103093E5 		ldr	r3, [r3, #16]
+ 3039 0c14 1C201BE5 		ldr	r2, [fp, #-28]
+ 3040 0c18 002083E5 		str	r2, [r3, #0]
+ 3041 0c1c 100000EA 		b	.L74
+ 3042              	.L72:
+ 638:../os_core/os_q.c ****     } else {                                          /* No,  Post as FIFO                         
+ 639:../os_core/os_q.c ****         *pq->OSQIn++ = msg;                           /*      Insert message into queue            
+ 3043              		.loc 1 639 0
+ 3044 0c20 10301BE5 		ldr	r3, [fp, #-16]
+ 3045 0c24 0C3093E5 		ldr	r3, [r3, #12]
+ 3046 0c28 1C201BE5 		ldr	r2, [fp, #-28]
+ 3047 0c2c 002083E5 		str	r2, [r3, #0]
+ 3048 0c30 042083E2 		add	r2, r3, #4
+ 3049 0c34 10301BE5 		ldr	r3, [fp, #-16]
+ 3050 0c38 0C2083E5 		str	r2, [r3, #12]
+ 640:../os_core/os_q.c ****         if (pq->OSQIn == pq->OSQEnd) {                /*      Wrap IN ptr if we are at end of queue
+ 3051              		.loc 1 640 0
+ 3052 0c3c 10301BE5 		ldr	r3, [fp, #-16]
+ 3053 0c40 0C2093E5 		ldr	r2, [r3, #12]
+ 3054 0c44 10301BE5 		ldr	r3, [fp, #-16]
+ 3055 0c48 083093E5 		ldr	r3, [r3, #8]
+ 3056 0c4c 030052E1 		cmp	r2, r3
+ 3057 0c50 0300001A 		bne	.L74
+ 641:../os_core/os_q.c ****             pq->OSQIn = pq->OSQStart;
+ 3058              		.loc 1 641 0
+ 3059 0c54 10301BE5 		ldr	r3, [fp, #-16]
+ 3060 0c58 042093E5 		ldr	r2, [r3, #4]
+ 3061 0c5c 10301BE5 		ldr	r3, [fp, #-16]
+ 3062 0c60 0C2083E5 		str	r2, [r3, #12]
+ 3063              	.L74:
+ 642:../os_core/os_q.c ****         }
+ 643:../os_core/os_q.c ****     }
+ 644:../os_core/os_q.c ****     pq->OSQEntries++;                                 /* Update the nbr of entries in the queue    
+ 3064              		.loc 1 644 0
+ 3065 0c64 10301BE5 		ldr	r3, [fp, #-16]
+ 3066 0c68 B631D3E1 		ldrh	r3, [r3, #22]
+ 3067 0c6c 013083E2 		add	r3, r3, #1
+ 3068 0c70 0338A0E1 		mov	r3, r3, asl #16
+ 3069 0c74 2328A0E1 		mov	r2, r3, lsr #16
+ 3070 0c78 10301BE5 		ldr	r3, [fp, #-16]
+ 3071 0c7c B621C3E1 		strh	r2, [r3, #22]	@ movhi
+ 645:../os_core/os_q.c ****     OS_EXIT_CRITICAL();
+ 3072              		.loc 1 645 0
+ 3073              	@ 645 "../os_core/os_q.c" 1
+ 3074 0c80 04009DE4 		ldmfd sp!, {r0}
+ 3075              	@ 0 "" 2
+ 3076              	@ 645 "../os_core/os_q.c" 1
+ 3077 0c84 00F021E1 		msr   cpsr_c, r0
+ 3078              	@ 0 "" 2
+ 646:../os_core/os_q.c ****     return (OS_NO_ERR);
+ 3079              		.loc 1 646 0
+ 3080 0c88 0030A0E3 		mov	r3, #0
+ 3081              	.L64:
+ 647:../os_core/os_q.c **** }
+ 3082              		.loc 1 647 0
+ 3083 0c8c 0300A0E1 		mov	r0, r3
+ 3084 0c90 0CD04BE2 		sub	sp, fp, #12
+ 3085 0c94 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3086 0c98 1EFF2FE1 		bx	lr
+ 3087              		.cfi_endproc
+ 3088              	.LFE7:
+ 3090              		.align	2
+ 3091              		.global	OSQQuery
+ 3093              	OSQQuery:
+ 3094              	.LFB8:
+ 648:../os_core/os_q.c **** #endif
+ 649:../os_core/os_q.c **** /*$PAGE*/
+ 650:../os_core/os_q.c **** /*
+ 651:../os_core/os_q.c **** ***************************************************************************************************
+ 652:../os_core/os_q.c **** *                                        QUERY A MESSAGE QUEUE
+ 653:../os_core/os_q.c **** *
+ 654:../os_core/os_q.c **** * Description: This function obtains information about a message queue.
+ 655:../os_core/os_q.c **** *
+ 656:../os_core/os_q.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired qu
+ 657:../os_core/os_q.c **** *
+ 658:../os_core/os_q.c **** *              p_q_data      is a pointer to a structure that will contain information about the me
+ 659:../os_core/os_q.c **** *                            queue.
+ 660:../os_core/os_q.c **** *
+ 661:../os_core/os_q.c **** * Returns    : OS_NO_ERR           The call was successful and the message was sent
+ 662:../os_core/os_q.c **** *              OS_ERR_EVENT_TYPE   If you are attempting to obtain data from a non queue.
+ 663:../os_core/os_q.c **** *              OS_ERR_PEVENT_NULL  If 'pevent' is a NULL pointer
+ 664:../os_core/os_q.c **** ***************************************************************************************************
+ 665:../os_core/os_q.c **** */
+ 666:../os_core/os_q.c **** 
+ 667:../os_core/os_q.c **** #if OS_Q_QUERY_EN > 0
+ 668:../os_core/os_q.c **** INT8U  OSQQuery (OS_EVENT *pevent, OS_Q_DATA *p_q_data)
+ 669:../os_core/os_q.c **** {
+ 3095              		.loc 1 669 0
+ 3096              		.cfi_startproc
+ 3097              		@ Function supports interworking.
+ 3098              		@ args = 0, pretend = 0, frame = 24
+ 3099              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3100 0c9c 0DC0A0E1 		mov	ip, sp
+ 3101              	.LCFI16:
+ 3102              		.cfi_def_cfa_register 12
+ 3103 0ca0 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3104 0ca4 04B04CE2 		sub	fp, ip, #4
+ 3105              		.cfi_offset 14, -8
+ 3106              		.cfi_offset 13, -12
+ 3107              		.cfi_offset 11, -16
+ 3108              	.LCFI17:
+ 3109              		.cfi_def_cfa 11, 4
+ 3110 0ca8 18D04DE2 		sub	sp, sp, #24
+ 3111 0cac 20000BE5 		str	r0, [fp, #-32]
+ 3112 0cb0 24100BE5 		str	r1, [fp, #-36]
+ 670:../os_core/os_q.c ****     OS_Q      *pq;
+ 671:../os_core/os_q.c ****     INT8U     *psrc;
+ 672:../os_core/os_q.c ****     INT8U     *pdest;
+ 673:../os_core/os_q.c **** #if OS_CRITICAL_METHOD == 3                      /* Allocate storage for CPU status register       
+ 674:../os_core/os_q.c ****     OS_CPU_SR  cpu_sr;
+ 675:../os_core/os_q.c **** 
+ 676:../os_core/os_q.c **** 
+ 677:../os_core/os_q.c **** 
+ 678:../os_core/os_q.c ****     cpu_sr = 0;                                            /* Prevent compiler warning             
+ 679:../os_core/os_q.c **** #endif    
+ 680:../os_core/os_q.c **** #if OS_ARG_CHK_EN > 0
+ 681:../os_core/os_q.c ****     if (pevent == (OS_EVENT *)0) {                         /* Validate 'pevent'                    
+ 3113              		.loc 1 681 0
+ 3114 0cb4 20301BE5 		ldr	r3, [fp, #-32]
+ 3115 0cb8 000053E3 		cmp	r3, #0
+ 3116 0cbc 0100001A 		bne	.L76
+ 682:../os_core/os_q.c ****         return (OS_ERR_PEVENT_NULL);
+ 3117              		.loc 1 682 0
+ 3118 0cc0 0430A0E3 		mov	r3, #4
+ 3119 0cc4 780000EA 		b	.L77
+ 3120              	.L76:
+ 683:../os_core/os_q.c ****     }
+ 684:../os_core/os_q.c **** #endif
+ 685:../os_core/os_q.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_Q) {          /* Validate event block type            
+ 3121              		.loc 1 685 0
+ 3122 0cc8 20301BE5 		ldr	r3, [fp, #-32]
+ 3123 0ccc 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 3124 0cd0 020053E3 		cmp	r3, #2
+ 3125 0cd4 0100000A 		beq	.L78
+ 686:../os_core/os_q.c ****         return (OS_ERR_EVENT_TYPE);
+ 3126              		.loc 1 686 0
+ 3127 0cd8 0130A0E3 		mov	r3, #1
+ 3128 0cdc 720000EA 		b	.L77
+ 3129              	.L78:
+ 687:../os_core/os_q.c ****     }
+ 688:../os_core/os_q.c ****     OS_ENTER_CRITICAL();
+ 3130              		.loc 1 688 0
+ 3131              	@ 688 "../os_core/os_q.c" 1
+ 3132 0ce0 00000FE1 		mrs   r0, cpsr
+ 3133              	@ 0 "" 2
+ 3134              	@ 688 "../os_core/os_q.c" 1
+ 3135 0ce4 04002DE5 		stmfd sp!, {r0}
+ 3136              	@ 0 "" 2
+ 3137              	@ 688 "../os_core/os_q.c" 1
+ 3138 0ce8 C00080E3 		orr   r0, r0, #0b11000000
+ 3139              	@ 0 "" 2
+ 3140              	@ 688 "../os_core/os_q.c" 1
+ 3141 0cec 00F021E1 		msr   cpsr_c, r0
+ 3142              	@ 0 "" 2
+ 689:../os_core/os_q.c ****     p_q_data->OSEventGrp = pevent->OSEventGrp;             /* Copy message queue wait list         
+ 3143              		.loc 1 689 0
+ 3144 0cf0 20301BE5 		ldr	r3, [fp, #-32]
+ 3145 0cf4 0120D3E5 		ldrb	r2, [r3, #1]	@ zero_extendqisi2
+ 3146 0cf8 24301BE5 		ldr	r3, [fp, #-36]
+ 3147 0cfc 1020C3E5 		strb	r2, [r3, #16]
+ 690:../os_core/os_q.c ****     psrc                 = &pevent->OSEventTbl[0];
+ 3148              		.loc 1 690 0
+ 3149 0d00 20301BE5 		ldr	r3, [fp, #-32]
+ 3150 0d04 083083E2 		add	r3, r3, #8
+ 3151 0d08 10300BE5 		str	r3, [fp, #-16]
+ 691:../os_core/os_q.c ****     pdest                = &p_q_data->OSEventTbl[0];
+ 3152              		.loc 1 691 0
+ 3153 0d0c 24301BE5 		ldr	r3, [fp, #-36]
+ 3154 0d10 083083E2 		add	r3, r3, #8
+ 3155 0d14 14300BE5 		str	r3, [fp, #-20]
+ 692:../os_core/os_q.c **** #if OS_EVENT_TBL_SIZE > 0
+ 693:../os_core/os_q.c ****     *pdest++ = *psrc++;
+ 3156              		.loc 1 693 0
+ 3157 0d18 10301BE5 		ldr	r3, [fp, #-16]
+ 3158 0d1c 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 3159 0d20 14301BE5 		ldr	r3, [fp, #-20]
+ 3160 0d24 0020C3E5 		strb	r2, [r3, #0]
+ 3161 0d28 14301BE5 		ldr	r3, [fp, #-20]
+ 3162 0d2c 013083E2 		add	r3, r3, #1
+ 3163 0d30 14300BE5 		str	r3, [fp, #-20]
+ 3164 0d34 10301BE5 		ldr	r3, [fp, #-16]
+ 3165 0d38 013083E2 		add	r3, r3, #1
+ 3166 0d3c 10300BE5 		str	r3, [fp, #-16]
+ 694:../os_core/os_q.c **** #endif
+ 695:../os_core/os_q.c **** 
+ 696:../os_core/os_q.c **** #if OS_EVENT_TBL_SIZE > 1
+ 697:../os_core/os_q.c ****     *pdest++ = *psrc++;
+ 3167              		.loc 1 697 0
+ 3168 0d40 10301BE5 		ldr	r3, [fp, #-16]
+ 3169 0d44 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 3170 0d48 14301BE5 		ldr	r3, [fp, #-20]
+ 3171 0d4c 0020C3E5 		strb	r2, [r3, #0]
+ 3172 0d50 14301BE5 		ldr	r3, [fp, #-20]
+ 3173 0d54 013083E2 		add	r3, r3, #1
+ 3174 0d58 14300BE5 		str	r3, [fp, #-20]
+ 3175 0d5c 10301BE5 		ldr	r3, [fp, #-16]
+ 3176 0d60 013083E2 		add	r3, r3, #1
+ 3177 0d64 10300BE5 		str	r3, [fp, #-16]
+ 698:../os_core/os_q.c **** #endif
+ 699:../os_core/os_q.c **** 
+ 700:../os_core/os_q.c **** #if OS_EVENT_TBL_SIZE > 2
+ 701:../os_core/os_q.c ****     *pdest++ = *psrc++;
+ 3178              		.loc 1 701 0
+ 3179 0d68 10301BE5 		ldr	r3, [fp, #-16]
+ 3180 0d6c 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 3181 0d70 14301BE5 		ldr	r3, [fp, #-20]
+ 3182 0d74 0020C3E5 		strb	r2, [r3, #0]
+ 3183 0d78 14301BE5 		ldr	r3, [fp, #-20]
+ 3184 0d7c 013083E2 		add	r3, r3, #1
+ 3185 0d80 14300BE5 		str	r3, [fp, #-20]
+ 3186 0d84 10301BE5 		ldr	r3, [fp, #-16]
+ 3187 0d88 013083E2 		add	r3, r3, #1
+ 3188 0d8c 10300BE5 		str	r3, [fp, #-16]
+ 702:../os_core/os_q.c **** #endif
+ 703:../os_core/os_q.c **** 
+ 704:../os_core/os_q.c **** #if OS_EVENT_TBL_SIZE > 3
+ 705:../os_core/os_q.c ****     *pdest++ = *psrc++;
+ 3189              		.loc 1 705 0
+ 3190 0d90 10301BE5 		ldr	r3, [fp, #-16]
+ 3191 0d94 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 3192 0d98 14301BE5 		ldr	r3, [fp, #-20]
+ 3193 0d9c 0020C3E5 		strb	r2, [r3, #0]
+ 3194 0da0 14301BE5 		ldr	r3, [fp, #-20]
+ 3195 0da4 013083E2 		add	r3, r3, #1
+ 3196 0da8 14300BE5 		str	r3, [fp, #-20]
+ 3197 0dac 10301BE5 		ldr	r3, [fp, #-16]
+ 3198 0db0 013083E2 		add	r3, r3, #1
+ 3199 0db4 10300BE5 		str	r3, [fp, #-16]
+ 706:../os_core/os_q.c **** #endif
+ 707:../os_core/os_q.c **** 
+ 708:../os_core/os_q.c **** #if OS_EVENT_TBL_SIZE > 4
+ 709:../os_core/os_q.c ****     *pdest++ = *psrc++;
+ 3200              		.loc 1 709 0
+ 3201 0db8 10301BE5 		ldr	r3, [fp, #-16]
+ 3202 0dbc 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 3203 0dc0 14301BE5 		ldr	r3, [fp, #-20]
+ 3204 0dc4 0020C3E5 		strb	r2, [r3, #0]
+ 3205 0dc8 14301BE5 		ldr	r3, [fp, #-20]
+ 3206 0dcc 013083E2 		add	r3, r3, #1
+ 3207 0dd0 14300BE5 		str	r3, [fp, #-20]
+ 3208 0dd4 10301BE5 		ldr	r3, [fp, #-16]
+ 3209 0dd8 013083E2 		add	r3, r3, #1
+ 3210 0ddc 10300BE5 		str	r3, [fp, #-16]
+ 710:../os_core/os_q.c **** #endif
+ 711:../os_core/os_q.c **** 
+ 712:../os_core/os_q.c **** #if OS_EVENT_TBL_SIZE > 5
+ 713:../os_core/os_q.c ****     *pdest++ = *psrc++;
+ 3211              		.loc 1 713 0
+ 3212 0de0 10301BE5 		ldr	r3, [fp, #-16]
+ 3213 0de4 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 3214 0de8 14301BE5 		ldr	r3, [fp, #-20]
+ 3215 0dec 0020C3E5 		strb	r2, [r3, #0]
+ 3216 0df0 14301BE5 		ldr	r3, [fp, #-20]
+ 3217 0df4 013083E2 		add	r3, r3, #1
+ 3218 0df8 14300BE5 		str	r3, [fp, #-20]
+ 3219 0dfc 10301BE5 		ldr	r3, [fp, #-16]
+ 3220 0e00 013083E2 		add	r3, r3, #1
+ 3221 0e04 10300BE5 		str	r3, [fp, #-16]
+ 714:../os_core/os_q.c **** #endif
+ 715:../os_core/os_q.c **** 
+ 716:../os_core/os_q.c **** #if OS_EVENT_TBL_SIZE > 6
+ 717:../os_core/os_q.c ****     *pdest++ = *psrc++;
+ 3222              		.loc 1 717 0
+ 3223 0e08 10301BE5 		ldr	r3, [fp, #-16]
+ 3224 0e0c 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 3225 0e10 14301BE5 		ldr	r3, [fp, #-20]
+ 3226 0e14 0020C3E5 		strb	r2, [r3, #0]
+ 3227 0e18 14301BE5 		ldr	r3, [fp, #-20]
+ 3228 0e1c 013083E2 		add	r3, r3, #1
+ 3229 0e20 14300BE5 		str	r3, [fp, #-20]
+ 3230 0e24 10301BE5 		ldr	r3, [fp, #-16]
+ 3231 0e28 013083E2 		add	r3, r3, #1
+ 3232 0e2c 10300BE5 		str	r3, [fp, #-16]
+ 718:../os_core/os_q.c **** #endif
+ 719:../os_core/os_q.c **** 
+ 720:../os_core/os_q.c **** #if OS_EVENT_TBL_SIZE > 7
+ 721:../os_core/os_q.c ****     *pdest   = *psrc;
+ 3233              		.loc 1 721 0
+ 3234 0e30 10301BE5 		ldr	r3, [fp, #-16]
+ 3235 0e34 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 3236 0e38 14301BE5 		ldr	r3, [fp, #-20]
+ 3237 0e3c 0020C3E5 		strb	r2, [r3, #0]
+ 722:../os_core/os_q.c **** #endif
+ 723:../os_core/os_q.c ****     pq = (OS_Q *)pevent->OSEventPtr;
+ 3238              		.loc 1 723 0
+ 3239 0e40 20301BE5 		ldr	r3, [fp, #-32]
+ 3240 0e44 043093E5 		ldr	r3, [r3, #4]
+ 3241 0e48 18300BE5 		str	r3, [fp, #-24]
+ 724:../os_core/os_q.c ****     if (pq->OSQEntries > 0) {
+ 3242              		.loc 1 724 0
+ 3243 0e4c 18301BE5 		ldr	r3, [fp, #-24]
+ 3244 0e50 B631D3E1 		ldrh	r3, [r3, #22]
+ 3245 0e54 000053E3 		cmp	r3, #0
+ 3246 0e58 0500000A 		beq	.L79
+ 725:../os_core/os_q.c ****         p_q_data->OSMsg = *pq->OSQOut;                     /* Get next message to return if availab
+ 3247              		.loc 1 725 0
+ 3248 0e5c 18301BE5 		ldr	r3, [fp, #-24]
+ 3249 0e60 103093E5 		ldr	r3, [r3, #16]
+ 3250 0e64 002093E5 		ldr	r2, [r3, #0]
+ 3251 0e68 24301BE5 		ldr	r3, [fp, #-36]
+ 3252 0e6c 002083E5 		str	r2, [r3, #0]
+ 3253 0e70 020000EA 		b	.L80
+ 3254              	.L79:
+ 726:../os_core/os_q.c ****     } else {
+ 727:../os_core/os_q.c ****         p_q_data->OSMsg = (void *)0;
+ 3255              		.loc 1 727 0
+ 3256 0e74 24301BE5 		ldr	r3, [fp, #-36]
+ 3257 0e78 0020A0E3 		mov	r2, #0
+ 3258 0e7c 002083E5 		str	r2, [r3, #0]
+ 3259              	.L80:
+ 728:../os_core/os_q.c ****     }
+ 729:../os_core/os_q.c ****     p_q_data->OSNMsgs = pq->OSQEntries;
+ 3260              		.loc 1 729 0
+ 3261 0e80 18301BE5 		ldr	r3, [fp, #-24]
+ 3262 0e84 B621D3E1 		ldrh	r2, [r3, #22]
+ 3263 0e88 24301BE5 		ldr	r3, [fp, #-36]
+ 3264 0e8c B420C3E1 		strh	r2, [r3, #4]	@ movhi
+ 730:../os_core/os_q.c ****     p_q_data->OSQSize = pq->OSQSize;
+ 3265              		.loc 1 730 0
+ 3266 0e90 18301BE5 		ldr	r3, [fp, #-24]
+ 3267 0e94 B421D3E1 		ldrh	r2, [r3, #20]
+ 3268 0e98 24301BE5 		ldr	r3, [fp, #-36]
+ 3269 0e9c B620C3E1 		strh	r2, [r3, #6]	@ movhi
+ 731:../os_core/os_q.c ****     OS_EXIT_CRITICAL();
+ 3270              		.loc 1 731 0
+ 3271              	@ 731 "../os_core/os_q.c" 1
+ 3272 0ea0 04009DE4 		ldmfd sp!, {r0}
+ 3273              	@ 0 "" 2
+ 3274              	@ 731 "../os_core/os_q.c" 1
+ 3275 0ea4 00F021E1 		msr   cpsr_c, r0
+ 3276              	@ 0 "" 2
+ 732:../os_core/os_q.c ****     return (OS_NO_ERR);
+ 3277              		.loc 1 732 0
+ 3278 0ea8 0030A0E3 		mov	r3, #0
+ 3279              	.L77:
+ 733:../os_core/os_q.c **** }
+ 3280              		.loc 1 733 0
+ 3281 0eac 0300A0E1 		mov	r0, r3
+ 3282 0eb0 0CD04BE2 		sub	sp, fp, #12
+ 3283 0eb4 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3284 0eb8 1EFF2FE1 		bx	lr
+ 3285              		.cfi_endproc
+ 3286              	.LFE8:
+ 3288              		.align	2
+ 3289              		.global	OS_QInit
+ 3291              	OS_QInit:
+ 3292              	.LFB9:
+ 734:../os_core/os_q.c **** #endif                                                     /* OS_Q_QUERY_EN                        
+ 735:../os_core/os_q.c **** 
+ 736:../os_core/os_q.c **** /*$PAGE*/
+ 737:../os_core/os_q.c **** /*
+ 738:../os_core/os_q.c **** ***************************************************************************************************
+ 739:../os_core/os_q.c **** *                                      QUEUE MODULE INITIALIZATION
+ 740:../os_core/os_q.c **** *
+ 741:../os_core/os_q.c **** * Description : This function is called by uC/OS-II to initialize the message queue module.  Your
+ 742:../os_core/os_q.c **** *               application MUST NOT call this function.
+ 743:../os_core/os_q.c **** *
+ 744:../os_core/os_q.c **** * Arguments   :  none
+ 745:../os_core/os_q.c **** *
+ 746:../os_core/os_q.c **** * Returns     : none
+ 747:../os_core/os_q.c **** *
+ 748:../os_core/os_q.c **** * Note(s)    : This function is INTERNAL to uC/OS-II and your application should not call it.
+ 749:../os_core/os_q.c **** ***************************************************************************************************
+ 750:../os_core/os_q.c **** */
+ 751:../os_core/os_q.c **** 
+ 752:../os_core/os_q.c **** void  OS_QInit (void)
+ 753:../os_core/os_q.c **** {
+ 3293              		.loc 1 753 0
+ 3294              		.cfi_startproc
+ 3295              		@ Function supports interworking.
+ 3296              		@ args = 0, pretend = 0, frame = 16
+ 3297              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3298 0ebc 0DC0A0E1 		mov	ip, sp
+ 3299              	.LCFI18:
+ 3300              		.cfi_def_cfa_register 12
+ 3301 0ec0 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3302 0ec4 04B04CE2 		sub	fp, ip, #4
+ 3303              		.cfi_offset 14, -8
+ 3304              		.cfi_offset 13, -12
+ 3305              		.cfi_offset 11, -16
+ 3306              	.LCFI19:
+ 3307              		.cfi_def_cfa 11, 4
+ 3308 0ec8 10D04DE2 		sub	sp, sp, #16
+ 754:../os_core/os_q.c **** #if OS_MAX_QS == 1
+ 755:../os_core/os_q.c ****     OSQFreeList         = &OSQTbl[0];                /* Only ONE queue!                            
+ 756:../os_core/os_q.c ****     OSQFreeList->OSQPtr = (OS_Q *)0;
+ 757:../os_core/os_q.c **** #endif
+ 758:../os_core/os_q.c **** 
+ 759:../os_core/os_q.c **** #if OS_MAX_QS >= 2
+ 760:../os_core/os_q.c ****     INT16U  i;
+ 761:../os_core/os_q.c ****     OS_Q   *pq1;
+ 762:../os_core/os_q.c ****     OS_Q   *pq2;
+ 763:../os_core/os_q.c **** 
+ 764:../os_core/os_q.c **** 
+ 765:../os_core/os_q.c **** 
+ 766:../os_core/os_q.c ****     OS_MemClr((INT8U *)&OSQTbl[0], sizeof(OSQTbl));  /* Clear the queue table                      
+ 3309              		.loc 1 766 0
+ 3310 0ecc 84309FE5 		ldr	r3, .L84
+ 3311 0ed0 0300A0E1 		mov	r0, r3
+ 3312 0ed4 6010A0E3 		mov	r1, #96
+ 3313 0ed8 FEFFFFEB 		bl	OS_MemClr
+ 767:../os_core/os_q.c ****     pq1 = &OSQTbl[0];
+ 3314              		.loc 1 767 0
+ 3315 0edc 74309FE5 		ldr	r3, .L84
+ 3316 0ee0 14300BE5 		str	r3, [fp, #-20]
+ 768:../os_core/os_q.c ****     pq2 = &OSQTbl[1];
+ 3317              		.loc 1 768 0
+ 3318 0ee4 70309FE5 		ldr	r3, .L84+4
+ 3319 0ee8 18300BE5 		str	r3, [fp, #-24]
+ 769:../os_core/os_q.c ****     for (i = 0; i < (OS_MAX_QS - 1); i++) {          /* Init. list of free QUEUE control blocks    
+ 3320              		.loc 1 769 0
+ 3321 0eec 0030A0E3 		mov	r3, #0
+ 3322 0ef0 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 3323 0ef4 0B0000EA 		b	.L82
+ 3324              	.L83:
+ 770:../os_core/os_q.c ****         pq1->OSQPtr = pq2;
+ 3325              		.loc 1 770 0 discriminator 2
+ 3326 0ef8 14301BE5 		ldr	r3, [fp, #-20]
+ 3327 0efc 18201BE5 		ldr	r2, [fp, #-24]
+ 3328 0f00 002083E5 		str	r2, [r3, #0]
+ 771:../os_core/os_q.c ****         pq1++;
+ 3329              		.loc 1 771 0 discriminator 2
+ 3330 0f04 14301BE5 		ldr	r3, [fp, #-20]
+ 3331 0f08 183083E2 		add	r3, r3, #24
+ 3332 0f0c 14300BE5 		str	r3, [fp, #-20]
+ 772:../os_core/os_q.c ****         pq2++;
+ 3333              		.loc 1 772 0 discriminator 2
+ 3334 0f10 18301BE5 		ldr	r3, [fp, #-24]
+ 3335 0f14 183083E2 		add	r3, r3, #24
+ 3336 0f18 18300BE5 		str	r3, [fp, #-24]
+ 769:../os_core/os_q.c ****     for (i = 0; i < (OS_MAX_QS - 1); i++) {          /* Init. list of free QUEUE control blocks    
+ 3337              		.loc 1 769 0 discriminator 2
+ 3338 0f1c BE305BE1 		ldrh	r3, [fp, #-14]	@ movhi
+ 3339 0f20 013083E2 		add	r3, r3, #1
+ 3340 0f24 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 3341              	.L82:
+ 769:../os_core/os_q.c ****     for (i = 0; i < (OS_MAX_QS - 1); i++) {          /* Init. list of free QUEUE control blocks    
+ 3342              		.loc 1 769 0 is_stmt 0 discriminator 1
+ 3343 0f28 BE305BE1 		ldrh	r3, [fp, #-14]
+ 3344 0f2c 020053E3 		cmp	r3, #2
+ 3345 0f30 F0FFFF9A 		bls	.L83
+ 773:../os_core/os_q.c ****     }
+ 774:../os_core/os_q.c ****     pq1->OSQPtr = (OS_Q *)0;
+ 3346              		.loc 1 774 0 is_stmt 1
+ 3347 0f34 14301BE5 		ldr	r3, [fp, #-20]
+ 3348 0f38 0020A0E3 		mov	r2, #0
+ 3349 0f3c 002083E5 		str	r2, [r3, #0]
+ 775:../os_core/os_q.c ****     OSQFreeList = &OSQTbl[0];
+ 3350              		.loc 1 775 0
+ 3351 0f40 18309FE5 		ldr	r3, .L84+8
+ 3352 0f44 0C209FE5 		ldr	r2, .L84
+ 3353 0f48 002083E5 		str	r2, [r3, #0]
+ 776:../os_core/os_q.c **** #endif
+ 777:../os_core/os_q.c **** }
+ 3354              		.loc 1 777 0
+ 3355 0f4c 0CD04BE2 		sub	sp, fp, #12
+ 3356 0f50 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3357 0f54 1EFF2FE1 		bx	lr
+ 3358              	.L85:
+ 3359              		.align	2
+ 3360              	.L84:
+ 3361 0f58 00000000 		.word	OSQTbl
+ 3362 0f5c 18000000 		.word	OSQTbl+24
+ 3363 0f60 00000000 		.word	OSQFreeList
+ 3364              		.cfi_endproc
+ 3365              	.LFE9:
+ 3367              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 os_q.c
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:1662   .text:00000000 $a
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:1665   .text:00000000 OSQAccept
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:1796   .text:00000128 OSQCreate
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:1984   .text:000002d4 $d
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:1990   .text:000002e0 $a
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:1993   .text:000002e0 OSQDel
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:2257   .text:0000055c $d
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:2263   .text:00000568 $a
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:2266   .text:00000568 OSQFlush
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:2354   .text:0000060c OSQPend
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:2590   .text:00000840 $d
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:2595   .text:00000848 $a
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:2598   .text:00000848 OSQPost
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:2743   .text:00000980 OSQPostFront
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:2891   .text:00000ac0 OSQPostOpt
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:3093   .text:00000c9c OSQQuery
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:3291   .text:00000ebc OS_QInit
+C:\Users\Muadi\AppData\Local\Temp\ccJseBeb.s:3361   .text:00000f58 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+OS_EventWaitListInit
+OSIntNesting
+OSEventFreeList
+OSQFreeList
+OS_EventTaskRdy
+OS_Sched
+OS_EventTaskWait
+OS_EventTO
+OSTCBCur
+OS_MemClr
+OSQTbl

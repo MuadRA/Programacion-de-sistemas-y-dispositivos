@@ -1,0 +1,1565 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"os_sem.c"
+  21              	.Ltext0:
+  22              		.file 1 "../os_core/os_sem.c"
+ 1662              		.align	2
+ 1663              		.global	OSSemAccept
+ 1665              	OSSemAccept:
+ 1666              	.LFB0:
+   1:../os_core/os_sem.c **** /*
+   2:../os_core/os_sem.c **** ***************************************************************************************************
+   3:../os_core/os_sem.c **** *                                                uC/OS-II
+   4:../os_core/os_sem.c **** *                                          The Real-Time Kernel
+   5:../os_core/os_sem.c **** *                                          SEMAPHORE MANAGEMENT
+   6:../os_core/os_sem.c **** *
+   7:../os_core/os_sem.c **** *                          (c) Copyright 1992-2003, Jean J. Labrosse, Weston, FL
+   8:../os_core/os_sem.c **** *                                           All Rights Reserved
+   9:../os_core/os_sem.c **** *
+  10:../os_core/os_sem.c **** * File    : OS_SEM.C
+  11:../os_core/os_sem.c **** * By      : Jean J. Labrosse
+  12:../os_core/os_sem.c **** * Version : V2.76
+  13:../os_core/os_sem.c **** ***************************************************************************************************
+  14:../os_core/os_sem.c **** */
+  15:../os_core/os_sem.c **** 
+  16:../os_core/os_sem.c **** #ifndef  OS_MASTER_FILE
+  17:../os_core/os_sem.c **** #include "ucos_ii.h"
+  18:../os_core/os_sem.c **** #endif
+  19:../os_core/os_sem.c **** 
+  20:../os_core/os_sem.c **** #if OS_SEM_EN > 0
+  21:../os_core/os_sem.c **** /*
+  22:../os_core/os_sem.c **** ***************************************************************************************************
+  23:../os_core/os_sem.c **** *                                           ACCEPT SEMAPHORE
+  24:../os_core/os_sem.c **** *
+  25:../os_core/os_sem.c **** * Description: This function checks the semaphore to see if a resource is available or, if an event
+  26:../os_core/os_sem.c **** *              occurred.  Unlike OSSemPend(), OSSemAccept() does not suspend the calling task if th
+  27:../os_core/os_sem.c **** *              resource is not available or the event did not occur.
+  28:../os_core/os_sem.c **** *
+  29:../os_core/os_sem.c **** * Arguments  : pevent     is a pointer to the event control block
+  30:../os_core/os_sem.c **** *
+  31:../os_core/os_sem.c **** * Returns    : >  0       if the resource is available or the event did not occur the semaphore is
+  32:../os_core/os_sem.c **** *                         decremented to obtain the resource.
+  33:../os_core/os_sem.c **** *              == 0       if the resource is not available or the event did not occur or,
+  34:../os_core/os_sem.c **** *                         if 'pevent' is a NULL pointer or,
+  35:../os_core/os_sem.c **** *                         if you didn't pass a pointer to a semaphore
+  36:../os_core/os_sem.c **** ***************************************************************************************************
+  37:../os_core/os_sem.c **** */
+  38:../os_core/os_sem.c **** 
+  39:../os_core/os_sem.c **** #if OS_SEM_ACCEPT_EN > 0
+  40:../os_core/os_sem.c **** INT16U  OSSemAccept (OS_EVENT *pevent)
+  41:../os_core/os_sem.c **** {
+ 1667              		.loc 1 41 0
+ 1668              		.cfi_startproc
+ 1669              		@ Function supports interworking.
+ 1670              		@ args = 0, pretend = 0, frame = 16
+ 1671              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1672 0000 0DC0A0E1 		mov	ip, sp
+ 1673              	.LCFI0:
+ 1674              		.cfi_def_cfa_register 12
+ 1675 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1676 0008 04B04CE2 		sub	fp, ip, #4
+ 1677              		.cfi_offset 14, -8
+ 1678              		.cfi_offset 13, -12
+ 1679              		.cfi_offset 11, -16
+ 1680              	.LCFI1:
+ 1681              		.cfi_def_cfa 11, 4
+ 1682 000c 10D04DE2 		sub	sp, sp, #16
+ 1683 0010 18000BE5 		str	r0, [fp, #-24]
+  42:../os_core/os_sem.c ****     INT16U     cnt;
+  43:../os_core/os_sem.c **** #if OS_CRITICAL_METHOD == 3                           /* Allocate storage for CPU status register  
+  44:../os_core/os_sem.c ****     OS_CPU_SR  cpu_sr;
+  45:../os_core/os_sem.c **** 
+  46:../os_core/os_sem.c **** 
+  47:../os_core/os_sem.c **** 
+  48:../os_core/os_sem.c ****     cpu_sr = 0;                                       /* Prevent compiler warning                  
+  49:../os_core/os_sem.c **** #endif    
+  50:../os_core/os_sem.c **** #if OS_ARG_CHK_EN > 0
+  51:../os_core/os_sem.c ****     if (pevent == (OS_EVENT *)0) {                    /* Validate 'pevent'                         
+ 1684              		.loc 1 51 0
+ 1685 0014 18301BE5 		ldr	r3, [fp, #-24]
+ 1686 0018 000053E3 		cmp	r3, #0
+ 1687 001c 0100001A 		bne	.L2
+  52:../os_core/os_sem.c ****         return (0);
+ 1688              		.loc 1 52 0
+ 1689 0020 0030A0E3 		mov	r3, #0
+ 1690 0024 190000EA 		b	.L3
+ 1691              	.L2:
+  53:../os_core/os_sem.c ****     }
+  54:../os_core/os_sem.c **** #endif
+  55:../os_core/os_sem.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_SEM) {   /* Validate event block type                 
+ 1692              		.loc 1 55 0
+ 1693 0028 18301BE5 		ldr	r3, [fp, #-24]
+ 1694 002c 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1695 0030 030053E3 		cmp	r3, #3
+ 1696 0034 0100000A 		beq	.L4
+  56:../os_core/os_sem.c ****         return (0);
+ 1697              		.loc 1 56 0
+ 1698 0038 0030A0E3 		mov	r3, #0
+ 1699 003c 130000EA 		b	.L3
+ 1700              	.L4:
+  57:../os_core/os_sem.c ****     }
+  58:../os_core/os_sem.c ****     OS_ENTER_CRITICAL();
+ 1701              		.loc 1 58 0
+ 1702              	@ 58 "../os_core/os_sem.c" 1
+ 1703 0040 00000FE1 		mrs   r0, cpsr
+ 1704              	@ 0 "" 2
+ 1705              	@ 58 "../os_core/os_sem.c" 1
+ 1706 0044 04002DE5 		stmfd sp!, {r0}
+ 1707              	@ 0 "" 2
+ 1708              	@ 58 "../os_core/os_sem.c" 1
+ 1709 0048 C00080E3 		orr   r0, r0, #0b11000000
+ 1710              	@ 0 "" 2
+ 1711              	@ 58 "../os_core/os_sem.c" 1
+ 1712 004c 00F021E1 		msr   cpsr_c, r0
+ 1713              	@ 0 "" 2
+  59:../os_core/os_sem.c ****     cnt = pevent->OSEventCnt;
+ 1714              		.loc 1 59 0
+ 1715 0050 18301BE5 		ldr	r3, [fp, #-24]
+ 1716 0054 B230D3E1 		ldrh	r3, [r3, #2]	@ movhi
+ 1717 0058 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+  60:../os_core/os_sem.c ****     if (cnt > 0) {                                    /* See if resource is available              
+ 1718              		.loc 1 60 0
+ 1719 005c BE305BE1 		ldrh	r3, [fp, #-14]
+ 1720 0060 000053E3 		cmp	r3, #0
+ 1721 0064 0600000A 		beq	.L5
+  61:../os_core/os_sem.c ****         pevent->OSEventCnt--;                         /* Yes, decrement semaphore and notify caller
+ 1722              		.loc 1 61 0
+ 1723 0068 18301BE5 		ldr	r3, [fp, #-24]
+ 1724 006c B230D3E1 		ldrh	r3, [r3, #2]
+ 1725 0070 013043E2 		sub	r3, r3, #1
+ 1726 0074 0338A0E1 		mov	r3, r3, asl #16
+ 1727 0078 2328A0E1 		mov	r2, r3, lsr #16
+ 1728 007c 18301BE5 		ldr	r3, [fp, #-24]
+ 1729 0080 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 1730              	.L5:
+  62:../os_core/os_sem.c ****     }
+  63:../os_core/os_sem.c ****     OS_EXIT_CRITICAL();
+ 1731              		.loc 1 63 0
+ 1732              	@ 63 "../os_core/os_sem.c" 1
+ 1733 0084 04009DE4 		ldmfd sp!, {r0}
+ 1734              	@ 0 "" 2
+ 1735              	@ 63 "../os_core/os_sem.c" 1
+ 1736 0088 00F021E1 		msr   cpsr_c, r0
+ 1737              	@ 0 "" 2
+  64:../os_core/os_sem.c ****     return (cnt);                                     /* Return semaphore count                    
+ 1738              		.loc 1 64 0
+ 1739 008c BE305BE1 		ldrh	r3, [fp, #-14]
+ 1740              	.L3:
+  65:../os_core/os_sem.c **** }
+ 1741              		.loc 1 65 0
+ 1742 0090 0300A0E1 		mov	r0, r3
+ 1743 0094 0CD04BE2 		sub	sp, fp, #12
+ 1744 0098 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1745 009c 1EFF2FE1 		bx	lr
+ 1746              		.cfi_endproc
+ 1747              	.LFE0:
+ 1749              		.align	2
+ 1750              		.global	OSSemCreate
+ 1752              	OSSemCreate:
+ 1753              	.LFB1:
+  66:../os_core/os_sem.c **** #endif    
+  67:../os_core/os_sem.c **** 
+  68:../os_core/os_sem.c **** /*$PAGE*/
+  69:../os_core/os_sem.c **** /*
+  70:../os_core/os_sem.c **** ***************************************************************************************************
+  71:../os_core/os_sem.c **** *                                           CREATE A SEMAPHORE
+  72:../os_core/os_sem.c **** *
+  73:../os_core/os_sem.c **** * Description: This function creates a semaphore.
+  74:../os_core/os_sem.c **** *
+  75:../os_core/os_sem.c **** * Arguments  : cnt           is the initial value for the semaphore.  If the value is 0, no resourc
+  76:../os_core/os_sem.c **** *                            available (or no event has occurred).  You initialize the semaphore to
+  77:../os_core/os_sem.c **** *                            non-zero value to specify how many resources are available (e.g. if yo
+  78:../os_core/os_sem.c **** *                            10 resources, you would initialize the semaphore to 10).
+  79:../os_core/os_sem.c **** *
+  80:../os_core/os_sem.c **** * Returns    : != (void *)0  is a pointer to the event control clock (OS_EVENT) associated with the
+  81:../os_core/os_sem.c **** *                            created semaphore
+  82:../os_core/os_sem.c **** *              == (void *)0  if no event control blocks were available
+  83:../os_core/os_sem.c **** ***************************************************************************************************
+  84:../os_core/os_sem.c **** */
+  85:../os_core/os_sem.c **** 
+  86:../os_core/os_sem.c **** OS_EVENT  *OSSemCreate (INT16U cnt)
+  87:../os_core/os_sem.c **** {
+ 1754              		.loc 1 87 0
+ 1755              		.cfi_startproc
+ 1756              		@ Function supports interworking.
+ 1757              		@ args = 0, pretend = 0, frame = 16
+ 1758              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1759 00a0 0DC0A0E1 		mov	ip, sp
+ 1760              	.LCFI2:
+ 1761              		.cfi_def_cfa_register 12
+ 1762 00a4 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1763 00a8 04B04CE2 		sub	fp, ip, #4
+ 1764              		.cfi_offset 14, -8
+ 1765              		.cfi_offset 13, -12
+ 1766              		.cfi_offset 11, -16
+ 1767              	.LCFI3:
+ 1768              		.cfi_def_cfa 11, 4
+ 1769 00ac 10D04DE2 		sub	sp, sp, #16
+ 1770 00b0 0030A0E1 		mov	r3, r0
+ 1771 00b4 B6314BE1 		strh	r3, [fp, #-22]	@ movhi
+  88:../os_core/os_sem.c ****     OS_EVENT  *pevent;
+  89:../os_core/os_sem.c **** #if OS_CRITICAL_METHOD == 3                                /* Allocate storage for CPU status regis
+  90:../os_core/os_sem.c ****     OS_CPU_SR  cpu_sr;
+  91:../os_core/os_sem.c **** 
+  92:../os_core/os_sem.c **** 
+  93:../os_core/os_sem.c **** 
+  94:../os_core/os_sem.c ****     cpu_sr = 0;                                            /* Prevent compiler warning             
+  95:../os_core/os_sem.c **** #endif    
+  96:../os_core/os_sem.c ****     if (OSIntNesting > 0) {                                /* See if called from ISR ...           
+ 1772              		.loc 1 96 0
+ 1773 00b8 C0309FE5 		ldr	r3, .L11
+ 1774 00bc 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1775 00c0 000053E3 		cmp	r3, #0
+ 1776 00c4 0100000A 		beq	.L7
+  97:../os_core/os_sem.c ****         return ((OS_EVENT *)0);                            /* ... can't CREATE from an ISR         
+ 1777              		.loc 1 97 0
+ 1778 00c8 0030A0E3 		mov	r3, #0
+ 1779 00cc 270000EA 		b	.L8
+ 1780              	.L7:
+  98:../os_core/os_sem.c ****     }
+  99:../os_core/os_sem.c ****     OS_ENTER_CRITICAL();
+ 1781              		.loc 1 99 0
+ 1782              	@ 99 "../os_core/os_sem.c" 1
+ 1783 00d0 00000FE1 		mrs   r0, cpsr
+ 1784              	@ 0 "" 2
+ 1785              	@ 99 "../os_core/os_sem.c" 1
+ 1786 00d4 04002DE5 		stmfd sp!, {r0}
+ 1787              	@ 0 "" 2
+ 1788              	@ 99 "../os_core/os_sem.c" 1
+ 1789 00d8 C00080E3 		orr   r0, r0, #0b11000000
+ 1790              	@ 0 "" 2
+ 1791              	@ 99 "../os_core/os_sem.c" 1
+ 1792 00dc 00F021E1 		msr   cpsr_c, r0
+ 1793              	@ 0 "" 2
+ 100:../os_core/os_sem.c ****     pevent = OSEventFreeList;                              /* Get next free event control block    
+ 1794              		.loc 1 100 0
+ 1795 00e0 9C309FE5 		ldr	r3, .L11+4
+ 1796 00e4 003093E5 		ldr	r3, [r3, #0]
+ 1797 00e8 10300BE5 		str	r3, [fp, #-16]
+ 101:../os_core/os_sem.c ****     if (OSEventFreeList != (OS_EVENT *)0) {                /* See if pool of free ECB pool was empt
+ 1798              		.loc 1 101 0
+ 1799 00ec 90309FE5 		ldr	r3, .L11+4
+ 1800 00f0 003093E5 		ldr	r3, [r3, #0]
+ 1801 00f4 000053E3 		cmp	r3, #0
+ 1802 00f8 0500000A 		beq	.L9
+ 102:../os_core/os_sem.c ****         OSEventFreeList = (OS_EVENT *)OSEventFreeList->OSEventPtr;
+ 1803              		.loc 1 102 0
+ 1804 00fc 80309FE5 		ldr	r3, .L11+4
+ 1805 0100 003093E5 		ldr	r3, [r3, #0]
+ 1806 0104 043093E5 		ldr	r3, [r3, #4]
+ 1807 0108 0320A0E1 		mov	r2, r3
+ 1808 010c 70309FE5 		ldr	r3, .L11+4
+ 1809 0110 002083E5 		str	r2, [r3, #0]
+ 1810              	.L9:
+ 103:../os_core/os_sem.c ****     }
+ 104:../os_core/os_sem.c ****     OS_EXIT_CRITICAL();
+ 1811              		.loc 1 104 0
+ 1812              	@ 104 "../os_core/os_sem.c" 1
+ 1813 0114 04009DE4 		ldmfd sp!, {r0}
+ 1814              	@ 0 "" 2
+ 1815              	@ 104 "../os_core/os_sem.c" 1
+ 1816 0118 00F021E1 		msr   cpsr_c, r0
+ 1817              	@ 0 "" 2
+ 105:../os_core/os_sem.c ****     if (pevent != (OS_EVENT *)0) {                         /* Get an event control block           
+ 1818              		.loc 1 105 0
+ 1819 011c 10301BE5 		ldr	r3, [fp, #-16]
+ 1820 0120 000053E3 		cmp	r3, #0
+ 1821 0124 1000000A 		beq	.L10
+ 106:../os_core/os_sem.c ****         pevent->OSEventType    = OS_EVENT_TYPE_SEM;
+ 1822              		.loc 1 106 0
+ 1823 0128 10301BE5 		ldr	r3, [fp, #-16]
+ 1824 012c 0320A0E3 		mov	r2, #3
+ 1825 0130 0020C3E5 		strb	r2, [r3, #0]
+ 107:../os_core/os_sem.c ****         pevent->OSEventCnt     = cnt;                      /* Set semaphore value                  
+ 1826              		.loc 1 107 0
+ 1827 0134 10301BE5 		ldr	r3, [fp, #-16]
+ 1828 0138 B6215BE1 		ldrh	r2, [fp, #-22]	@ movhi
+ 1829 013c B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 108:../os_core/os_sem.c ****         pevent->OSEventPtr     = (void *)0;                /* Unlink from ECB free list            
+ 1830              		.loc 1 108 0
+ 1831 0140 10301BE5 		ldr	r3, [fp, #-16]
+ 1832 0144 0020A0E3 		mov	r2, #0
+ 1833 0148 042083E5 		str	r2, [r3, #4]
+ 109:../os_core/os_sem.c **** #if OS_EVENT_NAME_SIZE > 1
+ 110:../os_core/os_sem.c ****         pevent->OSEventName[0] = '?';                      /* Unknown name                         
+ 1834              		.loc 1 110 0
+ 1835 014c 10301BE5 		ldr	r3, [fp, #-16]
+ 1836 0150 3F20A0E3 		mov	r2, #63
+ 1837 0154 1020C3E5 		strb	r2, [r3, #16]
+ 111:../os_core/os_sem.c ****         pevent->OSEventName[1] = OS_ASCII_NUL;
+ 1838              		.loc 1 111 0
+ 1839 0158 10301BE5 		ldr	r3, [fp, #-16]
+ 1840 015c 0020A0E3 		mov	r2, #0
+ 1841 0160 1120C3E5 		strb	r2, [r3, #17]
+ 112:../os_core/os_sem.c **** #endif
+ 113:../os_core/os_sem.c ****         OS_EventWaitListInit(pevent);                      /* Initialize to 'nobody waiting' on sem
+ 1842              		.loc 1 113 0
+ 1843 0164 10001BE5 		ldr	r0, [fp, #-16]
+ 1844 0168 FEFFFFEB 		bl	OS_EventWaitListInit
+ 1845              	.L10:
+ 114:../os_core/os_sem.c ****     }
+ 115:../os_core/os_sem.c ****     return (pevent);
+ 1846              		.loc 1 115 0
+ 1847 016c 10301BE5 		ldr	r3, [fp, #-16]
+ 1848              	.L8:
+ 116:../os_core/os_sem.c **** }
+ 1849              		.loc 1 116 0
+ 1850 0170 0300A0E1 		mov	r0, r3
+ 1851 0174 0CD04BE2 		sub	sp, fp, #12
+ 1852 0178 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1853 017c 1EFF2FE1 		bx	lr
+ 1854              	.L12:
+ 1855              		.align	2
+ 1856              	.L11:
+ 1857 0180 00000000 		.word	OSIntNesting
+ 1858 0184 00000000 		.word	OSEventFreeList
+ 1859              		.cfi_endproc
+ 1860              	.LFE1:
+ 1862              		.align	2
+ 1863              		.global	OSSemDel
+ 1865              	OSSemDel:
+ 1866              	.LFB2:
+ 117:../os_core/os_sem.c **** 
+ 118:../os_core/os_sem.c **** /*$PAGE*/
+ 119:../os_core/os_sem.c **** /*
+ 120:../os_core/os_sem.c **** ***************************************************************************************************
+ 121:../os_core/os_sem.c **** *                                         DELETE A SEMAPHORE
+ 122:../os_core/os_sem.c **** *
+ 123:../os_core/os_sem.c **** * Description: This function deletes a semaphore and readies all tasks pending on the semaphore.
+ 124:../os_core/os_sem.c **** *
+ 125:../os_core/os_sem.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired
+ 126:../os_core/os_sem.c **** *                            semaphore.
+ 127:../os_core/os_sem.c **** *
+ 128:../os_core/os_sem.c **** *              opt           determines delete options as follows:
+ 129:../os_core/os_sem.c **** *                            opt == OS_DEL_NO_PEND   Delete semaphore ONLY if no task pending
+ 130:../os_core/os_sem.c **** *                            opt == OS_DEL_ALWAYS    Deletes the semaphore even if tasks are waitin
+ 131:../os_core/os_sem.c **** *                                                    In this case, all the tasks pending will be re
+ 132:../os_core/os_sem.c **** *
+ 133:../os_core/os_sem.c **** *              err           is a pointer to an error code that can contain one of the following va
+ 134:../os_core/os_sem.c **** *                            OS_NO_ERR               The call was successful and the semaphore was 
+ 135:../os_core/os_sem.c **** *                            OS_ERR_DEL_ISR          If you attempted to delete the semaphore from 
+ 136:../os_core/os_sem.c **** *                            OS_ERR_INVALID_OPT      An invalid option was specified
+ 137:../os_core/os_sem.c **** *                            OS_ERR_TASK_WAITING     One or more tasks were waiting on the semaphor
+ 138:../os_core/os_sem.c **** *                            OS_ERR_EVENT_TYPE       If you didn't pass a pointer to a semaphore
+ 139:../os_core/os_sem.c **** *                            OS_ERR_PEVENT_NULL      If 'pevent' is a NULL pointer.
+ 140:../os_core/os_sem.c **** *
+ 141:../os_core/os_sem.c **** * Returns    : pevent        upon error
+ 142:../os_core/os_sem.c **** *              (OS_EVENT *)0 if the semaphore was successfully deleted.
+ 143:../os_core/os_sem.c **** *
+ 144:../os_core/os_sem.c **** * Note(s)    : 1) This function must be used with care.  Tasks that would normally expect the prese
+ 145:../os_core/os_sem.c **** *                 the semaphore MUST check the return code of OSSemPend().
+ 146:../os_core/os_sem.c **** *              2) OSSemAccept() callers will not know that the intended semaphore has been deleted 
+ 147:../os_core/os_sem.c **** *                 they check 'pevent' to see that it's a NULL pointer.
+ 148:../os_core/os_sem.c **** *              3) This call can potentially disable interrupts for a long time.  The interrupt disa
+ 149:../os_core/os_sem.c **** *                 time is directly proportional to the number of tasks waiting on the semaphore.
+ 150:../os_core/os_sem.c **** *              4) Because ALL tasks pending on the semaphore will be readied, you MUST be careful i
+ 151:../os_core/os_sem.c **** *                 applications where the semaphore is used for mutual exclusion because the resourc
+ 152:../os_core/os_sem.c **** *                 will no longer be guarded by the semaphore.
+ 153:../os_core/os_sem.c **** ***************************************************************************************************
+ 154:../os_core/os_sem.c **** */
+ 155:../os_core/os_sem.c **** 
+ 156:../os_core/os_sem.c **** #if OS_SEM_DEL_EN > 0
+ 157:../os_core/os_sem.c **** OS_EVENT  *OSSemDel (OS_EVENT *pevent, INT8U opt, INT8U *err)
+ 158:../os_core/os_sem.c **** {
+ 1867              		.loc 1 158 0
+ 1868              		.cfi_startproc
+ 1869              		@ Function supports interworking.
+ 1870              		@ args = 0, pretend = 0, frame = 24
+ 1871              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1872 0188 0DC0A0E1 		mov	ip, sp
+ 1873              	.LCFI4:
+ 1874              		.cfi_def_cfa_register 12
+ 1875 018c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1876 0190 04B04CE2 		sub	fp, ip, #4
+ 1877              		.cfi_offset 14, -8
+ 1878              		.cfi_offset 13, -12
+ 1879              		.cfi_offset 11, -16
+ 1880              	.LCFI5:
+ 1881              		.cfi_def_cfa 11, 4
+ 1882 0194 18D04DE2 		sub	sp, sp, #24
+ 1883 0198 18000BE5 		str	r0, [fp, #-24]
+ 1884 019c 0130A0E1 		mov	r3, r1
+ 1885 01a0 20200BE5 		str	r2, [fp, #-32]
+ 1886 01a4 19304BE5 		strb	r3, [fp, #-25]
+ 159:../os_core/os_sem.c ****     BOOLEAN    tasks_waiting;
+ 160:../os_core/os_sem.c **** #if OS_CRITICAL_METHOD == 3                                /* Allocate storage for CPU status regis
+ 161:../os_core/os_sem.c ****     OS_CPU_SR  cpu_sr;
+ 162:../os_core/os_sem.c **** 
+ 163:../os_core/os_sem.c **** 
+ 164:../os_core/os_sem.c **** 
+ 165:../os_core/os_sem.c ****     cpu_sr = 0;                                            /* Prevent compiler warning             
+ 166:../os_core/os_sem.c **** #endif    
+ 167:../os_core/os_sem.c ****     if (OSIntNesting > 0) {                                /* See if called from ISR ...           
+ 1887              		.loc 1 167 0
+ 1888 01a8 04329FE5 		ldr	r3, .L29
+ 1889 01ac 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1890 01b0 000053E3 		cmp	r3, #0
+ 1891 01b4 0400000A 		beq	.L14
+ 168:../os_core/os_sem.c ****         *err = OS_ERR_DEL_ISR;                             /* ... can't DELETE from an ISR         
+ 1892              		.loc 1 168 0
+ 1893 01b8 20301BE5 		ldr	r3, [fp, #-32]
+ 1894 01bc 7320E0E3 		mvn	r2, #115
+ 1895 01c0 0020C3E5 		strb	r2, [r3, #0]
+ 169:../os_core/os_sem.c ****         return (pevent);
+ 1896              		.loc 1 169 0
+ 1897 01c4 18301BE5 		ldr	r3, [fp, #-24]
+ 1898 01c8 750000EA 		b	.L15
+ 1899              	.L14:
+ 170:../os_core/os_sem.c ****     }
+ 171:../os_core/os_sem.c **** #if OS_ARG_CHK_EN > 0
+ 172:../os_core/os_sem.c ****     if (pevent == (OS_EVENT *)0) {                         /* Validate 'pevent'                    
+ 1900              		.loc 1 172 0
+ 1901 01cc 18301BE5 		ldr	r3, [fp, #-24]
+ 1902 01d0 000053E3 		cmp	r3, #0
+ 1903 01d4 0400001A 		bne	.L16
+ 173:../os_core/os_sem.c ****         *err = OS_ERR_PEVENT_NULL;
+ 1904              		.loc 1 173 0
+ 1905 01d8 20301BE5 		ldr	r3, [fp, #-32]
+ 1906 01dc 0420A0E3 		mov	r2, #4
+ 1907 01e0 0020C3E5 		strb	r2, [r3, #0]
+ 174:../os_core/os_sem.c ****         return (pevent);
+ 1908              		.loc 1 174 0
+ 1909 01e4 18301BE5 		ldr	r3, [fp, #-24]
+ 1910 01e8 6D0000EA 		b	.L15
+ 1911              	.L16:
+ 175:../os_core/os_sem.c ****     }
+ 176:../os_core/os_sem.c **** #endif
+ 177:../os_core/os_sem.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_SEM) {        /* Validate event block type            
+ 1912              		.loc 1 177 0
+ 1913 01ec 18301BE5 		ldr	r3, [fp, #-24]
+ 1914 01f0 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1915 01f4 030053E3 		cmp	r3, #3
+ 1916 01f8 0400000A 		beq	.L17
+ 178:../os_core/os_sem.c ****         *err = OS_ERR_EVENT_TYPE;
+ 1917              		.loc 1 178 0
+ 1918 01fc 20301BE5 		ldr	r3, [fp, #-32]
+ 1919 0200 0120A0E3 		mov	r2, #1
+ 1920 0204 0020C3E5 		strb	r2, [r3, #0]
+ 179:../os_core/os_sem.c ****         return (pevent);
+ 1921              		.loc 1 179 0
+ 1922 0208 18301BE5 		ldr	r3, [fp, #-24]
+ 1923 020c 640000EA 		b	.L15
+ 1924              	.L17:
+ 180:../os_core/os_sem.c ****     }
+ 181:../os_core/os_sem.c ****     OS_ENTER_CRITICAL();
+ 1925              		.loc 1 181 0
+ 1926              	@ 181 "../os_core/os_sem.c" 1
+ 1927 0210 00000FE1 		mrs   r0, cpsr
+ 1928              	@ 0 "" 2
+ 1929              	@ 181 "../os_core/os_sem.c" 1
+ 1930 0214 04002DE5 		stmfd sp!, {r0}
+ 1931              	@ 0 "" 2
+ 1932              	@ 181 "../os_core/os_sem.c" 1
+ 1933 0218 C00080E3 		orr   r0, r0, #0b11000000
+ 1934              	@ 0 "" 2
+ 1935              	@ 181 "../os_core/os_sem.c" 1
+ 1936 021c 00F021E1 		msr   cpsr_c, r0
+ 1937              	@ 0 "" 2
+ 182:../os_core/os_sem.c ****     if (pevent->OSEventGrp != 0x00) {                      /* See if any tasks waiting on semaphore
+ 1938              		.loc 1 182 0
+ 1939 0220 18301BE5 		ldr	r3, [fp, #-24]
+ 1940 0224 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 1941 0228 000053E3 		cmp	r3, #0
+ 1942 022c 0200000A 		beq	.L18
+ 183:../os_core/os_sem.c ****         tasks_waiting = TRUE;                              /* Yes                                  
+ 1943              		.loc 1 183 0
+ 1944 0230 0130A0E3 		mov	r3, #1
+ 1945 0234 0D304BE5 		strb	r3, [fp, #-13]
+ 1946 0238 010000EA 		b	.L19
+ 1947              	.L18:
+ 184:../os_core/os_sem.c ****     } else {
+ 185:../os_core/os_sem.c ****         tasks_waiting = FALSE;                             /* No                                   
+ 1948              		.loc 1 185 0
+ 1949 023c 0030A0E3 		mov	r3, #0
+ 1950 0240 0D304BE5 		strb	r3, [fp, #-13]
+ 1951              	.L19:
+ 186:../os_core/os_sem.c ****     }
+ 187:../os_core/os_sem.c ****     switch (opt) {
+ 1952              		.loc 1 187 0
+ 1953 0244 19305BE5 		ldrb	r3, [fp, #-25]	@ zero_extendqisi2
+ 1954 0248 000053E3 		cmp	r3, #0
+ 1955 024c 0200000A 		beq	.L21
+ 1956 0250 010053E3 		cmp	r3, #1
+ 1957 0254 2900000A 		beq	.L28
+ 1958 0258 4B0000EA 		b	.L27
+ 1959              	.L21:
+ 188:../os_core/os_sem.c ****         case OS_DEL_NO_PEND:                               /* Delete semaphore only if no task wait
+ 189:../os_core/os_sem.c ****              if (tasks_waiting == FALSE) {
+ 1960              		.loc 1 189 0
+ 1961 025c 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 1962 0260 000053E3 		cmp	r3, #0
+ 1963 0264 1900001A 		bne	.L23
+ 190:../os_core/os_sem.c **** #if OS_EVENT_NAME_SIZE > 1
+ 191:../os_core/os_sem.c ****                  pevent->OSEventName[0] = '?';             /* Unknown name                         
+ 1964              		.loc 1 191 0
+ 1965 0268 18301BE5 		ldr	r3, [fp, #-24]
+ 1966 026c 3F20A0E3 		mov	r2, #63
+ 1967 0270 1020C3E5 		strb	r2, [r3, #16]
+ 192:../os_core/os_sem.c ****                  pevent->OSEventName[1] = OS_ASCII_NUL;
+ 1968              		.loc 1 192 0
+ 1969 0274 18301BE5 		ldr	r3, [fp, #-24]
+ 1970 0278 0020A0E3 		mov	r2, #0
+ 1971 027c 1120C3E5 		strb	r2, [r3, #17]
+ 193:../os_core/os_sem.c **** #endif
+ 194:../os_core/os_sem.c ****                  pevent->OSEventType    = OS_EVENT_TYPE_UNUSED;
+ 1972              		.loc 1 194 0
+ 1973 0280 18301BE5 		ldr	r3, [fp, #-24]
+ 1974 0284 0020A0E3 		mov	r2, #0
+ 1975 0288 0020C3E5 		strb	r2, [r3, #0]
+ 195:../os_core/os_sem.c ****                  pevent->OSEventPtr     = OSEventFreeList; /* Return Event Control Block to free li
+ 1976              		.loc 1 195 0
+ 1977 028c 24319FE5 		ldr	r3, .L29+4
+ 1978 0290 002093E5 		ldr	r2, [r3, #0]
+ 1979 0294 18301BE5 		ldr	r3, [fp, #-24]
+ 1980 0298 042083E5 		str	r2, [r3, #4]
+ 196:../os_core/os_sem.c ****                  pevent->OSEventCnt     = 0;
+ 1981              		.loc 1 196 0
+ 1982 029c 18301BE5 		ldr	r3, [fp, #-24]
+ 1983 02a0 0020A0E3 		mov	r2, #0
+ 1984 02a4 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 197:../os_core/os_sem.c ****                  OSEventFreeList        = pevent;          /* Get next free event control block    
+ 1985              		.loc 1 197 0
+ 1986 02a8 08319FE5 		ldr	r3, .L29+4
+ 1987 02ac 18201BE5 		ldr	r2, [fp, #-24]
+ 1988 02b0 002083E5 		str	r2, [r3, #0]
+ 198:../os_core/os_sem.c ****                  OS_EXIT_CRITICAL();
+ 1989              		.loc 1 198 0
+ 1990              	@ 198 "../os_core/os_sem.c" 1
+ 1991 02b4 04009DE4 		ldmfd sp!, {r0}
+ 1992              	@ 0 "" 2
+ 1993              	@ 198 "../os_core/os_sem.c" 1
+ 1994 02b8 00F021E1 		msr   cpsr_c, r0
+ 1995              	@ 0 "" 2
+ 199:../os_core/os_sem.c ****                  *err                   = OS_NO_ERR;
+ 1996              		.loc 1 199 0
+ 1997 02bc 20301BE5 		ldr	r3, [fp, #-32]
+ 1998 02c0 0020A0E3 		mov	r2, #0
+ 1999 02c4 0020C3E5 		strb	r2, [r3, #0]
+ 200:../os_core/os_sem.c ****                  return ((OS_EVENT *)0);                   /* Semaphore has been deleted           
+ 2000              		.loc 1 200 0
+ 2001 02c8 0030A0E3 		mov	r3, #0
+ 2002 02cc 340000EA 		b	.L15
+ 2003              	.L23:
+ 201:../os_core/os_sem.c ****              } else {
+ 202:../os_core/os_sem.c ****                  OS_EXIT_CRITICAL();
+ 2004              		.loc 1 202 0
+ 2005              	@ 202 "../os_core/os_sem.c" 1
+ 2006 02d0 04009DE4 		ldmfd sp!, {r0}
+ 2007              	@ 0 "" 2
+ 2008              	@ 202 "../os_core/os_sem.c" 1
+ 2009 02d4 00F021E1 		msr   cpsr_c, r0
+ 2010              	@ 0 "" 2
+ 203:../os_core/os_sem.c ****                  *err                   = OS_ERR_TASK_WAITING;
+ 2011              		.loc 1 203 0
+ 2012 02d8 20301BE5 		ldr	r3, [fp, #-32]
+ 2013 02dc 0820A0E3 		mov	r2, #8
+ 2014 02e0 0020C3E5 		strb	r2, [r3, #0]
+ 204:../os_core/os_sem.c ****                  return (pevent);
+ 2015              		.loc 1 204 0
+ 2016 02e4 18301BE5 		ldr	r3, [fp, #-24]
+ 2017 02e8 2D0000EA 		b	.L15
+ 2018              	.L25:
+ 205:../os_core/os_sem.c ****              }
+ 206:../os_core/os_sem.c **** 
+ 207:../os_core/os_sem.c ****         case OS_DEL_ALWAYS:                                /* Always delete the semaphore          
+ 208:../os_core/os_sem.c ****              while (pevent->OSEventGrp != 0x00) {          /* Ready ALL tasks waiting for semaphore
+ 209:../os_core/os_sem.c ****                  (void)OS_EventTaskRdy(pevent, (void *)0, OS_STAT_SEM);
+ 2019              		.loc 1 209 0
+ 2020 02ec 18001BE5 		ldr	r0, [fp, #-24]
+ 2021 02f0 0010A0E3 		mov	r1, #0
+ 2022 02f4 0120A0E3 		mov	r2, #1
+ 2023 02f8 FEFFFFEB 		bl	OS_EventTaskRdy
+ 2024 02fc 000000EA 		b	.L24
+ 2025              	.L28:
+ 208:../os_core/os_sem.c ****              while (pevent->OSEventGrp != 0x00) {          /* Ready ALL tasks waiting for semaphore
+ 2026              		.loc 1 208 0
+ 2027 0300 0000A0E1 		mov	r0, r0	@ nop
+ 2028              	.L24:
+ 208:../os_core/os_sem.c ****              while (pevent->OSEventGrp != 0x00) {          /* Ready ALL tasks waiting for semaphore
+ 2029              		.loc 1 208 0 is_stmt 0 discriminator 1
+ 2030 0304 18301BE5 		ldr	r3, [fp, #-24]
+ 2031 0308 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2032 030c 000053E3 		cmp	r3, #0
+ 2033 0310 F5FFFF1A 		bne	.L25
+ 210:../os_core/os_sem.c ****              }
+ 211:../os_core/os_sem.c **** #if OS_EVENT_NAME_SIZE > 1
+ 212:../os_core/os_sem.c ****              pevent->OSEventName[0] = '?';                 /* Unknown name                         
+ 2034              		.loc 1 212 0 is_stmt 1
+ 2035 0314 18301BE5 		ldr	r3, [fp, #-24]
+ 2036 0318 3F20A0E3 		mov	r2, #63
+ 2037 031c 1020C3E5 		strb	r2, [r3, #16]
+ 213:../os_core/os_sem.c ****              pevent->OSEventName[1] = OS_ASCII_NUL;
+ 2038              		.loc 1 213 0
+ 2039 0320 18301BE5 		ldr	r3, [fp, #-24]
+ 2040 0324 0020A0E3 		mov	r2, #0
+ 2041 0328 1120C3E5 		strb	r2, [r3, #17]
+ 214:../os_core/os_sem.c **** #endif
+ 215:../os_core/os_sem.c ****              pevent->OSEventType    = OS_EVENT_TYPE_UNUSED;
+ 2042              		.loc 1 215 0
+ 2043 032c 18301BE5 		ldr	r3, [fp, #-24]
+ 2044 0330 0020A0E3 		mov	r2, #0
+ 2045 0334 0020C3E5 		strb	r2, [r3, #0]
+ 216:../os_core/os_sem.c ****              pevent->OSEventPtr     = OSEventFreeList;     /* Return Event Control Block to free li
+ 2046              		.loc 1 216 0
+ 2047 0338 78309FE5 		ldr	r3, .L29+4
+ 2048 033c 002093E5 		ldr	r2, [r3, #0]
+ 2049 0340 18301BE5 		ldr	r3, [fp, #-24]
+ 2050 0344 042083E5 		str	r2, [r3, #4]
+ 217:../os_core/os_sem.c ****              pevent->OSEventCnt     = 0;
+ 2051              		.loc 1 217 0
+ 2052 0348 18301BE5 		ldr	r3, [fp, #-24]
+ 2053 034c 0020A0E3 		mov	r2, #0
+ 2054 0350 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 218:../os_core/os_sem.c ****              OSEventFreeList        = pevent;              /* Get next free event control block    
+ 2055              		.loc 1 218 0
+ 2056 0354 5C309FE5 		ldr	r3, .L29+4
+ 2057 0358 18201BE5 		ldr	r2, [fp, #-24]
+ 2058 035c 002083E5 		str	r2, [r3, #0]
+ 219:../os_core/os_sem.c ****              OS_EXIT_CRITICAL();
+ 2059              		.loc 1 219 0
+ 2060              	@ 219 "../os_core/os_sem.c" 1
+ 2061 0360 04009DE4 		ldmfd sp!, {r0}
+ 2062              	@ 0 "" 2
+ 2063              	@ 219 "../os_core/os_sem.c" 1
+ 2064 0364 00F021E1 		msr   cpsr_c, r0
+ 2065              	@ 0 "" 2
+ 220:../os_core/os_sem.c ****              if (tasks_waiting == TRUE) {                  /* Reschedule only if task(s) were waiti
+ 2066              		.loc 1 220 0
+ 2067 0368 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2068 036c 010053E3 		cmp	r3, #1
+ 2069 0370 0000001A 		bne	.L26
+ 221:../os_core/os_sem.c ****                  OS_Sched();                               /* Find highest priority task ready to r
+ 2070              		.loc 1 221 0
+ 2071 0374 FEFFFFEB 		bl	OS_Sched
+ 2072              	.L26:
+ 222:../os_core/os_sem.c ****              }
+ 223:../os_core/os_sem.c ****              *err = OS_NO_ERR;
+ 2073              		.loc 1 223 0
+ 2074 0378 20301BE5 		ldr	r3, [fp, #-32]
+ 2075 037c 0020A0E3 		mov	r2, #0
+ 2076 0380 0020C3E5 		strb	r2, [r3, #0]
+ 224:../os_core/os_sem.c ****              return ((OS_EVENT *)0);                       /* Semaphore has been deleted           
+ 2077              		.loc 1 224 0
+ 2078 0384 0030A0E3 		mov	r3, #0
+ 2079 0388 050000EA 		b	.L15
+ 2080              	.L27:
+ 225:../os_core/os_sem.c **** 
+ 226:../os_core/os_sem.c ****         default:
+ 227:../os_core/os_sem.c ****              OS_EXIT_CRITICAL();
+ 2081              		.loc 1 227 0
+ 2082              	@ 227 "../os_core/os_sem.c" 1
+ 2083 038c 04009DE4 		ldmfd sp!, {r0}
+ 2084              	@ 0 "" 2
+ 2085              	@ 227 "../os_core/os_sem.c" 1
+ 2086 0390 00F021E1 		msr   cpsr_c, r0
+ 2087              	@ 0 "" 2
+ 228:../os_core/os_sem.c ****              *err = OS_ERR_INVALID_OPT;
+ 2088              		.loc 1 228 0
+ 2089 0394 20301BE5 		ldr	r3, [fp, #-32]
+ 2090 0398 0720A0E3 		mov	r2, #7
+ 2091 039c 0020C3E5 		strb	r2, [r3, #0]
+ 229:../os_core/os_sem.c ****              return (pevent);
+ 2092              		.loc 1 229 0
+ 2093 03a0 18301BE5 		ldr	r3, [fp, #-24]
+ 2094              	.L15:
+ 230:../os_core/os_sem.c ****     }
+ 231:../os_core/os_sem.c **** }
+ 2095              		.loc 1 231 0
+ 2096 03a4 0300A0E1 		mov	r0, r3
+ 2097 03a8 0CD04BE2 		sub	sp, fp, #12
+ 2098 03ac 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2099 03b0 1EFF2FE1 		bx	lr
+ 2100              	.L30:
+ 2101              		.align	2
+ 2102              	.L29:
+ 2103 03b4 00000000 		.word	OSIntNesting
+ 2104 03b8 00000000 		.word	OSEventFreeList
+ 2105              		.cfi_endproc
+ 2106              	.LFE2:
+ 2108              		.align	2
+ 2109              		.global	OSSemPend
+ 2111              	OSSemPend:
+ 2112              	.LFB3:
+ 232:../os_core/os_sem.c **** #endif
+ 233:../os_core/os_sem.c **** 
+ 234:../os_core/os_sem.c **** /*$PAGE*/
+ 235:../os_core/os_sem.c **** /*
+ 236:../os_core/os_sem.c **** ***************************************************************************************************
+ 237:../os_core/os_sem.c **** *                                           PEND ON SEMAPHORE
+ 238:../os_core/os_sem.c **** *
+ 239:../os_core/os_sem.c **** * Description: This function waits for a semaphore.
+ 240:../os_core/os_sem.c **** *
+ 241:../os_core/os_sem.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired
+ 242:../os_core/os_sem.c **** *                            semaphore.
+ 243:../os_core/os_sem.c **** *
+ 244:../os_core/os_sem.c **** *              timeout       is an optional timeout period (in clock ticks).  If non-zero, your tas
+ 245:../os_core/os_sem.c **** *                            wait for the resource up to the amount of time specified by this argum
+ 246:../os_core/os_sem.c **** *                            If you specify 0, however, your task will wait forever at the specifie
+ 247:../os_core/os_sem.c **** *                            semaphore or, until the resource becomes available (or the event occur
+ 248:../os_core/os_sem.c **** *
+ 249:../os_core/os_sem.c **** *              err           is a pointer to where an error message will be deposited.  Possible er
+ 250:../os_core/os_sem.c **** *                            messages are:
+ 251:../os_core/os_sem.c **** *
+ 252:../os_core/os_sem.c **** *                            OS_NO_ERR           The call was successful and your task owns the res
+ 253:../os_core/os_sem.c **** *                                                or, the event you are waiting for occurred.
+ 254:../os_core/os_sem.c **** *                            OS_TIMEOUT          The semaphore was not received within the specifie
+ 255:../os_core/os_sem.c **** *                                                timeout.
+ 256:../os_core/os_sem.c **** *                            OS_ERR_EVENT_TYPE   If you didn't pass a pointer to a semaphore.
+ 257:../os_core/os_sem.c **** *                            OS_ERR_PEND_ISR     If you called this function from an ISR and the re
+ 258:../os_core/os_sem.c **** *                                                would lead to a suspension.
+ 259:../os_core/os_sem.c **** *                            OS_ERR_PEVENT_NULL  If 'pevent' is a NULL pointer.
+ 260:../os_core/os_sem.c **** *
+ 261:../os_core/os_sem.c **** * Returns    : none
+ 262:../os_core/os_sem.c **** ***************************************************************************************************
+ 263:../os_core/os_sem.c **** */
+ 264:../os_core/os_sem.c **** 
+ 265:../os_core/os_sem.c **** void  OSSemPend (OS_EVENT *pevent, INT16U timeout, INT8U *err)
+ 266:../os_core/os_sem.c **** {
+ 2113              		.loc 1 266 0
+ 2114              		.cfi_startproc
+ 2115              		@ Function supports interworking.
+ 2116              		@ args = 0, pretend = 0, frame = 16
+ 2117              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2118 03bc 0DC0A0E1 		mov	ip, sp
+ 2119              	.LCFI6:
+ 2120              		.cfi_def_cfa_register 12
+ 2121 03c0 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2122 03c4 04B04CE2 		sub	fp, ip, #4
+ 2123              		.cfi_offset 14, -8
+ 2124              		.cfi_offset 13, -12
+ 2125              		.cfi_offset 11, -16
+ 2126              	.LCFI7:
+ 2127              		.cfi_def_cfa 11, 4
+ 2128 03c8 10D04DE2 		sub	sp, sp, #16
+ 2129 03cc 10000BE5 		str	r0, [fp, #-16]
+ 2130 03d0 0130A0E1 		mov	r3, r1
+ 2131 03d4 18200BE5 		str	r2, [fp, #-24]
+ 2132 03d8 B2314BE1 		strh	r3, [fp, #-18]	@ movhi
+ 267:../os_core/os_sem.c **** #if OS_CRITICAL_METHOD == 3                           /* Allocate storage for CPU status register  
+ 268:../os_core/os_sem.c ****     OS_CPU_SR  cpu_sr;
+ 269:../os_core/os_sem.c **** 
+ 270:../os_core/os_sem.c **** 
+ 271:../os_core/os_sem.c **** 
+ 272:../os_core/os_sem.c ****     cpu_sr = 0;                                       /* Prevent compiler warning                  
+ 273:../os_core/os_sem.c **** #endif    
+ 274:../os_core/os_sem.c ****     if (OSIntNesting > 0) {                           /* See if called from ISR ...                
+ 2133              		.loc 1 274 0
+ 2134 03dc 70319FE5 		ldr	r3, .L38
+ 2135 03e0 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2136 03e4 000053E3 		cmp	r3, #0
+ 2137 03e8 0300000A 		beq	.L32
+ 275:../os_core/os_sem.c ****         *err = OS_ERR_PEND_ISR;                       /* ... can't PEND from an ISR                
+ 2138              		.loc 1 275 0
+ 2139 03ec 18301BE5 		ldr	r3, [fp, #-24]
+ 2140 03f0 0220A0E3 		mov	r2, #2
+ 2141 03f4 0020C3E5 		strb	r2, [r3, #0]
+ 276:../os_core/os_sem.c ****         return;
+ 2142              		.loc 1 276 0
+ 2143 03f8 520000EA 		b	.L31
+ 2144              	.L32:
+ 277:../os_core/os_sem.c ****     }
+ 278:../os_core/os_sem.c **** #if OS_ARG_CHK_EN > 0
+ 279:../os_core/os_sem.c ****     if (pevent == (OS_EVENT *)0) {                    /* Validate 'pevent'                         
+ 2145              		.loc 1 279 0
+ 2146 03fc 10301BE5 		ldr	r3, [fp, #-16]
+ 2147 0400 000053E3 		cmp	r3, #0
+ 2148 0404 0300001A 		bne	.L34
+ 280:../os_core/os_sem.c ****         *err = OS_ERR_PEVENT_NULL;
+ 2149              		.loc 1 280 0
+ 2150 0408 18301BE5 		ldr	r3, [fp, #-24]
+ 2151 040c 0420A0E3 		mov	r2, #4
+ 2152 0410 0020C3E5 		strb	r2, [r3, #0]
+ 281:../os_core/os_sem.c ****         return;
+ 2153              		.loc 1 281 0
+ 2154 0414 4B0000EA 		b	.L31
+ 2155              	.L34:
+ 282:../os_core/os_sem.c ****     }
+ 283:../os_core/os_sem.c **** #endif
+ 284:../os_core/os_sem.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_SEM) {   /* Validate event block type                 
+ 2156              		.loc 1 284 0
+ 2157 0418 10301BE5 		ldr	r3, [fp, #-16]
+ 2158 041c 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2159 0420 030053E3 		cmp	r3, #3
+ 2160 0424 0300000A 		beq	.L35
+ 285:../os_core/os_sem.c ****         *err = OS_ERR_EVENT_TYPE;
+ 2161              		.loc 1 285 0
+ 2162 0428 18301BE5 		ldr	r3, [fp, #-24]
+ 2163 042c 0120A0E3 		mov	r2, #1
+ 2164 0430 0020C3E5 		strb	r2, [r3, #0]
+ 286:../os_core/os_sem.c ****         return;
+ 2165              		.loc 1 286 0
+ 2166 0434 430000EA 		b	.L31
+ 2167              	.L35:
+ 287:../os_core/os_sem.c ****     }
+ 288:../os_core/os_sem.c ****     OS_ENTER_CRITICAL();
+ 2168              		.loc 1 288 0
+ 2169              	@ 288 "../os_core/os_sem.c" 1
+ 2170 0438 00000FE1 		mrs   r0, cpsr
+ 2171              	@ 0 "" 2
+ 2172              	@ 288 "../os_core/os_sem.c" 1
+ 2173 043c 04002DE5 		stmfd sp!, {r0}
+ 2174              	@ 0 "" 2
+ 2175              	@ 288 "../os_core/os_sem.c" 1
+ 2176 0440 C00080E3 		orr   r0, r0, #0b11000000
+ 2177              	@ 0 "" 2
+ 2178              	@ 288 "../os_core/os_sem.c" 1
+ 2179 0444 00F021E1 		msr   cpsr_c, r0
+ 2180              	@ 0 "" 2
+ 289:../os_core/os_sem.c ****     if (pevent->OSEventCnt > 0) {                     /* If sem. is positive, resource available ..
+ 2181              		.loc 1 289 0
+ 2182 0448 10301BE5 		ldr	r3, [fp, #-16]
+ 2183 044c B230D3E1 		ldrh	r3, [r3, #2]
+ 2184 0450 000053E3 		cmp	r3, #0
+ 2185 0454 0C00000A 		beq	.L36
+ 290:../os_core/os_sem.c ****         pevent->OSEventCnt--;                         /* ... decrement semaphore only if positive. 
+ 2186              		.loc 1 290 0
+ 2187 0458 10301BE5 		ldr	r3, [fp, #-16]
+ 2188 045c B230D3E1 		ldrh	r3, [r3, #2]
+ 2189 0460 013043E2 		sub	r3, r3, #1
+ 2190 0464 0338A0E1 		mov	r3, r3, asl #16
+ 2191 0468 2328A0E1 		mov	r2, r3, lsr #16
+ 2192 046c 10301BE5 		ldr	r3, [fp, #-16]
+ 2193 0470 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 291:../os_core/os_sem.c ****         OS_EXIT_CRITICAL();
+ 2194              		.loc 1 291 0
+ 2195              	@ 291 "../os_core/os_sem.c" 1
+ 2196 0474 04009DE4 		ldmfd sp!, {r0}
+ 2197              	@ 0 "" 2
+ 2198              	@ 291 "../os_core/os_sem.c" 1
+ 2199 0478 00F021E1 		msr   cpsr_c, r0
+ 2200              	@ 0 "" 2
+ 292:../os_core/os_sem.c ****         *err = OS_NO_ERR;
+ 2201              		.loc 1 292 0
+ 2202 047c 18301BE5 		ldr	r3, [fp, #-24]
+ 2203 0480 0020A0E3 		mov	r2, #0
+ 2204 0484 0020C3E5 		strb	r2, [r3, #0]
+ 293:../os_core/os_sem.c ****         return;
+ 2205              		.loc 1 293 0
+ 2206 0488 2E0000EA 		b	.L31
+ 2207              	.L36:
+ 294:../os_core/os_sem.c ****     }
+ 295:../os_core/os_sem.c ****                                                       /* Otherwise, must wait until event occurs   
+ 296:../os_core/os_sem.c ****     OSTCBCur->OSTCBStat   |= OS_STAT_SEM;             /* Resource not available, pend on semaphore 
+ 2208              		.loc 1 296 0
+ 2209 048c C4309FE5 		ldr	r3, .L38+4
+ 2210 0490 003093E5 		ldr	r3, [r3, #0]
+ 2211 0494 BC209FE5 		ldr	r2, .L38+4
+ 2212 0498 002092E5 		ldr	r2, [r2, #0]
+ 2213 049c 2C20D2E5 		ldrb	r2, [r2, #44]	@ zero_extendqisi2
+ 2214 04a0 012082E3 		orr	r2, r2, #1
+ 2215 04a4 FF2002E2 		and	r2, r2, #255
+ 2216 04a8 2C20C3E5 		strb	r2, [r3, #44]
+ 297:../os_core/os_sem.c ****     OSTCBCur->OSTCBPendTO  = FALSE;
+ 2217              		.loc 1 297 0
+ 2218 04ac A4309FE5 		ldr	r3, .L38+4
+ 2219 04b0 003093E5 		ldr	r3, [r3, #0]
+ 2220 04b4 0020A0E3 		mov	r2, #0
+ 2221 04b8 2D20C3E5 		strb	r2, [r3, #45]
+ 298:../os_core/os_sem.c ****     OSTCBCur->OSTCBDly     = timeout;                 /* Store pend timeout in TCB                 
+ 2222              		.loc 1 298 0
+ 2223 04bc 94309FE5 		ldr	r3, .L38+4
+ 2224 04c0 003093E5 		ldr	r3, [r3, #0]
+ 2225 04c4 B2215BE1 		ldrh	r2, [fp, #-18]	@ movhi
+ 2226 04c8 BA22C3E1 		strh	r2, [r3, #42]	@ movhi
+ 299:../os_core/os_sem.c ****     OS_EventTaskWait(pevent);                         /* Suspend task until event or timeout occurs
+ 2227              		.loc 1 299 0
+ 2228 04cc 10001BE5 		ldr	r0, [fp, #-16]
+ 2229 04d0 FEFFFFEB 		bl	OS_EventTaskWait
+ 300:../os_core/os_sem.c ****     OS_EXIT_CRITICAL();
+ 2230              		.loc 1 300 0
+ 2231              	@ 300 "../os_core/os_sem.c" 1
+ 2232 04d4 04009DE4 		ldmfd sp!, {r0}
+ 2233              	@ 0 "" 2
+ 2234              	@ 300 "../os_core/os_sem.c" 1
+ 2235 04d8 00F021E1 		msr   cpsr_c, r0
+ 2236              	@ 0 "" 2
+ 301:../os_core/os_sem.c ****     OS_Sched();                                       /* Find next highest priority task ready     
+ 2237              		.loc 1 301 0
+ 2238 04dc FEFFFFEB 		bl	OS_Sched
+ 302:../os_core/os_sem.c ****     OS_ENTER_CRITICAL();
+ 2239              		.loc 1 302 0
+ 2240              	@ 302 "../os_core/os_sem.c" 1
+ 2241 04e0 00000FE1 		mrs   r0, cpsr
+ 2242              	@ 0 "" 2
+ 2243              	@ 302 "../os_core/os_sem.c" 1
+ 2244 04e4 04002DE5 		stmfd sp!, {r0}
+ 2245              	@ 0 "" 2
+ 2246              	@ 302 "../os_core/os_sem.c" 1
+ 2247 04e8 C00080E3 		orr   r0, r0, #0b11000000
+ 2248              	@ 0 "" 2
+ 2249              	@ 302 "../os_core/os_sem.c" 1
+ 2250 04ec 00F021E1 		msr   cpsr_c, r0
+ 2251              	@ 0 "" 2
+ 303:../os_core/os_sem.c ****     if (OSTCBCur->OSTCBPendTO == TRUE) {              /* See if we timedout                        
+ 2252              		.loc 1 303 0
+ 2253 04f0 60309FE5 		ldr	r3, .L38+4
+ 2254 04f4 003093E5 		ldr	r3, [r3, #0]
+ 2255 04f8 2D30D3E5 		ldrb	r3, [r3, #45]	@ zero_extendqisi2
+ 2256 04fc 010053E3 		cmp	r3, #1
+ 2257 0500 0700001A 		bne	.L37
+ 304:../os_core/os_sem.c ****         OS_EventTO(pevent);
+ 2258              		.loc 1 304 0
+ 2259 0504 10001BE5 		ldr	r0, [fp, #-16]
+ 2260 0508 FEFFFFEB 		bl	OS_EventTO
+ 305:../os_core/os_sem.c ****         OS_EXIT_CRITICAL();
+ 2261              		.loc 1 305 0
+ 2262              	@ 305 "../os_core/os_sem.c" 1
+ 2263 050c 04009DE4 		ldmfd sp!, {r0}
+ 2264              	@ 0 "" 2
+ 2265              	@ 305 "../os_core/os_sem.c" 1
+ 2266 0510 00F021E1 		msr   cpsr_c, r0
+ 2267              	@ 0 "" 2
+ 306:../os_core/os_sem.c ****         *err = OS_TIMEOUT;                            /* Indicate that didn't get event within TO  
+ 2268              		.loc 1 306 0
+ 2269 0514 18301BE5 		ldr	r3, [fp, #-24]
+ 2270 0518 0A20A0E3 		mov	r2, #10
+ 2271 051c 0020C3E5 		strb	r2, [r3, #0]
+ 307:../os_core/os_sem.c ****         return;
+ 2272              		.loc 1 307 0
+ 2273 0520 080000EA 		b	.L31
+ 2274              	.L37:
+ 308:../os_core/os_sem.c ****     }
+ 309:../os_core/os_sem.c ****     OSTCBCur->OSTCBEventPtr = (OS_EVENT *)0;
+ 2275              		.loc 1 309 0
+ 2276 0524 2C309FE5 		ldr	r3, .L38+4
+ 2277 0528 003093E5 		ldr	r3, [r3, #0]
+ 2278 052c 0020A0E3 		mov	r2, #0
+ 2279 0530 1C2083E5 		str	r2, [r3, #28]
+ 310:../os_core/os_sem.c ****     OS_EXIT_CRITICAL();
+ 2280              		.loc 1 310 0
+ 2281              	@ 310 "../os_core/os_sem.c" 1
+ 2282 0534 04009DE4 		ldmfd sp!, {r0}
+ 2283              	@ 0 "" 2
+ 2284              	@ 310 "../os_core/os_sem.c" 1
+ 2285 0538 00F021E1 		msr   cpsr_c, r0
+ 2286              	@ 0 "" 2
+ 311:../os_core/os_sem.c ****     *err = OS_NO_ERR;
+ 2287              		.loc 1 311 0
+ 2288 053c 18301BE5 		ldr	r3, [fp, #-24]
+ 2289 0540 0020A0E3 		mov	r2, #0
+ 2290 0544 0020C3E5 		strb	r2, [r3, #0]
+ 2291              	.L31:
+ 312:../os_core/os_sem.c **** }
+ 2292              		.loc 1 312 0
+ 2293 0548 0CD04BE2 		sub	sp, fp, #12
+ 2294 054c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2295 0550 1EFF2FE1 		bx	lr
+ 2296              	.L39:
+ 2297              		.align	2
+ 2298              	.L38:
+ 2299 0554 00000000 		.word	OSIntNesting
+ 2300 0558 00000000 		.word	OSTCBCur
+ 2301              		.cfi_endproc
+ 2302              	.LFE3:
+ 2304              		.align	2
+ 2305              		.global	OSSemPost
+ 2307              	OSSemPost:
+ 2308              	.LFB4:
+ 313:../os_core/os_sem.c **** /*$PAGE*/
+ 314:../os_core/os_sem.c **** /*
+ 315:../os_core/os_sem.c **** ***************************************************************************************************
+ 316:../os_core/os_sem.c **** *                                         POST TO A SEMAPHORE
+ 317:../os_core/os_sem.c **** *
+ 318:../os_core/os_sem.c **** * Description: This function signals a semaphore
+ 319:../os_core/os_sem.c **** *
+ 320:../os_core/os_sem.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired
+ 321:../os_core/os_sem.c **** *                            semaphore.
+ 322:../os_core/os_sem.c **** *
+ 323:../os_core/os_sem.c **** * Returns    : OS_NO_ERR           The call was successful and the semaphore was signaled.
+ 324:../os_core/os_sem.c **** *              OS_SEM_OVF          If the semaphore count exceeded its limit.  In other words, you 
+ 325:../os_core/os_sem.c **** *                                  signalled the semaphore more often than you waited on it with ei
+ 326:../os_core/os_sem.c **** *                                  OSSemAccept() or OSSemPend().
+ 327:../os_core/os_sem.c **** *              OS_ERR_EVENT_TYPE   If you didn't pass a pointer to a semaphore
+ 328:../os_core/os_sem.c **** *              OS_ERR_PEVENT_NULL  If 'pevent' is a NULL pointer.
+ 329:../os_core/os_sem.c **** ***************************************************************************************************
+ 330:../os_core/os_sem.c **** */
+ 331:../os_core/os_sem.c **** 
+ 332:../os_core/os_sem.c **** INT8U  OSSemPost (OS_EVENT *pevent)
+ 333:../os_core/os_sem.c **** {
+ 2309              		.loc 1 333 0
+ 2310              		.cfi_startproc
+ 2311              		@ Function supports interworking.
+ 2312              		@ args = 0, pretend = 0, frame = 8
+ 2313              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2314 055c 0DC0A0E1 		mov	ip, sp
+ 2315              	.LCFI8:
+ 2316              		.cfi_def_cfa_register 12
+ 2317 0560 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2318 0564 04B04CE2 		sub	fp, ip, #4
+ 2319              		.cfi_offset 14, -8
+ 2320              		.cfi_offset 13, -12
+ 2321              		.cfi_offset 11, -16
+ 2322              	.LCFI9:
+ 2323              		.cfi_def_cfa 11, 4
+ 2324 0568 08D04DE2 		sub	sp, sp, #8
+ 2325 056c 10000BE5 		str	r0, [fp, #-16]
+ 334:../os_core/os_sem.c **** #if OS_CRITICAL_METHOD == 3                                /* Allocate storage for CPU status regis
+ 335:../os_core/os_sem.c ****     OS_CPU_SR  cpu_sr;                               
+ 336:../os_core/os_sem.c **** 
+ 337:../os_core/os_sem.c **** 
+ 338:../os_core/os_sem.c **** 
+ 339:../os_core/os_sem.c ****     cpu_sr = 0;                                            /* Prevent compiler warning             
+ 340:../os_core/os_sem.c **** #endif    
+ 341:../os_core/os_sem.c **** #if OS_ARG_CHK_EN > 0
+ 342:../os_core/os_sem.c ****     if (pevent == (OS_EVENT *)0) {                         /* Validate 'pevent'                    
+ 2326              		.loc 1 342 0
+ 2327 0570 10301BE5 		ldr	r3, [fp, #-16]
+ 2328 0574 000053E3 		cmp	r3, #0
+ 2329 0578 0100001A 		bne	.L41
+ 343:../os_core/os_sem.c ****         return (OS_ERR_PEVENT_NULL);
+ 2330              		.loc 1 343 0
+ 2331 057c 0430A0E3 		mov	r3, #4
+ 2332 0580 290000EA 		b	.L42
+ 2333              	.L41:
+ 344:../os_core/os_sem.c ****     }
+ 345:../os_core/os_sem.c **** #endif
+ 346:../os_core/os_sem.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_SEM) {        /* Validate event block type            
+ 2334              		.loc 1 346 0
+ 2335 0584 10301BE5 		ldr	r3, [fp, #-16]
+ 2336 0588 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2337 058c 030053E3 		cmp	r3, #3
+ 2338 0590 0100000A 		beq	.L43
+ 347:../os_core/os_sem.c ****         return (OS_ERR_EVENT_TYPE);
+ 2339              		.loc 1 347 0
+ 2340 0594 0130A0E3 		mov	r3, #1
+ 2341 0598 230000EA 		b	.L42
+ 2342              	.L43:
+ 348:../os_core/os_sem.c ****     }
+ 349:../os_core/os_sem.c ****     OS_ENTER_CRITICAL();
+ 2343              		.loc 1 349 0
+ 2344              	@ 349 "../os_core/os_sem.c" 1
+ 2345 059c 00000FE1 		mrs   r0, cpsr
+ 2346              	@ 0 "" 2
+ 2347              	@ 349 "../os_core/os_sem.c" 1
+ 2348 05a0 04002DE5 		stmfd sp!, {r0}
+ 2349              	@ 0 "" 2
+ 2350              	@ 349 "../os_core/os_sem.c" 1
+ 2351 05a4 C00080E3 		orr   r0, r0, #0b11000000
+ 2352              	@ 0 "" 2
+ 2353              	@ 349 "../os_core/os_sem.c" 1
+ 2354 05a8 00F021E1 		msr   cpsr_c, r0
+ 2355              	@ 0 "" 2
+ 350:../os_core/os_sem.c ****     if (pevent->OSEventGrp != 0x00) {                          /* See if any task waiting for semap
+ 2356              		.loc 1 350 0
+ 2357 05ac 10301BE5 		ldr	r3, [fp, #-16]
+ 2358 05b0 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2359 05b4 000053E3 		cmp	r3, #0
+ 2360 05b8 0800000A 		beq	.L44
+ 351:../os_core/os_sem.c ****         (void)OS_EventTaskRdy(pevent, (void *)0, OS_STAT_SEM); /* Ready HPT waiting on event       
+ 2361              		.loc 1 351 0
+ 2362 05bc 10001BE5 		ldr	r0, [fp, #-16]
+ 2363 05c0 0010A0E3 		mov	r1, #0
+ 2364 05c4 0120A0E3 		mov	r2, #1
+ 2365 05c8 FEFFFFEB 		bl	OS_EventTaskRdy
+ 352:../os_core/os_sem.c ****         OS_EXIT_CRITICAL();
+ 2366              		.loc 1 352 0
+ 2367              	@ 352 "../os_core/os_sem.c" 1
+ 2368 05cc 04009DE4 		ldmfd sp!, {r0}
+ 2369              	@ 0 "" 2
+ 2370              	@ 352 "../os_core/os_sem.c" 1
+ 2371 05d0 00F021E1 		msr   cpsr_c, r0
+ 2372              	@ 0 "" 2
+ 353:../os_core/os_sem.c ****         OS_Sched();                                            /* Find HPT ready to run            
+ 2373              		.loc 1 353 0
+ 2374 05d4 FEFFFFEB 		bl	OS_Sched
+ 354:../os_core/os_sem.c ****         return (OS_NO_ERR);
+ 2375              		.loc 1 354 0
+ 2376 05d8 0030A0E3 		mov	r3, #0
+ 2377 05dc 120000EA 		b	.L42
+ 2378              	.L44:
+ 355:../os_core/os_sem.c ****     }
+ 356:../os_core/os_sem.c ****     if (pevent->OSEventCnt < 65535u) {                /* Make sure semaphore will not overflow     
+ 2379              		.loc 1 356 0
+ 2380 05e0 10301BE5 		ldr	r3, [fp, #-16]
+ 2381 05e4 B220D3E1 		ldrh	r2, [r3, #2]
+ 2382 05e8 4C309FE5 		ldr	r3, .L46
+ 2383 05ec 030052E1 		cmp	r2, r3
+ 2384 05f0 0A00000A 		beq	.L45
+ 357:../os_core/os_sem.c ****         pevent->OSEventCnt++;                         /* Increment semaphore count to register even
+ 2385              		.loc 1 357 0
+ 2386 05f4 10301BE5 		ldr	r3, [fp, #-16]
+ 2387 05f8 B230D3E1 		ldrh	r3, [r3, #2]
+ 2388 05fc 013083E2 		add	r3, r3, #1
+ 2389 0600 0338A0E1 		mov	r3, r3, asl #16
+ 2390 0604 2328A0E1 		mov	r2, r3, lsr #16
+ 2391 0608 10301BE5 		ldr	r3, [fp, #-16]
+ 2392 060c B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 358:../os_core/os_sem.c ****         OS_EXIT_CRITICAL();
+ 2393              		.loc 1 358 0
+ 2394              	@ 358 "../os_core/os_sem.c" 1
+ 2395 0610 04009DE4 		ldmfd sp!, {r0}
+ 2396              	@ 0 "" 2
+ 2397              	@ 358 "../os_core/os_sem.c" 1
+ 2398 0614 00F021E1 		msr   cpsr_c, r0
+ 2399              	@ 0 "" 2
+ 359:../os_core/os_sem.c ****         return (OS_NO_ERR);
+ 2400              		.loc 1 359 0
+ 2401 0618 0030A0E3 		mov	r3, #0
+ 2402 061c 020000EA 		b	.L42
+ 2403              	.L45:
+ 360:../os_core/os_sem.c ****     }
+ 361:../os_core/os_sem.c ****     OS_EXIT_CRITICAL();                               /* Semaphore value has reached its maximum   
+ 2404              		.loc 1 361 0
+ 2405              	@ 361 "../os_core/os_sem.c" 1
+ 2406 0620 04009DE4 		ldmfd sp!, {r0}
+ 2407              	@ 0 "" 2
+ 2408              	@ 361 "../os_core/os_sem.c" 1
+ 2409 0624 00F021E1 		msr   cpsr_c, r0
+ 2410              	@ 0 "" 2
+ 362:../os_core/os_sem.c ****     return (OS_SEM_OVF);
+ 2411              		.loc 1 362 0
+ 2412 0628 3230A0E3 		mov	r3, #50
+ 2413              	.L42:
+ 363:../os_core/os_sem.c **** }
+ 2414              		.loc 1 363 0
+ 2415 062c 0300A0E1 		mov	r0, r3
+ 2416 0630 0CD04BE2 		sub	sp, fp, #12
+ 2417 0634 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2418 0638 1EFF2FE1 		bx	lr
+ 2419              	.L47:
+ 2420              		.align	2
+ 2421              	.L46:
+ 2422 063c FFFF0000 		.word	65535
+ 2423              		.cfi_endproc
+ 2424              	.LFE4:
+ 2426              		.align	2
+ 2427              		.global	OSSemQuery
+ 2429              	OSSemQuery:
+ 2430              	.LFB5:
+ 364:../os_core/os_sem.c **** /*$PAGE*/
+ 365:../os_core/os_sem.c **** /*
+ 366:../os_core/os_sem.c **** ***************************************************************************************************
+ 367:../os_core/os_sem.c **** *                                          QUERY A SEMAPHORE
+ 368:../os_core/os_sem.c **** *
+ 369:../os_core/os_sem.c **** * Description: This function obtains information about a semaphore
+ 370:../os_core/os_sem.c **** *
+ 371:../os_core/os_sem.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired
+ 372:../os_core/os_sem.c **** *                            semaphore
+ 373:../os_core/os_sem.c **** *
+ 374:../os_core/os_sem.c **** *              p_sem_data    is a pointer to a structure that will contain information about the
+ 375:../os_core/os_sem.c **** *                            semaphore.
+ 376:../os_core/os_sem.c **** *
+ 377:../os_core/os_sem.c **** * Returns    : OS_NO_ERR           The call was successful and the message was sent
+ 378:../os_core/os_sem.c **** *              OS_ERR_EVENT_TYPE   If you are attempting to obtain data from a non semaphore.
+ 379:../os_core/os_sem.c **** *              OS_ERR_PEVENT_NULL  If 'pevent' is a NULL pointer.
+ 380:../os_core/os_sem.c **** ***************************************************************************************************
+ 381:../os_core/os_sem.c **** */
+ 382:../os_core/os_sem.c **** 
+ 383:../os_core/os_sem.c **** #if OS_SEM_QUERY_EN > 0
+ 384:../os_core/os_sem.c **** INT8U  OSSemQuery (OS_EVENT *pevent, OS_SEM_DATA *p_sem_data)
+ 385:../os_core/os_sem.c **** {
+ 2431              		.loc 1 385 0
+ 2432              		.cfi_startproc
+ 2433              		@ Function supports interworking.
+ 2434              		@ args = 0, pretend = 0, frame = 16
+ 2435              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2436 0640 0DC0A0E1 		mov	ip, sp
+ 2437              	.LCFI10:
+ 2438              		.cfi_def_cfa_register 12
+ 2439 0644 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2440 0648 04B04CE2 		sub	fp, ip, #4
+ 2441              		.cfi_offset 14, -8
+ 2442              		.cfi_offset 13, -12
+ 2443              		.cfi_offset 11, -16
+ 2444              	.LCFI11:
+ 2445              		.cfi_def_cfa 11, 4
+ 2446 064c 10D04DE2 		sub	sp, sp, #16
+ 2447 0650 18000BE5 		str	r0, [fp, #-24]
+ 2448 0654 1C100BE5 		str	r1, [fp, #-28]
+ 386:../os_core/os_sem.c ****     INT8U     *psrc;
+ 387:../os_core/os_sem.c ****     INT8U     *pdest;
+ 388:../os_core/os_sem.c **** #if OS_CRITICAL_METHOD == 3                                /* Allocate storage for CPU status regis
+ 389:../os_core/os_sem.c ****     OS_CPU_SR  cpu_sr;
+ 390:../os_core/os_sem.c **** 
+ 391:../os_core/os_sem.c **** 
+ 392:../os_core/os_sem.c **** 
+ 393:../os_core/os_sem.c ****     cpu_sr = 0;                                            /* Prevent compiler warning             
+ 394:../os_core/os_sem.c **** #endif    
+ 395:../os_core/os_sem.c **** #if OS_ARG_CHK_EN > 0
+ 396:../os_core/os_sem.c ****     if (pevent == (OS_EVENT *)0) {                         /* Validate 'pevent'                    
+ 2449              		.loc 1 396 0
+ 2450 0658 18301BE5 		ldr	r3, [fp, #-24]
+ 2451 065c 000053E3 		cmp	r3, #0
+ 2452 0660 0100001A 		bne	.L49
+ 397:../os_core/os_sem.c ****         return (OS_ERR_PEVENT_NULL);
+ 2453              		.loc 1 397 0
+ 2454 0664 0430A0E3 		mov	r3, #4
+ 2455 0668 640000EA 		b	.L50
+ 2456              	.L49:
+ 398:../os_core/os_sem.c ****     }
+ 399:../os_core/os_sem.c **** #endif
+ 400:../os_core/os_sem.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_SEM) {        /* Validate event block type            
+ 2457              		.loc 1 400 0
+ 2458 066c 18301BE5 		ldr	r3, [fp, #-24]
+ 2459 0670 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2460 0674 030053E3 		cmp	r3, #3
+ 2461 0678 0100000A 		beq	.L51
+ 401:../os_core/os_sem.c ****         return (OS_ERR_EVENT_TYPE);
+ 2462              		.loc 1 401 0
+ 2463 067c 0130A0E3 		mov	r3, #1
+ 2464 0680 5E0000EA 		b	.L50
+ 2465              	.L51:
+ 402:../os_core/os_sem.c ****     }
+ 403:../os_core/os_sem.c ****     OS_ENTER_CRITICAL();
+ 2466              		.loc 1 403 0
+ 2467              	@ 403 "../os_core/os_sem.c" 1
+ 2468 0684 00000FE1 		mrs   r0, cpsr
+ 2469              	@ 0 "" 2
+ 2470              	@ 403 "../os_core/os_sem.c" 1
+ 2471 0688 04002DE5 		stmfd sp!, {r0}
+ 2472              	@ 0 "" 2
+ 2473              	@ 403 "../os_core/os_sem.c" 1
+ 2474 068c C00080E3 		orr   r0, r0, #0b11000000
+ 2475              	@ 0 "" 2
+ 2476              	@ 403 "../os_core/os_sem.c" 1
+ 2477 0690 00F021E1 		msr   cpsr_c, r0
+ 2478              	@ 0 "" 2
+ 404:../os_core/os_sem.c ****     p_sem_data->OSEventGrp = pevent->OSEventGrp;           /* Copy message mailbox wait list       
+ 2479              		.loc 1 404 0
+ 2480 0694 18301BE5 		ldr	r3, [fp, #-24]
+ 2481 0698 0120D3E5 		ldrb	r2, [r3, #1]	@ zero_extendqisi2
+ 2482 069c 1C301BE5 		ldr	r3, [fp, #-28]
+ 2483 06a0 0A20C3E5 		strb	r2, [r3, #10]
+ 405:../os_core/os_sem.c ****     psrc              = &pevent->OSEventTbl[0];
+ 2484              		.loc 1 405 0
+ 2485 06a4 18301BE5 		ldr	r3, [fp, #-24]
+ 2486 06a8 083083E2 		add	r3, r3, #8
+ 2487 06ac 10300BE5 		str	r3, [fp, #-16]
+ 406:../os_core/os_sem.c ****     pdest             = &p_sem_data->OSEventTbl[0];
+ 2488              		.loc 1 406 0
+ 2489 06b0 1C301BE5 		ldr	r3, [fp, #-28]
+ 2490 06b4 023083E2 		add	r3, r3, #2
+ 2491 06b8 14300BE5 		str	r3, [fp, #-20]
+ 407:../os_core/os_sem.c **** #if OS_EVENT_TBL_SIZE > 0
+ 408:../os_core/os_sem.c ****     *pdest++ = *psrc++;
+ 2492              		.loc 1 408 0
+ 2493 06bc 10301BE5 		ldr	r3, [fp, #-16]
+ 2494 06c0 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2495 06c4 14301BE5 		ldr	r3, [fp, #-20]
+ 2496 06c8 0020C3E5 		strb	r2, [r3, #0]
+ 2497 06cc 14301BE5 		ldr	r3, [fp, #-20]
+ 2498 06d0 013083E2 		add	r3, r3, #1
+ 2499 06d4 14300BE5 		str	r3, [fp, #-20]
+ 2500 06d8 10301BE5 		ldr	r3, [fp, #-16]
+ 2501 06dc 013083E2 		add	r3, r3, #1
+ 2502 06e0 10300BE5 		str	r3, [fp, #-16]
+ 409:../os_core/os_sem.c **** #endif
+ 410:../os_core/os_sem.c **** 
+ 411:../os_core/os_sem.c **** #if OS_EVENT_TBL_SIZE > 1
+ 412:../os_core/os_sem.c ****     *pdest++ = *psrc++;
+ 2503              		.loc 1 412 0
+ 2504 06e4 10301BE5 		ldr	r3, [fp, #-16]
+ 2505 06e8 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2506 06ec 14301BE5 		ldr	r3, [fp, #-20]
+ 2507 06f0 0020C3E5 		strb	r2, [r3, #0]
+ 2508 06f4 14301BE5 		ldr	r3, [fp, #-20]
+ 2509 06f8 013083E2 		add	r3, r3, #1
+ 2510 06fc 14300BE5 		str	r3, [fp, #-20]
+ 2511 0700 10301BE5 		ldr	r3, [fp, #-16]
+ 2512 0704 013083E2 		add	r3, r3, #1
+ 2513 0708 10300BE5 		str	r3, [fp, #-16]
+ 413:../os_core/os_sem.c **** #endif
+ 414:../os_core/os_sem.c **** 
+ 415:../os_core/os_sem.c **** #if OS_EVENT_TBL_SIZE > 2
+ 416:../os_core/os_sem.c ****     *pdest++ = *psrc++;
+ 2514              		.loc 1 416 0
+ 2515 070c 10301BE5 		ldr	r3, [fp, #-16]
+ 2516 0710 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2517 0714 14301BE5 		ldr	r3, [fp, #-20]
+ 2518 0718 0020C3E5 		strb	r2, [r3, #0]
+ 2519 071c 14301BE5 		ldr	r3, [fp, #-20]
+ 2520 0720 013083E2 		add	r3, r3, #1
+ 2521 0724 14300BE5 		str	r3, [fp, #-20]
+ 2522 0728 10301BE5 		ldr	r3, [fp, #-16]
+ 2523 072c 013083E2 		add	r3, r3, #1
+ 2524 0730 10300BE5 		str	r3, [fp, #-16]
+ 417:../os_core/os_sem.c **** #endif
+ 418:../os_core/os_sem.c **** 
+ 419:../os_core/os_sem.c **** #if OS_EVENT_TBL_SIZE > 3
+ 420:../os_core/os_sem.c ****     *pdest++ = *psrc++;
+ 2525              		.loc 1 420 0
+ 2526 0734 10301BE5 		ldr	r3, [fp, #-16]
+ 2527 0738 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2528 073c 14301BE5 		ldr	r3, [fp, #-20]
+ 2529 0740 0020C3E5 		strb	r2, [r3, #0]
+ 2530 0744 14301BE5 		ldr	r3, [fp, #-20]
+ 2531 0748 013083E2 		add	r3, r3, #1
+ 2532 074c 14300BE5 		str	r3, [fp, #-20]
+ 2533 0750 10301BE5 		ldr	r3, [fp, #-16]
+ 2534 0754 013083E2 		add	r3, r3, #1
+ 2535 0758 10300BE5 		str	r3, [fp, #-16]
+ 421:../os_core/os_sem.c **** #endif
+ 422:../os_core/os_sem.c **** 
+ 423:../os_core/os_sem.c **** #if OS_EVENT_TBL_SIZE > 4
+ 424:../os_core/os_sem.c ****     *pdest++ = *psrc++;
+ 2536              		.loc 1 424 0
+ 2537 075c 10301BE5 		ldr	r3, [fp, #-16]
+ 2538 0760 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2539 0764 14301BE5 		ldr	r3, [fp, #-20]
+ 2540 0768 0020C3E5 		strb	r2, [r3, #0]
+ 2541 076c 14301BE5 		ldr	r3, [fp, #-20]
+ 2542 0770 013083E2 		add	r3, r3, #1
+ 2543 0774 14300BE5 		str	r3, [fp, #-20]
+ 2544 0778 10301BE5 		ldr	r3, [fp, #-16]
+ 2545 077c 013083E2 		add	r3, r3, #1
+ 2546 0780 10300BE5 		str	r3, [fp, #-16]
+ 425:../os_core/os_sem.c **** #endif
+ 426:../os_core/os_sem.c **** 
+ 427:../os_core/os_sem.c **** #if OS_EVENT_TBL_SIZE > 5
+ 428:../os_core/os_sem.c ****     *pdest++ = *psrc++;
+ 2547              		.loc 1 428 0
+ 2548 0784 10301BE5 		ldr	r3, [fp, #-16]
+ 2549 0788 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2550 078c 14301BE5 		ldr	r3, [fp, #-20]
+ 2551 0790 0020C3E5 		strb	r2, [r3, #0]
+ 2552 0794 14301BE5 		ldr	r3, [fp, #-20]
+ 2553 0798 013083E2 		add	r3, r3, #1
+ 2554 079c 14300BE5 		str	r3, [fp, #-20]
+ 2555 07a0 10301BE5 		ldr	r3, [fp, #-16]
+ 2556 07a4 013083E2 		add	r3, r3, #1
+ 2557 07a8 10300BE5 		str	r3, [fp, #-16]
+ 429:../os_core/os_sem.c **** #endif
+ 430:../os_core/os_sem.c **** 
+ 431:../os_core/os_sem.c **** #if OS_EVENT_TBL_SIZE > 6
+ 432:../os_core/os_sem.c ****     *pdest++ = *psrc++;
+ 2558              		.loc 1 432 0
+ 2559 07ac 10301BE5 		ldr	r3, [fp, #-16]
+ 2560 07b0 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2561 07b4 14301BE5 		ldr	r3, [fp, #-20]
+ 2562 07b8 0020C3E5 		strb	r2, [r3, #0]
+ 2563 07bc 14301BE5 		ldr	r3, [fp, #-20]
+ 2564 07c0 013083E2 		add	r3, r3, #1
+ 2565 07c4 14300BE5 		str	r3, [fp, #-20]
+ 2566 07c8 10301BE5 		ldr	r3, [fp, #-16]
+ 2567 07cc 013083E2 		add	r3, r3, #1
+ 2568 07d0 10300BE5 		str	r3, [fp, #-16]
+ 433:../os_core/os_sem.c **** #endif
+ 434:../os_core/os_sem.c **** 
+ 435:../os_core/os_sem.c **** #if OS_EVENT_TBL_SIZE > 7
+ 436:../os_core/os_sem.c ****     *pdest   = *psrc;
+ 2569              		.loc 1 436 0
+ 2570 07d4 10301BE5 		ldr	r3, [fp, #-16]
+ 2571 07d8 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2572 07dc 14301BE5 		ldr	r3, [fp, #-20]
+ 2573 07e0 0020C3E5 		strb	r2, [r3, #0]
+ 437:../os_core/os_sem.c **** #endif
+ 438:../os_core/os_sem.c ****     p_sem_data->OSCnt      = pevent->OSEventCnt;           /* Get semaphore count                  
+ 2574              		.loc 1 438 0
+ 2575 07e4 18301BE5 		ldr	r3, [fp, #-24]
+ 2576 07e8 B220D3E1 		ldrh	r2, [r3, #2]
+ 2577 07ec 1C301BE5 		ldr	r3, [fp, #-28]
+ 2578 07f0 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 439:../os_core/os_sem.c ****     OS_EXIT_CRITICAL();
+ 2579              		.loc 1 439 0
+ 2580              	@ 439 "../os_core/os_sem.c" 1
+ 2581 07f4 04009DE4 		ldmfd sp!, {r0}
+ 2582              	@ 0 "" 2
+ 2583              	@ 439 "../os_core/os_sem.c" 1
+ 2584 07f8 00F021E1 		msr   cpsr_c, r0
+ 2585              	@ 0 "" 2
+ 440:../os_core/os_sem.c ****     return (OS_NO_ERR);
+ 2586              		.loc 1 440 0
+ 2587 07fc 0030A0E3 		mov	r3, #0
+ 2588              	.L50:
+ 441:../os_core/os_sem.c **** }
+ 2589              		.loc 1 441 0
+ 2590 0800 0300A0E1 		mov	r0, r3
+ 2591 0804 0CD04BE2 		sub	sp, fp, #12
+ 2592 0808 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2593 080c 1EFF2FE1 		bx	lr
+ 2594              		.cfi_endproc
+ 2595              	.LFE5:
+ 2597              		.align	2
+ 2598              		.global	OSSemSet
+ 2600              	OSSemSet:
+ 2601              	.LFB6:
+ 442:../os_core/os_sem.c **** #endif                                                     /* OS_SEM_QUERY_EN                      
+ 443:../os_core/os_sem.c **** 
+ 444:../os_core/os_sem.c **** /*$PAGE*/
+ 445:../os_core/os_sem.c **** /*
+ 446:../os_core/os_sem.c **** ***************************************************************************************************
+ 447:../os_core/os_sem.c **** *                                              SET SEMAPHORE
+ 448:../os_core/os_sem.c **** *
+ 449:../os_core/os_sem.c **** * Description: This function sets the semaphore count to the value specified as an argument.  Typic
+ 450:../os_core/os_sem.c **** *              this value would be 0.
+ 451:../os_core/os_sem.c **** *
+ 452:../os_core/os_sem.c **** *              You would typically use this function when a semaphore is used as a signaling mechan
+ 453:../os_core/os_sem.c **** *              and, you want to reset the count value.
+ 454:../os_core/os_sem.c **** *
+ 455:../os_core/os_sem.c **** * Arguments  : pevent     is a pointer to the event control block
+ 456:../os_core/os_sem.c **** *
+ 457:../os_core/os_sem.c **** *              cnt        is the new value for the semaphore count.  You would pass 0 to reset the
+ 458:../os_core/os_sem.c **** *                         semaphore count.
+ 459:../os_core/os_sem.c **** *
+ 460:../os_core/os_sem.c **** *              err        is a pointer to an error code returned by the function as follows:
+ 461:../os_core/os_sem.c **** *
+ 462:../os_core/os_sem.c **** *                            OS_NO_ERR           The call was successful and the semaphore value wa
+ 463:../os_core/os_sem.c **** *                            OS_ERR_EVENT_TYPE   If you didn't pass a pointer to a semaphore.
+ 464:../os_core/os_sem.c **** *                            OS_ERR_PEVENT_NULL  If 'pevent' is a NULL pointer.
+ 465:../os_core/os_sem.c **** ***************************************************************************************************
+ 466:../os_core/os_sem.c **** */
+ 467:../os_core/os_sem.c **** 
+ 468:../os_core/os_sem.c **** #if OS_SEM_SET_EN > 0
+ 469:../os_core/os_sem.c **** void  OSSemSet (OS_EVENT *pevent, INT16U cnt, INT8U *err)
+ 470:../os_core/os_sem.c **** {
+ 2602              		.loc 1 470 0
+ 2603              		.cfi_startproc
+ 2604              		@ Function supports interworking.
+ 2605              		@ args = 0, pretend = 0, frame = 16
+ 2606              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2607 0810 0DC0A0E1 		mov	ip, sp
+ 2608              	.LCFI12:
+ 2609              		.cfi_def_cfa_register 12
+ 2610 0814 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2611 0818 04B04CE2 		sub	fp, ip, #4
+ 2612              		.cfi_offset 14, -8
+ 2613              		.cfi_offset 13, -12
+ 2614              		.cfi_offset 11, -16
+ 2615              	.LCFI13:
+ 2616              		.cfi_def_cfa 11, 4
+ 2617 081c 10D04DE2 		sub	sp, sp, #16
+ 2618 0820 10000BE5 		str	r0, [fp, #-16]
+ 2619 0824 0130A0E1 		mov	r3, r1
+ 2620 0828 18200BE5 		str	r2, [fp, #-24]
+ 2621 082c B2314BE1 		strh	r3, [fp, #-18]	@ movhi
+ 471:../os_core/os_sem.c **** #if OS_CRITICAL_METHOD == 3                           /* Allocate storage for CPU status register  
+ 472:../os_core/os_sem.c ****     OS_CPU_SR  cpu_sr;
+ 473:../os_core/os_sem.c **** 
+ 474:../os_core/os_sem.c **** 
+ 475:../os_core/os_sem.c **** 
+ 476:../os_core/os_sem.c ****     cpu_sr = 0;                                       /* Prevent compiler warning                  
+ 477:../os_core/os_sem.c **** #endif    
+ 478:../os_core/os_sem.c **** #if OS_ARG_CHK_EN > 0
+ 479:../os_core/os_sem.c ****     if (pevent == (OS_EVENT *)0) {                    /* Validate 'pevent'                         
+ 2622              		.loc 1 479 0
+ 2623 0830 10301BE5 		ldr	r3, [fp, #-16]
+ 2624 0834 000053E3 		cmp	r3, #0
+ 2625 0838 0300001A 		bne	.L53
+ 480:../os_core/os_sem.c ****         *err = OS_ERR_PEVENT_NULL;
+ 2626              		.loc 1 480 0
+ 2627 083c 18301BE5 		ldr	r3, [fp, #-24]
+ 2628 0840 0420A0E3 		mov	r2, #4
+ 2629 0844 0020C3E5 		strb	r2, [r3, #0]
+ 481:../os_core/os_sem.c ****         return;
+ 2630              		.loc 1 481 0
+ 2631 0848 1F0000EA 		b	.L52
+ 2632              	.L53:
+ 482:../os_core/os_sem.c ****     }
+ 483:../os_core/os_sem.c **** #endif
+ 484:../os_core/os_sem.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_SEM) {   /* Validate event block type                 
+ 2633              		.loc 1 484 0
+ 2634 084c 10301BE5 		ldr	r3, [fp, #-16]
+ 2635 0850 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2636 0854 030053E3 		cmp	r3, #3
+ 2637 0858 0300000A 		beq	.L55
+ 485:../os_core/os_sem.c ****         *err = OS_ERR_EVENT_TYPE;
+ 2638              		.loc 1 485 0
+ 2639 085c 18301BE5 		ldr	r3, [fp, #-24]
+ 2640 0860 0120A0E3 		mov	r2, #1
+ 2641 0864 0020C3E5 		strb	r2, [r3, #0]
+ 486:../os_core/os_sem.c ****         return;
+ 2642              		.loc 1 486 0
+ 2643 0868 170000EA 		b	.L52
+ 2644              	.L55:
+ 487:../os_core/os_sem.c ****     }
+ 488:../os_core/os_sem.c ****     OS_ENTER_CRITICAL();
+ 2645              		.loc 1 488 0
+ 2646              	@ 488 "../os_core/os_sem.c" 1
+ 2647 086c 00000FE1 		mrs   r0, cpsr
+ 2648              	@ 0 "" 2
+ 2649              	@ 488 "../os_core/os_sem.c" 1
+ 2650 0870 04002DE5 		stmfd sp!, {r0}
+ 2651              	@ 0 "" 2
+ 2652              	@ 488 "../os_core/os_sem.c" 1
+ 2653 0874 C00080E3 		orr   r0, r0, #0b11000000
+ 2654              	@ 0 "" 2
+ 2655              	@ 488 "../os_core/os_sem.c" 1
+ 2656 0878 00F021E1 		msr   cpsr_c, r0
+ 2657              	@ 0 "" 2
+ 489:../os_core/os_sem.c ****     if (pevent->OSEventCnt > 0) {                     /* See if semaphore already has a count      
+ 2658              		.loc 1 489 0
+ 2659 087c 10301BE5 		ldr	r3, [fp, #-16]
+ 2660 0880 B230D3E1 		ldrh	r3, [r3, #2]
+ 2661 0884 000053E3 		cmp	r3, #0
+ 2662 0888 0300000A 		beq	.L56
+ 490:../os_core/os_sem.c ****         pevent->OSEventCnt = cnt;                     /* Yes, set it to the new value specified.   
+ 2663              		.loc 1 490 0
+ 2664 088c 10301BE5 		ldr	r3, [fp, #-16]
+ 2665 0890 B2215BE1 		ldrh	r2, [fp, #-18]	@ movhi
+ 2666 0894 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 2667 0898 060000EA 		b	.L57
+ 2668              	.L56:
+ 491:../os_core/os_sem.c ****     } else {                                          /* No                                        
+ 492:../os_core/os_sem.c ****         if (pevent->OSEventGrp == 0x00) {             /*      See if task(s) waiting?              
+ 2669              		.loc 1 492 0
+ 2670 089c 10301BE5 		ldr	r3, [fp, #-16]
+ 2671 08a0 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2672 08a4 000053E3 		cmp	r3, #0
+ 2673 08a8 0200001A 		bne	.L57
+ 493:../os_core/os_sem.c ****             pevent->OSEventCnt = cnt;                 /*      No, OK to set the value              
+ 2674              		.loc 1 493 0
+ 2675 08ac 10301BE5 		ldr	r3, [fp, #-16]
+ 2676 08b0 B2215BE1 		ldrh	r2, [fp, #-18]	@ movhi
+ 2677 08b4 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 2678              	.L57:
+ 494:../os_core/os_sem.c ****         }
+ 495:../os_core/os_sem.c ****     }
+ 496:../os_core/os_sem.c ****     OS_EXIT_CRITICAL();
+ 2679              		.loc 1 496 0
+ 2680              	@ 496 "../os_core/os_sem.c" 1
+ 2681 08b8 04009DE4 		ldmfd sp!, {r0}
+ 2682              	@ 0 "" 2
+ 2683              	@ 496 "../os_core/os_sem.c" 1
+ 2684 08bc 00F021E1 		msr   cpsr_c, r0
+ 2685              	@ 0 "" 2
+ 497:../os_core/os_sem.c ****     *err = OS_NO_ERR;
+ 2686              		.loc 1 497 0
+ 2687 08c0 18301BE5 		ldr	r3, [fp, #-24]
+ 2688 08c4 0020A0E3 		mov	r2, #0
+ 2689 08c8 0020C3E5 		strb	r2, [r3, #0]
+ 2690              	.L52:
+ 498:../os_core/os_sem.c **** }
+ 2691              		.loc 1 498 0
+ 2692 08cc 0CD04BE2 		sub	sp, fp, #12
+ 2693 08d0 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2694 08d4 1EFF2FE1 		bx	lr
+ 2695              		.cfi_endproc
+ 2696              	.LFE6:
+ 2698              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 os_sem.c
+C:\Users\Muadi\AppData\Local\Temp\ccInUCvo.s:1662   .text:00000000 $a
+C:\Users\Muadi\AppData\Local\Temp\ccInUCvo.s:1665   .text:00000000 OSSemAccept
+C:\Users\Muadi\AppData\Local\Temp\ccInUCvo.s:1752   .text:000000a0 OSSemCreate
+C:\Users\Muadi\AppData\Local\Temp\ccInUCvo.s:1857   .text:00000180 $d
+C:\Users\Muadi\AppData\Local\Temp\ccInUCvo.s:1862   .text:00000188 $a
+C:\Users\Muadi\AppData\Local\Temp\ccInUCvo.s:1865   .text:00000188 OSSemDel
+C:\Users\Muadi\AppData\Local\Temp\ccInUCvo.s:2103   .text:000003b4 $d
+C:\Users\Muadi\AppData\Local\Temp\ccInUCvo.s:2108   .text:000003bc $a
+C:\Users\Muadi\AppData\Local\Temp\ccInUCvo.s:2111   .text:000003bc OSSemPend
+C:\Users\Muadi\AppData\Local\Temp\ccInUCvo.s:2299   .text:00000554 $d
+C:\Users\Muadi\AppData\Local\Temp\ccInUCvo.s:2304   .text:0000055c $a
+C:\Users\Muadi\AppData\Local\Temp\ccInUCvo.s:2307   .text:0000055c OSSemPost
+C:\Users\Muadi\AppData\Local\Temp\ccInUCvo.s:2422   .text:0000063c $d
+C:\Users\Muadi\AppData\Local\Temp\ccInUCvo.s:2426   .text:00000640 $a
+C:\Users\Muadi\AppData\Local\Temp\ccInUCvo.s:2429   .text:00000640 OSSemQuery
+C:\Users\Muadi\AppData\Local\Temp\ccInUCvo.s:2600   .text:00000810 OSSemSet
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+OS_EventWaitListInit
+OSIntNesting
+OSEventFreeList
+OS_EventTaskRdy
+OS_Sched
+OS_EventTaskWait
+OS_EventTO
+OSTCBCur

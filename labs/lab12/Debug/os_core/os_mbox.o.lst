@@ -1,0 +1,1651 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"os_mbox.c"
+  21              	.Ltext0:
+  22              		.file 1 "../os_core/os_mbox.c"
+ 1662              		.align	2
+ 1663              		.global	OSMboxAccept
+ 1665              	OSMboxAccept:
+ 1666              	.LFB0:
+   1:../os_core/os_mbox.c **** /*
+   2:../os_core/os_mbox.c **** ***************************************************************************************************
+   3:../os_core/os_mbox.c **** *                                                uC/OS-II
+   4:../os_core/os_mbox.c **** *                                          The Real-Time Kernel
+   5:../os_core/os_mbox.c **** *                                       MESSAGE MAILBOX MANAGEMENT
+   6:../os_core/os_mbox.c **** *
+   7:../os_core/os_mbox.c **** *                          (c) Copyright 1992-2003, Jean J. Labrosse, Weston, FL
+   8:../os_core/os_mbox.c **** *                                           All Rights Reserved
+   9:../os_core/os_mbox.c **** *
+  10:../os_core/os_mbox.c **** * File    : OS_MBOX.C
+  11:../os_core/os_mbox.c **** * By      : Jean J. Labrosse
+  12:../os_core/os_mbox.c **** * Version : V2.76
+  13:../os_core/os_mbox.c **** ***************************************************************************************************
+  14:../os_core/os_mbox.c **** */
+  15:../os_core/os_mbox.c **** 
+  16:../os_core/os_mbox.c **** #ifndef  OS_MASTER_FILE
+  17:../os_core/os_mbox.c **** #include "ucos_ii.h"
+  18:../os_core/os_mbox.c **** #endif
+  19:../os_core/os_mbox.c **** 
+  20:../os_core/os_mbox.c **** #if OS_MBOX_EN > 0
+  21:../os_core/os_mbox.c **** /*
+  22:../os_core/os_mbox.c **** ***************************************************************************************************
+  23:../os_core/os_mbox.c **** *                                     ACCEPT MESSAGE FROM MAILBOX
+  24:../os_core/os_mbox.c **** *
+  25:../os_core/os_mbox.c **** * Description: This function checks the mailbox to see if a message is available.  Unlike OSMboxPen
+  26:../os_core/os_mbox.c **** *              OSMboxAccept() does not suspend the calling task if a message is not available.
+  27:../os_core/os_mbox.c **** *
+  28:../os_core/os_mbox.c **** * Arguments  : pevent        is a pointer to the event control block
+  29:../os_core/os_mbox.c **** *
+  30:../os_core/os_mbox.c **** * Returns    : != (void *)0  is the message in the mailbox if one is available.  The mailbox is cle
+  31:../os_core/os_mbox.c **** *                            so the next time OSMboxAccept() is called, the mailbox will be empty.
+  32:../os_core/os_mbox.c **** *              == (void *)0  if the mailbox is empty or,
+  33:../os_core/os_mbox.c **** *                            if 'pevent' is a NULL pointer or,
+  34:../os_core/os_mbox.c **** *                            if you didn't pass the proper event pointer.
+  35:../os_core/os_mbox.c **** ***************************************************************************************************
+  36:../os_core/os_mbox.c **** */
+  37:../os_core/os_mbox.c **** 
+  38:../os_core/os_mbox.c **** #if OS_MBOX_ACCEPT_EN > 0
+  39:../os_core/os_mbox.c **** void  *OSMboxAccept (OS_EVENT *pevent)
+  40:../os_core/os_mbox.c **** {
+ 1667              		.loc 1 40 0
+ 1668              		.cfi_startproc
+ 1669              		@ Function supports interworking.
+ 1670              		@ args = 0, pretend = 0, frame = 16
+ 1671              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1672 0000 0DC0A0E1 		mov	ip, sp
+ 1673              	.LCFI0:
+ 1674              		.cfi_def_cfa_register 12
+ 1675 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1676 0008 04B04CE2 		sub	fp, ip, #4
+ 1677              		.cfi_offset 14, -8
+ 1678              		.cfi_offset 13, -12
+ 1679              		.cfi_offset 11, -16
+ 1680              	.LCFI1:
+ 1681              		.cfi_def_cfa 11, 4
+ 1682 000c 10D04DE2 		sub	sp, sp, #16
+ 1683 0010 18000BE5 		str	r0, [fp, #-24]
+  41:../os_core/os_mbox.c ****     void      *msg;
+  42:../os_core/os_mbox.c **** #if OS_CRITICAL_METHOD == 3                               /* Allocate storage for CPU status regist
+  43:../os_core/os_mbox.c ****     OS_CPU_SR  cpu_sr;
+  44:../os_core/os_mbox.c **** 
+  45:../os_core/os_mbox.c **** 
+  46:../os_core/os_mbox.c **** 
+  47:../os_core/os_mbox.c ****     cpu_sr = 0;                                           /* Prevent compiler warning              
+  48:../os_core/os_mbox.c **** #endif    
+  49:../os_core/os_mbox.c **** #if OS_ARG_CHK_EN > 0
+  50:../os_core/os_mbox.c ****     if (pevent == (OS_EVENT *)0) {                        /* Validate 'pevent'                     
+ 1684              		.loc 1 50 0
+ 1685 0014 18301BE5 		ldr	r3, [fp, #-24]
+ 1686 0018 000053E3 		cmp	r3, #0
+ 1687 001c 0100001A 		bne	.L2
+  51:../os_core/os_mbox.c ****         return ((void *)0);
+ 1688              		.loc 1 51 0
+ 1689 0020 0030A0E3 		mov	r3, #0
+ 1690 0024 120000EA 		b	.L3
+ 1691              	.L2:
+  52:../os_core/os_mbox.c ****     }
+  53:../os_core/os_mbox.c **** #endif
+  54:../os_core/os_mbox.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_MBOX) {      /* Validate event block type             
+ 1692              		.loc 1 54 0
+ 1693 0028 18301BE5 		ldr	r3, [fp, #-24]
+ 1694 002c 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1695 0030 010053E3 		cmp	r3, #1
+ 1696 0034 0100000A 		beq	.L4
+  55:../os_core/os_mbox.c ****         return ((void *)0);
+ 1697              		.loc 1 55 0
+ 1698 0038 0030A0E3 		mov	r3, #0
+ 1699 003c 0C0000EA 		b	.L3
+ 1700              	.L4:
+  56:../os_core/os_mbox.c ****     }
+  57:../os_core/os_mbox.c ****     OS_ENTER_CRITICAL();
+ 1701              		.loc 1 57 0
+ 1702              	@ 57 "../os_core/os_mbox.c" 1
+ 1703 0040 00000FE1 		mrs   r0, cpsr
+ 1704              	@ 0 "" 2
+ 1705              	@ 57 "../os_core/os_mbox.c" 1
+ 1706 0044 04002DE5 		stmfd sp!, {r0}
+ 1707              	@ 0 "" 2
+ 1708              	@ 57 "../os_core/os_mbox.c" 1
+ 1709 0048 C00080E3 		orr   r0, r0, #0b11000000
+ 1710              	@ 0 "" 2
+ 1711              	@ 57 "../os_core/os_mbox.c" 1
+ 1712 004c 00F021E1 		msr   cpsr_c, r0
+ 1713              	@ 0 "" 2
+  58:../os_core/os_mbox.c ****     msg                = pevent->OSEventPtr;
+ 1714              		.loc 1 58 0
+ 1715 0050 18301BE5 		ldr	r3, [fp, #-24]
+ 1716 0054 043093E5 		ldr	r3, [r3, #4]
+ 1717 0058 10300BE5 		str	r3, [fp, #-16]
+  59:../os_core/os_mbox.c ****     pevent->OSEventPtr = (void *)0;                       /* Clear the mailbox                     
+ 1718              		.loc 1 59 0
+ 1719 005c 18301BE5 		ldr	r3, [fp, #-24]
+ 1720 0060 0020A0E3 		mov	r2, #0
+ 1721 0064 042083E5 		str	r2, [r3, #4]
+  60:../os_core/os_mbox.c ****     OS_EXIT_CRITICAL();
+ 1722              		.loc 1 60 0
+ 1723              	@ 60 "../os_core/os_mbox.c" 1
+ 1724 0068 04009DE4 		ldmfd sp!, {r0}
+ 1725              	@ 0 "" 2
+ 1726              	@ 60 "../os_core/os_mbox.c" 1
+ 1727 006c 00F021E1 		msr   cpsr_c, r0
+ 1728              	@ 0 "" 2
+  61:../os_core/os_mbox.c ****     return (msg);                                         /* Return the message received (or NULL) 
+ 1729              		.loc 1 61 0
+ 1730 0070 10301BE5 		ldr	r3, [fp, #-16]
+ 1731              	.L3:
+  62:../os_core/os_mbox.c **** }
+ 1732              		.loc 1 62 0
+ 1733 0074 0300A0E1 		mov	r0, r3
+ 1734 0078 0CD04BE2 		sub	sp, fp, #12
+ 1735 007c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1736 0080 1EFF2FE1 		bx	lr
+ 1737              		.cfi_endproc
+ 1738              	.LFE0:
+ 1740              		.align	2
+ 1741              		.global	OSMboxCreate
+ 1743              	OSMboxCreate:
+ 1744              	.LFB1:
+  63:../os_core/os_mbox.c **** #endif
+  64:../os_core/os_mbox.c **** /*$PAGE*/
+  65:../os_core/os_mbox.c **** /*
+  66:../os_core/os_mbox.c **** ***************************************************************************************************
+  67:../os_core/os_mbox.c **** *                                        CREATE A MESSAGE MAILBOX
+  68:../os_core/os_mbox.c **** *
+  69:../os_core/os_mbox.c **** * Description: This function creates a message mailbox if free event control blocks are available.
+  70:../os_core/os_mbox.c **** *
+  71:../os_core/os_mbox.c **** * Arguments  : msg           is a pointer to a message that you wish to deposit in the mailbox.  If
+  72:../os_core/os_mbox.c **** *                            you set this value to the NULL pointer (i.e. (void *)0) then the mailb
+  73:../os_core/os_mbox.c **** *                            will be considered empty.
+  74:../os_core/os_mbox.c **** *
+  75:../os_core/os_mbox.c **** * Returns    : != (OS_EVENT *)0  is a pointer to the event control clock (OS_EVENT) associated with
+  76:../os_core/os_mbox.c **** *                                created mailbox
+  77:../os_core/os_mbox.c **** *              == (OS_EVENT *)0  if no event control blocks were available
+  78:../os_core/os_mbox.c **** ***************************************************************************************************
+  79:../os_core/os_mbox.c **** */
+  80:../os_core/os_mbox.c **** 
+  81:../os_core/os_mbox.c **** OS_EVENT  *OSMboxCreate (void *msg)
+  82:../os_core/os_mbox.c **** {
+ 1745              		.loc 1 82 0
+ 1746              		.cfi_startproc
+ 1747              		@ Function supports interworking.
+ 1748              		@ args = 0, pretend = 0, frame = 16
+ 1749              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1750 0084 0DC0A0E1 		mov	ip, sp
+ 1751              	.LCFI2:
+ 1752              		.cfi_def_cfa_register 12
+ 1753 0088 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1754 008c 04B04CE2 		sub	fp, ip, #4
+ 1755              		.cfi_offset 14, -8
+ 1756              		.cfi_offset 13, -12
+ 1757              		.cfi_offset 11, -16
+ 1758              	.LCFI3:
+ 1759              		.cfi_def_cfa 11, 4
+ 1760 0090 10D04DE2 		sub	sp, sp, #16
+ 1761 0094 18000BE5 		str	r0, [fp, #-24]
+  83:../os_core/os_mbox.c ****     OS_EVENT  *pevent;
+  84:../os_core/os_mbox.c **** #if OS_CRITICAL_METHOD == 3                      /* Allocate storage for CPU status register       
+  85:../os_core/os_mbox.c ****     OS_CPU_SR  cpu_sr;
+  86:../os_core/os_mbox.c **** 
+  87:../os_core/os_mbox.c **** 
+  88:../os_core/os_mbox.c **** 
+  89:../os_core/os_mbox.c ****     cpu_sr = 0;                                  /* Prevent compiler warning                       
+  90:../os_core/os_mbox.c **** #endif    
+  91:../os_core/os_mbox.c ****     if (OSIntNesting > 0) {                      /* See if called from ISR ...                     
+ 1762              		.loc 1 91 0
+ 1763 0098 C0309FE5 		ldr	r3, .L10
+ 1764 009c 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1765 00a0 000053E3 		cmp	r3, #0
+ 1766 00a4 0100000A 		beq	.L6
+  92:../os_core/os_mbox.c ****         return ((OS_EVENT *)0);                  /* ... can't CREATE from an ISR                   
+ 1767              		.loc 1 92 0
+ 1768 00a8 0030A0E3 		mov	r3, #0
+ 1769 00ac 270000EA 		b	.L7
+ 1770              	.L6:
+  93:../os_core/os_mbox.c ****     }
+  94:../os_core/os_mbox.c ****     OS_ENTER_CRITICAL();
+ 1771              		.loc 1 94 0
+ 1772              	@ 94 "../os_core/os_mbox.c" 1
+ 1773 00b0 00000FE1 		mrs   r0, cpsr
+ 1774              	@ 0 "" 2
+ 1775              	@ 94 "../os_core/os_mbox.c" 1
+ 1776 00b4 04002DE5 		stmfd sp!, {r0}
+ 1777              	@ 0 "" 2
+ 1778              	@ 94 "../os_core/os_mbox.c" 1
+ 1779 00b8 C00080E3 		orr   r0, r0, #0b11000000
+ 1780              	@ 0 "" 2
+ 1781              	@ 94 "../os_core/os_mbox.c" 1
+ 1782 00bc 00F021E1 		msr   cpsr_c, r0
+ 1783              	@ 0 "" 2
+  95:../os_core/os_mbox.c ****     pevent = OSEventFreeList;                    /* Get next free event control block              
+ 1784              		.loc 1 95 0
+ 1785 00c0 9C309FE5 		ldr	r3, .L10+4
+ 1786 00c4 003093E5 		ldr	r3, [r3, #0]
+ 1787 00c8 10300BE5 		str	r3, [fp, #-16]
+  96:../os_core/os_mbox.c ****     if (OSEventFreeList != (OS_EVENT *)0) {      /* See if pool of free ECB pool was empty         
+ 1788              		.loc 1 96 0
+ 1789 00cc 90309FE5 		ldr	r3, .L10+4
+ 1790 00d0 003093E5 		ldr	r3, [r3, #0]
+ 1791 00d4 000053E3 		cmp	r3, #0
+ 1792 00d8 0500000A 		beq	.L8
+  97:../os_core/os_mbox.c ****         OSEventFreeList = (OS_EVENT *)OSEventFreeList->OSEventPtr;
+ 1793              		.loc 1 97 0
+ 1794 00dc 80309FE5 		ldr	r3, .L10+4
+ 1795 00e0 003093E5 		ldr	r3, [r3, #0]
+ 1796 00e4 043093E5 		ldr	r3, [r3, #4]
+ 1797 00e8 0320A0E1 		mov	r2, r3
+ 1798 00ec 70309FE5 		ldr	r3, .L10+4
+ 1799 00f0 002083E5 		str	r2, [r3, #0]
+ 1800              	.L8:
+  98:../os_core/os_mbox.c ****     }
+  99:../os_core/os_mbox.c ****     OS_EXIT_CRITICAL();
+ 1801              		.loc 1 99 0
+ 1802              	@ 99 "../os_core/os_mbox.c" 1
+ 1803 00f4 04009DE4 		ldmfd sp!, {r0}
+ 1804              	@ 0 "" 2
+ 1805              	@ 99 "../os_core/os_mbox.c" 1
+ 1806 00f8 00F021E1 		msr   cpsr_c, r0
+ 1807              	@ 0 "" 2
+ 100:../os_core/os_mbox.c ****     if (pevent != (OS_EVENT *)0) {
+ 1808              		.loc 1 100 0
+ 1809 00fc 10301BE5 		ldr	r3, [fp, #-16]
+ 1810 0100 000053E3 		cmp	r3, #0
+ 1811 0104 1000000A 		beq	.L9
+ 101:../os_core/os_mbox.c ****         pevent->OSEventType    = OS_EVENT_TYPE_MBOX;
+ 1812              		.loc 1 101 0
+ 1813 0108 10301BE5 		ldr	r3, [fp, #-16]
+ 1814 010c 0120A0E3 		mov	r2, #1
+ 1815 0110 0020C3E5 		strb	r2, [r3, #0]
+ 102:../os_core/os_mbox.c ****         pevent->OSEventCnt     = 0;
+ 1816              		.loc 1 102 0
+ 1817 0114 10301BE5 		ldr	r3, [fp, #-16]
+ 1818 0118 0020A0E3 		mov	r2, #0
+ 1819 011c B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 103:../os_core/os_mbox.c ****         pevent->OSEventPtr     = msg;            /* Deposit message in event control block         
+ 1820              		.loc 1 103 0
+ 1821 0120 10301BE5 		ldr	r3, [fp, #-16]
+ 1822 0124 18201BE5 		ldr	r2, [fp, #-24]
+ 1823 0128 042083E5 		str	r2, [r3, #4]
+ 104:../os_core/os_mbox.c **** #if OS_EVENT_NAME_SIZE > 1
+ 105:../os_core/os_mbox.c ****         pevent->OSEventName[0] = '?';
+ 1824              		.loc 1 105 0
+ 1825 012c 10301BE5 		ldr	r3, [fp, #-16]
+ 1826 0130 3F20A0E3 		mov	r2, #63
+ 1827 0134 1020C3E5 		strb	r2, [r3, #16]
+ 106:../os_core/os_mbox.c ****         pevent->OSEventName[1] = OS_ASCII_NUL;
+ 1828              		.loc 1 106 0
+ 1829 0138 10301BE5 		ldr	r3, [fp, #-16]
+ 1830 013c 0020A0E3 		mov	r2, #0
+ 1831 0140 1120C3E5 		strb	r2, [r3, #17]
+ 107:../os_core/os_mbox.c **** #endif
+ 108:../os_core/os_mbox.c ****         OS_EventWaitListInit(pevent);
+ 1832              		.loc 1 108 0
+ 1833 0144 10001BE5 		ldr	r0, [fp, #-16]
+ 1834 0148 FEFFFFEB 		bl	OS_EventWaitListInit
+ 1835              	.L9:
+ 109:../os_core/os_mbox.c ****     }
+ 110:../os_core/os_mbox.c ****     return (pevent);                             /* Return pointer to event control block          
+ 1836              		.loc 1 110 0
+ 1837 014c 10301BE5 		ldr	r3, [fp, #-16]
+ 1838              	.L7:
+ 111:../os_core/os_mbox.c **** }
+ 1839              		.loc 1 111 0
+ 1840 0150 0300A0E1 		mov	r0, r3
+ 1841 0154 0CD04BE2 		sub	sp, fp, #12
+ 1842 0158 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1843 015c 1EFF2FE1 		bx	lr
+ 1844              	.L11:
+ 1845              		.align	2
+ 1846              	.L10:
+ 1847 0160 00000000 		.word	OSIntNesting
+ 1848 0164 00000000 		.word	OSEventFreeList
+ 1849              		.cfi_endproc
+ 1850              	.LFE1:
+ 1852              		.align	2
+ 1853              		.global	OSMboxDel
+ 1855              	OSMboxDel:
+ 1856              	.LFB2:
+ 112:../os_core/os_mbox.c **** /*$PAGE*/
+ 113:../os_core/os_mbox.c **** /*
+ 114:../os_core/os_mbox.c **** ***************************************************************************************************
+ 115:../os_core/os_mbox.c **** *                                         DELETE A MAIBOX
+ 116:../os_core/os_mbox.c **** *
+ 117:../os_core/os_mbox.c **** * Description: This function deletes a mailbox and readies all tasks pending on the mailbox.
+ 118:../os_core/os_mbox.c **** *
+ 119:../os_core/os_mbox.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired
+ 120:../os_core/os_mbox.c **** *                            mailbox.
+ 121:../os_core/os_mbox.c **** *
+ 122:../os_core/os_mbox.c **** *              opt           determines delete options as follows:
+ 123:../os_core/os_mbox.c **** *                            opt == OS_DEL_NO_PEND   Delete the mailbox ONLY if no task pending
+ 124:../os_core/os_mbox.c **** *                            opt == OS_DEL_ALWAYS    Deletes the mailbox even if tasks are waiting.
+ 125:../os_core/os_mbox.c **** *                                                    In this case, all the tasks pending will be re
+ 126:../os_core/os_mbox.c **** *
+ 127:../os_core/os_mbox.c **** *              err           is a pointer to an error code that can contain one of the following va
+ 128:../os_core/os_mbox.c **** *                            OS_NO_ERR               The call was successful and the mailbox was de
+ 129:../os_core/os_mbox.c **** *                            OS_ERR_DEL_ISR          If you attempted to delete the mailbox from an
+ 130:../os_core/os_mbox.c **** *                            OS_ERR_INVALID_OPT      An invalid option was specified
+ 131:../os_core/os_mbox.c **** *                            OS_ERR_TASK_WAITING     One or more tasks were waiting on the mailbox
+ 132:../os_core/os_mbox.c **** *                            OS_ERR_EVENT_TYPE       If you didn't pass a pointer to a mailbox
+ 133:../os_core/os_mbox.c **** *                            OS_ERR_PEVENT_NULL      If 'pevent' is a NULL pointer.
+ 134:../os_core/os_mbox.c **** *
+ 135:../os_core/os_mbox.c **** * Returns    : pevent        upon error
+ 136:../os_core/os_mbox.c **** *              (OS_EVENT *)0 if the mailbox was successfully deleted.
+ 137:../os_core/os_mbox.c **** *
+ 138:../os_core/os_mbox.c **** * Note(s)    : 1) This function must be used with care.  Tasks that would normally expect the prese
+ 139:../os_core/os_mbox.c **** *                 the mailbox MUST check the return code of OSMboxPend().
+ 140:../os_core/os_mbox.c **** *              2) OSMboxAccept() callers will not know that the intended mailbox has been deleted!
+ 141:../os_core/os_mbox.c **** *              3) This call can potentially disable interrupts for a long time.  The interrupt disa
+ 142:../os_core/os_mbox.c **** *                 time is directly proportional to the number of tasks waiting on the mailbox.
+ 143:../os_core/os_mbox.c **** *              4) Because ALL tasks pending on the mailbox will be readied, you MUST be careful in
+ 144:../os_core/os_mbox.c **** *                 applications where the mailbox is used for mutual exclusion because the resource(
+ 145:../os_core/os_mbox.c **** *                 will no longer be guarded by the mailbox.
+ 146:../os_core/os_mbox.c **** ***************************************************************************************************
+ 147:../os_core/os_mbox.c **** */
+ 148:../os_core/os_mbox.c **** 
+ 149:../os_core/os_mbox.c **** #if OS_MBOX_DEL_EN > 0
+ 150:../os_core/os_mbox.c **** OS_EVENT  *OSMboxDel (OS_EVENT *pevent, INT8U opt, INT8U *err)
+ 151:../os_core/os_mbox.c **** {
+ 1857              		.loc 1 151 0
+ 1858              		.cfi_startproc
+ 1859              		@ Function supports interworking.
+ 1860              		@ args = 0, pretend = 0, frame = 24
+ 1861              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1862 0168 0DC0A0E1 		mov	ip, sp
+ 1863              	.LCFI4:
+ 1864              		.cfi_def_cfa_register 12
+ 1865 016c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1866 0170 04B04CE2 		sub	fp, ip, #4
+ 1867              		.cfi_offset 14, -8
+ 1868              		.cfi_offset 13, -12
+ 1869              		.cfi_offset 11, -16
+ 1870              	.LCFI5:
+ 1871              		.cfi_def_cfa 11, 4
+ 1872 0174 18D04DE2 		sub	sp, sp, #24
+ 1873 0178 18000BE5 		str	r0, [fp, #-24]
+ 1874 017c 0130A0E1 		mov	r3, r1
+ 1875 0180 20200BE5 		str	r2, [fp, #-32]
+ 1876 0184 19304BE5 		strb	r3, [fp, #-25]
+ 152:../os_core/os_mbox.c ****     BOOLEAN    tasks_waiting;
+ 153:../os_core/os_mbox.c **** #if OS_CRITICAL_METHOD == 3                                /* Allocate storage for CPU status regis
+ 154:../os_core/os_mbox.c ****     OS_CPU_SR  cpu_sr;
+ 155:../os_core/os_mbox.c **** 
+ 156:../os_core/os_mbox.c **** 
+ 157:../os_core/os_mbox.c **** 
+ 158:../os_core/os_mbox.c ****     cpu_sr = 0;                                            /* Prevent compiler warning             
+ 159:../os_core/os_mbox.c **** #endif    
+ 160:../os_core/os_mbox.c ****     if (OSIntNesting > 0) {                                /* See if called from ISR ...           
+ 1877              		.loc 1 160 0
+ 1878 0188 04329FE5 		ldr	r3, .L28
+ 1879 018c 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1880 0190 000053E3 		cmp	r3, #0
+ 1881 0194 0400000A 		beq	.L13
+ 161:../os_core/os_mbox.c ****         *err = OS_ERR_DEL_ISR;                             /* ... can't DELETE from an ISR         
+ 1882              		.loc 1 161 0
+ 1883 0198 20301BE5 		ldr	r3, [fp, #-32]
+ 1884 019c 7320E0E3 		mvn	r2, #115
+ 1885 01a0 0020C3E5 		strb	r2, [r3, #0]
+ 162:../os_core/os_mbox.c ****         return (pevent);
+ 1886              		.loc 1 162 0
+ 1887 01a4 18301BE5 		ldr	r3, [fp, #-24]
+ 1888 01a8 750000EA 		b	.L14
+ 1889              	.L13:
+ 163:../os_core/os_mbox.c ****     }
+ 164:../os_core/os_mbox.c **** #if OS_ARG_CHK_EN > 0
+ 165:../os_core/os_mbox.c ****     if (pevent == (OS_EVENT *)0) {                         /* Validate 'pevent'                    
+ 1890              		.loc 1 165 0
+ 1891 01ac 18301BE5 		ldr	r3, [fp, #-24]
+ 1892 01b0 000053E3 		cmp	r3, #0
+ 1893 01b4 0400001A 		bne	.L15
+ 166:../os_core/os_mbox.c ****         *err = OS_ERR_PEVENT_NULL;
+ 1894              		.loc 1 166 0
+ 1895 01b8 20301BE5 		ldr	r3, [fp, #-32]
+ 1896 01bc 0420A0E3 		mov	r2, #4
+ 1897 01c0 0020C3E5 		strb	r2, [r3, #0]
+ 167:../os_core/os_mbox.c ****         return (pevent);
+ 1898              		.loc 1 167 0
+ 1899 01c4 18301BE5 		ldr	r3, [fp, #-24]
+ 1900 01c8 6D0000EA 		b	.L14
+ 1901              	.L15:
+ 168:../os_core/os_mbox.c ****     }
+ 169:../os_core/os_mbox.c **** #endif
+ 170:../os_core/os_mbox.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_MBOX) {       /* Validate event block type            
+ 1902              		.loc 1 170 0
+ 1903 01cc 18301BE5 		ldr	r3, [fp, #-24]
+ 1904 01d0 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1905 01d4 010053E3 		cmp	r3, #1
+ 1906 01d8 0400000A 		beq	.L16
+ 171:../os_core/os_mbox.c ****         *err = OS_ERR_EVENT_TYPE;
+ 1907              		.loc 1 171 0
+ 1908 01dc 20301BE5 		ldr	r3, [fp, #-32]
+ 1909 01e0 0120A0E3 		mov	r2, #1
+ 1910 01e4 0020C3E5 		strb	r2, [r3, #0]
+ 172:../os_core/os_mbox.c ****         return (pevent);
+ 1911              		.loc 1 172 0
+ 1912 01e8 18301BE5 		ldr	r3, [fp, #-24]
+ 1913 01ec 640000EA 		b	.L14
+ 1914              	.L16:
+ 173:../os_core/os_mbox.c ****     }
+ 174:../os_core/os_mbox.c ****     OS_ENTER_CRITICAL();
+ 1915              		.loc 1 174 0
+ 1916              	@ 174 "../os_core/os_mbox.c" 1
+ 1917 01f0 00000FE1 		mrs   r0, cpsr
+ 1918              	@ 0 "" 2
+ 1919              	@ 174 "../os_core/os_mbox.c" 1
+ 1920 01f4 04002DE5 		stmfd sp!, {r0}
+ 1921              	@ 0 "" 2
+ 1922              	@ 174 "../os_core/os_mbox.c" 1
+ 1923 01f8 C00080E3 		orr   r0, r0, #0b11000000
+ 1924              	@ 0 "" 2
+ 1925              	@ 174 "../os_core/os_mbox.c" 1
+ 1926 01fc 00F021E1 		msr   cpsr_c, r0
+ 1927              	@ 0 "" 2
+ 175:../os_core/os_mbox.c ****     if (pevent->OSEventGrp != 0x00) {                      /* See if any tasks waiting on mailbox  
+ 1928              		.loc 1 175 0
+ 1929 0200 18301BE5 		ldr	r3, [fp, #-24]
+ 1930 0204 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 1931 0208 000053E3 		cmp	r3, #0
+ 1932 020c 0200000A 		beq	.L17
+ 176:../os_core/os_mbox.c ****         tasks_waiting = TRUE;                              /* Yes                                  
+ 1933              		.loc 1 176 0
+ 1934 0210 0130A0E3 		mov	r3, #1
+ 1935 0214 0D304BE5 		strb	r3, [fp, #-13]
+ 1936 0218 010000EA 		b	.L18
+ 1937              	.L17:
+ 177:../os_core/os_mbox.c ****     } else {
+ 178:../os_core/os_mbox.c ****         tasks_waiting = FALSE;                             /* No                                   
+ 1938              		.loc 1 178 0
+ 1939 021c 0030A0E3 		mov	r3, #0
+ 1940 0220 0D304BE5 		strb	r3, [fp, #-13]
+ 1941              	.L18:
+ 179:../os_core/os_mbox.c ****     }
+ 180:../os_core/os_mbox.c ****     switch (opt) {
+ 1942              		.loc 1 180 0
+ 1943 0224 19305BE5 		ldrb	r3, [fp, #-25]	@ zero_extendqisi2
+ 1944 0228 000053E3 		cmp	r3, #0
+ 1945 022c 0200000A 		beq	.L20
+ 1946 0230 010053E3 		cmp	r3, #1
+ 1947 0234 2900000A 		beq	.L27
+ 1948 0238 4B0000EA 		b	.L26
+ 1949              	.L20:
+ 181:../os_core/os_mbox.c ****         case OS_DEL_NO_PEND:                               /* Delete mailbox only if no task waitin
+ 182:../os_core/os_mbox.c ****              if (tasks_waiting == FALSE) {
+ 1950              		.loc 1 182 0
+ 1951 023c 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 1952 0240 000053E3 		cmp	r3, #0
+ 1953 0244 1900001A 		bne	.L22
+ 183:../os_core/os_mbox.c **** #if OS_EVENT_NAME_SIZE > 1
+ 184:../os_core/os_mbox.c ****                  pevent->OSEventName[0] = '?';             /* Unknown name                         
+ 1954              		.loc 1 184 0
+ 1955 0248 18301BE5 		ldr	r3, [fp, #-24]
+ 1956 024c 3F20A0E3 		mov	r2, #63
+ 1957 0250 1020C3E5 		strb	r2, [r3, #16]
+ 185:../os_core/os_mbox.c ****                  pevent->OSEventName[1] = OS_ASCII_NUL;
+ 1958              		.loc 1 185 0
+ 1959 0254 18301BE5 		ldr	r3, [fp, #-24]
+ 1960 0258 0020A0E3 		mov	r2, #0
+ 1961 025c 1120C3E5 		strb	r2, [r3, #17]
+ 186:../os_core/os_mbox.c **** #endif
+ 187:../os_core/os_mbox.c ****                  pevent->OSEventType = OS_EVENT_TYPE_UNUSED;
+ 1962              		.loc 1 187 0
+ 1963 0260 18301BE5 		ldr	r3, [fp, #-24]
+ 1964 0264 0020A0E3 		mov	r2, #0
+ 1965 0268 0020C3E5 		strb	r2, [r3, #0]
+ 188:../os_core/os_mbox.c ****                  pevent->OSEventPtr  = OSEventFreeList;    /* Return Event Control Block to free li
+ 1966              		.loc 1 188 0
+ 1967 026c 24319FE5 		ldr	r3, .L28+4
+ 1968 0270 002093E5 		ldr	r2, [r3, #0]
+ 1969 0274 18301BE5 		ldr	r3, [fp, #-24]
+ 1970 0278 042083E5 		str	r2, [r3, #4]
+ 189:../os_core/os_mbox.c ****                  pevent->OSEventCnt  = 0;
+ 1971              		.loc 1 189 0
+ 1972 027c 18301BE5 		ldr	r3, [fp, #-24]
+ 1973 0280 0020A0E3 		mov	r2, #0
+ 1974 0284 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 190:../os_core/os_mbox.c ****                  OSEventFreeList     = pevent;             /* Get next free event control block    
+ 1975              		.loc 1 190 0
+ 1976 0288 08319FE5 		ldr	r3, .L28+4
+ 1977 028c 18201BE5 		ldr	r2, [fp, #-24]
+ 1978 0290 002083E5 		str	r2, [r3, #0]
+ 191:../os_core/os_mbox.c ****                  OS_EXIT_CRITICAL();
+ 1979              		.loc 1 191 0
+ 1980              	@ 191 "../os_core/os_mbox.c" 1
+ 1981 0294 04009DE4 		ldmfd sp!, {r0}
+ 1982              	@ 0 "" 2
+ 1983              	@ 191 "../os_core/os_mbox.c" 1
+ 1984 0298 00F021E1 		msr   cpsr_c, r0
+ 1985              	@ 0 "" 2
+ 192:../os_core/os_mbox.c ****                  *err                = OS_NO_ERR;
+ 1986              		.loc 1 192 0
+ 1987 029c 20301BE5 		ldr	r3, [fp, #-32]
+ 1988 02a0 0020A0E3 		mov	r2, #0
+ 1989 02a4 0020C3E5 		strb	r2, [r3, #0]
+ 193:../os_core/os_mbox.c ****                  return ((OS_EVENT *)0);                   /* Mailbox has been deleted             
+ 1990              		.loc 1 193 0
+ 1991 02a8 0030A0E3 		mov	r3, #0
+ 1992 02ac 340000EA 		b	.L14
+ 1993              	.L22:
+ 194:../os_core/os_mbox.c ****              } else {
+ 195:../os_core/os_mbox.c ****                  OS_EXIT_CRITICAL();
+ 1994              		.loc 1 195 0
+ 1995              	@ 195 "../os_core/os_mbox.c" 1
+ 1996 02b0 04009DE4 		ldmfd sp!, {r0}
+ 1997              	@ 0 "" 2
+ 1998              	@ 195 "../os_core/os_mbox.c" 1
+ 1999 02b4 00F021E1 		msr   cpsr_c, r0
+ 2000              	@ 0 "" 2
+ 196:../os_core/os_mbox.c ****                  *err                = OS_ERR_TASK_WAITING;
+ 2001              		.loc 1 196 0
+ 2002 02b8 20301BE5 		ldr	r3, [fp, #-32]
+ 2003 02bc 0820A0E3 		mov	r2, #8
+ 2004 02c0 0020C3E5 		strb	r2, [r3, #0]
+ 197:../os_core/os_mbox.c ****                  return (pevent);
+ 2005              		.loc 1 197 0
+ 2006 02c4 18301BE5 		ldr	r3, [fp, #-24]
+ 2007 02c8 2D0000EA 		b	.L14
+ 2008              	.L24:
+ 198:../os_core/os_mbox.c ****              }
+ 199:../os_core/os_mbox.c **** 
+ 200:../os_core/os_mbox.c ****         case OS_DEL_ALWAYS:                                /* Always delete the mailbox            
+ 201:../os_core/os_mbox.c ****              while (pevent->OSEventGrp != 0x00) {          /* Ready ALL tasks waiting for mailbox  
+ 202:../os_core/os_mbox.c ****                  (void)OS_EventTaskRdy(pevent, (void *)0, OS_STAT_MBOX);
+ 2009              		.loc 1 202 0
+ 2010 02cc 18001BE5 		ldr	r0, [fp, #-24]
+ 2011 02d0 0010A0E3 		mov	r1, #0
+ 2012 02d4 0220A0E3 		mov	r2, #2
+ 2013 02d8 FEFFFFEB 		bl	OS_EventTaskRdy
+ 2014 02dc 000000EA 		b	.L23
+ 2015              	.L27:
+ 201:../os_core/os_mbox.c ****              while (pevent->OSEventGrp != 0x00) {          /* Ready ALL tasks waiting for mailbox  
+ 2016              		.loc 1 201 0
+ 2017 02e0 0000A0E1 		mov	r0, r0	@ nop
+ 2018              	.L23:
+ 201:../os_core/os_mbox.c ****              while (pevent->OSEventGrp != 0x00) {          /* Ready ALL tasks waiting for mailbox  
+ 2019              		.loc 1 201 0 is_stmt 0 discriminator 1
+ 2020 02e4 18301BE5 		ldr	r3, [fp, #-24]
+ 2021 02e8 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2022 02ec 000053E3 		cmp	r3, #0
+ 2023 02f0 F5FFFF1A 		bne	.L24
+ 203:../os_core/os_mbox.c ****              }
+ 204:../os_core/os_mbox.c **** #if OS_EVENT_NAME_SIZE > 1
+ 205:../os_core/os_mbox.c ****              pevent->OSEventName[0] = '?';                 /* Unknown name                         
+ 2024              		.loc 1 205 0 is_stmt 1
+ 2025 02f4 18301BE5 		ldr	r3, [fp, #-24]
+ 2026 02f8 3F20A0E3 		mov	r2, #63
+ 2027 02fc 1020C3E5 		strb	r2, [r3, #16]
+ 206:../os_core/os_mbox.c ****              pevent->OSEventName[1] = OS_ASCII_NUL;
+ 2028              		.loc 1 206 0
+ 2029 0300 18301BE5 		ldr	r3, [fp, #-24]
+ 2030 0304 0020A0E3 		mov	r2, #0
+ 2031 0308 1120C3E5 		strb	r2, [r3, #17]
+ 207:../os_core/os_mbox.c **** #endif
+ 208:../os_core/os_mbox.c ****              pevent->OSEventType    = OS_EVENT_TYPE_UNUSED;
+ 2032              		.loc 1 208 0
+ 2033 030c 18301BE5 		ldr	r3, [fp, #-24]
+ 2034 0310 0020A0E3 		mov	r2, #0
+ 2035 0314 0020C3E5 		strb	r2, [r3, #0]
+ 209:../os_core/os_mbox.c ****              pevent->OSEventPtr     = OSEventFreeList;     /* Return Event Control Block to free li
+ 2036              		.loc 1 209 0
+ 2037 0318 78309FE5 		ldr	r3, .L28+4
+ 2038 031c 002093E5 		ldr	r2, [r3, #0]
+ 2039 0320 18301BE5 		ldr	r3, [fp, #-24]
+ 2040 0324 042083E5 		str	r2, [r3, #4]
+ 210:../os_core/os_mbox.c ****              pevent->OSEventCnt     = 0;
+ 2041              		.loc 1 210 0
+ 2042 0328 18301BE5 		ldr	r3, [fp, #-24]
+ 2043 032c 0020A0E3 		mov	r2, #0
+ 2044 0330 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 211:../os_core/os_mbox.c ****              OSEventFreeList        = pevent;              /* Get next free event control block    
+ 2045              		.loc 1 211 0
+ 2046 0334 5C309FE5 		ldr	r3, .L28+4
+ 2047 0338 18201BE5 		ldr	r2, [fp, #-24]
+ 2048 033c 002083E5 		str	r2, [r3, #0]
+ 212:../os_core/os_mbox.c ****              OS_EXIT_CRITICAL();
+ 2049              		.loc 1 212 0
+ 2050              	@ 212 "../os_core/os_mbox.c" 1
+ 2051 0340 04009DE4 		ldmfd sp!, {r0}
+ 2052              	@ 0 "" 2
+ 2053              	@ 212 "../os_core/os_mbox.c" 1
+ 2054 0344 00F021E1 		msr   cpsr_c, r0
+ 2055              	@ 0 "" 2
+ 213:../os_core/os_mbox.c ****              if (tasks_waiting == TRUE) {                  /* Reschedule only if task(s) were waiti
+ 2056              		.loc 1 213 0
+ 2057 0348 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2058 034c 010053E3 		cmp	r3, #1
+ 2059 0350 0000001A 		bne	.L25
+ 214:../os_core/os_mbox.c ****                  OS_Sched();                               /* Find highest priority task ready to r
+ 2060              		.loc 1 214 0
+ 2061 0354 FEFFFFEB 		bl	OS_Sched
+ 2062              	.L25:
+ 215:../os_core/os_mbox.c ****              }
+ 216:../os_core/os_mbox.c ****              *err = OS_NO_ERR;
+ 2063              		.loc 1 216 0
+ 2064 0358 20301BE5 		ldr	r3, [fp, #-32]
+ 2065 035c 0020A0E3 		mov	r2, #0
+ 2066 0360 0020C3E5 		strb	r2, [r3, #0]
+ 217:../os_core/os_mbox.c ****              return ((OS_EVENT *)0);                       /* Mailbox has been deleted             
+ 2067              		.loc 1 217 0
+ 2068 0364 0030A0E3 		mov	r3, #0
+ 2069 0368 050000EA 		b	.L14
+ 2070              	.L26:
+ 218:../os_core/os_mbox.c **** 
+ 219:../os_core/os_mbox.c ****         default:
+ 220:../os_core/os_mbox.c ****              OS_EXIT_CRITICAL();
+ 2071              		.loc 1 220 0
+ 2072              	@ 220 "../os_core/os_mbox.c" 1
+ 2073 036c 04009DE4 		ldmfd sp!, {r0}
+ 2074              	@ 0 "" 2
+ 2075              	@ 220 "../os_core/os_mbox.c" 1
+ 2076 0370 00F021E1 		msr   cpsr_c, r0
+ 2077              	@ 0 "" 2
+ 221:../os_core/os_mbox.c ****              *err = OS_ERR_INVALID_OPT;
+ 2078              		.loc 1 221 0
+ 2079 0374 20301BE5 		ldr	r3, [fp, #-32]
+ 2080 0378 0720A0E3 		mov	r2, #7
+ 2081 037c 0020C3E5 		strb	r2, [r3, #0]
+ 222:../os_core/os_mbox.c ****              return (pevent);
+ 2082              		.loc 1 222 0
+ 2083 0380 18301BE5 		ldr	r3, [fp, #-24]
+ 2084              	.L14:
+ 223:../os_core/os_mbox.c ****     }
+ 224:../os_core/os_mbox.c **** }
+ 2085              		.loc 1 224 0
+ 2086 0384 0300A0E1 		mov	r0, r3
+ 2087 0388 0CD04BE2 		sub	sp, fp, #12
+ 2088 038c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2089 0390 1EFF2FE1 		bx	lr
+ 2090              	.L29:
+ 2091              		.align	2
+ 2092              	.L28:
+ 2093 0394 00000000 		.word	OSIntNesting
+ 2094 0398 00000000 		.word	OSEventFreeList
+ 2095              		.cfi_endproc
+ 2096              	.LFE2:
+ 2098              		.align	2
+ 2099              		.global	OSMboxPend
+ 2101              	OSMboxPend:
+ 2102              	.LFB3:
+ 225:../os_core/os_mbox.c **** #endif
+ 226:../os_core/os_mbox.c **** 
+ 227:../os_core/os_mbox.c **** /*$PAGE*/
+ 228:../os_core/os_mbox.c **** /*
+ 229:../os_core/os_mbox.c **** ***************************************************************************************************
+ 230:../os_core/os_mbox.c **** *                                      PEND ON MAILBOX FOR A MESSAGE
+ 231:../os_core/os_mbox.c **** *
+ 232:../os_core/os_mbox.c **** * Description: This function waits for a message to be sent to a mailbox
+ 233:../os_core/os_mbox.c **** *
+ 234:../os_core/os_mbox.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired ma
+ 235:../os_core/os_mbox.c **** *
+ 236:../os_core/os_mbox.c **** *              timeout       is an optional timeout period (in clock ticks).  If non-zero, your tas
+ 237:../os_core/os_mbox.c **** *                            wait for a message to arrive at the mailbox up to the amount of time
+ 238:../os_core/os_mbox.c **** *                            specified by this argument.  If you specify 0, however, your task will
+ 239:../os_core/os_mbox.c **** *                            forever at the specified mailbox or, until a message arrives.
+ 240:../os_core/os_mbox.c **** *
+ 241:../os_core/os_mbox.c **** *              err           is a pointer to where an error message will be deposited.  Possible er
+ 242:../os_core/os_mbox.c **** *                            messages are:
+ 243:../os_core/os_mbox.c **** *
+ 244:../os_core/os_mbox.c **** *                            OS_NO_ERR           The call was successful and your task received a
+ 245:../os_core/os_mbox.c **** *                                                message.
+ 246:../os_core/os_mbox.c **** *                            OS_TIMEOUT          A message was not received within the specified ti
+ 247:../os_core/os_mbox.c **** *                            OS_ERR_EVENT_TYPE   Invalid event type
+ 248:../os_core/os_mbox.c **** *                            OS_ERR_PEND_ISR     If you called this function from an ISR and the re
+ 249:../os_core/os_mbox.c **** *                                                would lead to a suspension.
+ 250:../os_core/os_mbox.c **** *                            OS_ERR_PEVENT_NULL  If 'pevent' is a NULL pointer
+ 251:../os_core/os_mbox.c **** *
+ 252:../os_core/os_mbox.c **** * Returns    : != (void *)0  is a pointer to the message received
+ 253:../os_core/os_mbox.c **** *              == (void *)0  if no message was received or,
+ 254:../os_core/os_mbox.c **** *                            if 'pevent' is a NULL pointer or,
+ 255:../os_core/os_mbox.c **** *                            if you didn't pass the proper pointer to the event control block.
+ 256:../os_core/os_mbox.c **** ***************************************************************************************************
+ 257:../os_core/os_mbox.c **** */
+ 258:../os_core/os_mbox.c **** 
+ 259:../os_core/os_mbox.c **** void  *OSMboxPend (OS_EVENT *pevent, INT16U timeout, INT8U *err)
+ 260:../os_core/os_mbox.c **** {
+ 2103              		.loc 1 260 0
+ 2104              		.cfi_startproc
+ 2105              		@ Function supports interworking.
+ 2106              		@ args = 0, pretend = 0, frame = 24
+ 2107              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2108 039c 0DC0A0E1 		mov	ip, sp
+ 2109              	.LCFI6:
+ 2110              		.cfi_def_cfa_register 12
+ 2111 03a0 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2112 03a4 04B04CE2 		sub	fp, ip, #4
+ 2113              		.cfi_offset 14, -8
+ 2114              		.cfi_offset 13, -12
+ 2115              		.cfi_offset 11, -16
+ 2116              	.LCFI7:
+ 2117              		.cfi_def_cfa 11, 4
+ 2118 03a8 18D04DE2 		sub	sp, sp, #24
+ 2119 03ac 18000BE5 		str	r0, [fp, #-24]
+ 2120 03b0 0130A0E1 		mov	r3, r1
+ 2121 03b4 20200BE5 		str	r2, [fp, #-32]
+ 2122 03b8 BA314BE1 		strh	r3, [fp, #-26]	@ movhi
+ 261:../os_core/os_mbox.c ****     void      *msg;
+ 262:../os_core/os_mbox.c **** #if OS_CRITICAL_METHOD == 3                           /* Allocate storage for CPU status register  
+ 263:../os_core/os_mbox.c ****     OS_CPU_SR  cpu_sr;
+ 264:../os_core/os_mbox.c **** 
+ 265:../os_core/os_mbox.c **** 
+ 266:../os_core/os_mbox.c **** 
+ 267:../os_core/os_mbox.c ****     cpu_sr = 0;                                       /* Prevent compiler warning                  
+ 268:../os_core/os_mbox.c **** #endif    
+ 269:../os_core/os_mbox.c ****     if (OSIntNesting > 0) {                           /* See if called from ISR ...                
+ 2123              		.loc 1 269 0
+ 2124 03bc B4319FE5 		ldr	r3, .L37
+ 2125 03c0 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2126 03c4 000053E3 		cmp	r3, #0
+ 2127 03c8 0400000A 		beq	.L31
+ 270:../os_core/os_mbox.c ****         *err = OS_ERR_PEND_ISR;                       /* ... can't PEND from an ISR                
+ 2128              		.loc 1 270 0
+ 2129 03cc 20301BE5 		ldr	r3, [fp, #-32]
+ 2130 03d0 0220A0E3 		mov	r2, #2
+ 2131 03d4 0020C3E5 		strb	r2, [r3, #0]
+ 271:../os_core/os_mbox.c ****         return ((void *)0);
+ 2132              		.loc 1 271 0
+ 2133 03d8 0030A0E3 		mov	r3, #0
+ 2134 03dc 610000EA 		b	.L32
+ 2135              	.L31:
+ 272:../os_core/os_mbox.c ****     }
+ 273:../os_core/os_mbox.c **** #if OS_ARG_CHK_EN > 0
+ 274:../os_core/os_mbox.c ****     if (pevent == (OS_EVENT *)0) {                    /* Validate 'pevent'                         
+ 2136              		.loc 1 274 0
+ 2137 03e0 18301BE5 		ldr	r3, [fp, #-24]
+ 2138 03e4 000053E3 		cmp	r3, #0
+ 2139 03e8 0400001A 		bne	.L33
+ 275:../os_core/os_mbox.c ****         *err = OS_ERR_PEVENT_NULL;
+ 2140              		.loc 1 275 0
+ 2141 03ec 20301BE5 		ldr	r3, [fp, #-32]
+ 2142 03f0 0420A0E3 		mov	r2, #4
+ 2143 03f4 0020C3E5 		strb	r2, [r3, #0]
+ 276:../os_core/os_mbox.c ****         return ((void *)0);
+ 2144              		.loc 1 276 0
+ 2145 03f8 0030A0E3 		mov	r3, #0
+ 2146 03fc 590000EA 		b	.L32
+ 2147              	.L33:
+ 277:../os_core/os_mbox.c ****     }
+ 278:../os_core/os_mbox.c **** #endif
+ 279:../os_core/os_mbox.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_MBOX) {  /* Validate event block type                 
+ 2148              		.loc 1 279 0
+ 2149 0400 18301BE5 		ldr	r3, [fp, #-24]
+ 2150 0404 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2151 0408 010053E3 		cmp	r3, #1
+ 2152 040c 0400000A 		beq	.L34
+ 280:../os_core/os_mbox.c ****         *err = OS_ERR_EVENT_TYPE;
+ 2153              		.loc 1 280 0
+ 2154 0410 20301BE5 		ldr	r3, [fp, #-32]
+ 2155 0414 0120A0E3 		mov	r2, #1
+ 2156 0418 0020C3E5 		strb	r2, [r3, #0]
+ 281:../os_core/os_mbox.c ****         return ((void *)0);
+ 2157              		.loc 1 281 0
+ 2158 041c 0030A0E3 		mov	r3, #0
+ 2159 0420 500000EA 		b	.L32
+ 2160              	.L34:
+ 282:../os_core/os_mbox.c ****     }
+ 283:../os_core/os_mbox.c ****     OS_ENTER_CRITICAL();
+ 2161              		.loc 1 283 0
+ 2162              	@ 283 "../os_core/os_mbox.c" 1
+ 2163 0424 00000FE1 		mrs   r0, cpsr
+ 2164              	@ 0 "" 2
+ 2165              	@ 283 "../os_core/os_mbox.c" 1
+ 2166 0428 04002DE5 		stmfd sp!, {r0}
+ 2167              	@ 0 "" 2
+ 2168              	@ 283 "../os_core/os_mbox.c" 1
+ 2169 042c C00080E3 		orr   r0, r0, #0b11000000
+ 2170              	@ 0 "" 2
+ 2171              	@ 283 "../os_core/os_mbox.c" 1
+ 2172 0430 00F021E1 		msr   cpsr_c, r0
+ 2173              	@ 0 "" 2
+ 284:../os_core/os_mbox.c ****     msg = pevent->OSEventPtr;
+ 2174              		.loc 1 284 0
+ 2175 0434 18301BE5 		ldr	r3, [fp, #-24]
+ 2176 0438 043093E5 		ldr	r3, [r3, #4]
+ 2177 043c 10300BE5 		str	r3, [fp, #-16]
+ 285:../os_core/os_mbox.c ****     if (msg != (void *)0) {                           /* See if there is already a message         
+ 2178              		.loc 1 285 0
+ 2179 0440 10301BE5 		ldr	r3, [fp, #-16]
+ 2180 0444 000053E3 		cmp	r3, #0
+ 2181 0448 0900000A 		beq	.L35
+ 286:../os_core/os_mbox.c ****         pevent->OSEventPtr = (void *)0;               /* Clear the mailbox                         
+ 2182              		.loc 1 286 0
+ 2183 044c 18301BE5 		ldr	r3, [fp, #-24]
+ 2184 0450 0020A0E3 		mov	r2, #0
+ 2185 0454 042083E5 		str	r2, [r3, #4]
+ 287:../os_core/os_mbox.c ****         OS_EXIT_CRITICAL();
+ 2186              		.loc 1 287 0
+ 2187              	@ 287 "../os_core/os_mbox.c" 1
+ 2188 0458 04009DE4 		ldmfd sp!, {r0}
+ 2189              	@ 0 "" 2
+ 2190              	@ 287 "../os_core/os_mbox.c" 1
+ 2191 045c 00F021E1 		msr   cpsr_c, r0
+ 2192              	@ 0 "" 2
+ 288:../os_core/os_mbox.c ****         *err = OS_NO_ERR;
+ 2193              		.loc 1 288 0
+ 2194 0460 20301BE5 		ldr	r3, [fp, #-32]
+ 2195 0464 0020A0E3 		mov	r2, #0
+ 2196 0468 0020C3E5 		strb	r2, [r3, #0]
+ 289:../os_core/os_mbox.c ****         return (msg);                                 /* Return the message received (or NULL)     
+ 2197              		.loc 1 289 0
+ 2198 046c 10301BE5 		ldr	r3, [fp, #-16]
+ 2199 0470 3C0000EA 		b	.L32
+ 2200              	.L35:
+ 290:../os_core/os_mbox.c ****     }
+ 291:../os_core/os_mbox.c ****     OSTCBCur->OSTCBStat  |= OS_STAT_MBOX;             /* Message not available, task will pend     
+ 2201              		.loc 1 291 0
+ 2202 0474 00319FE5 		ldr	r3, .L37+4
+ 2203 0478 003093E5 		ldr	r3, [r3, #0]
+ 2204 047c F8209FE5 		ldr	r2, .L37+4
+ 2205 0480 002092E5 		ldr	r2, [r2, #0]
+ 2206 0484 2C20D2E5 		ldrb	r2, [r2, #44]	@ zero_extendqisi2
+ 2207 0488 022082E3 		orr	r2, r2, #2
+ 2208 048c FF2002E2 		and	r2, r2, #255
+ 2209 0490 2C20C3E5 		strb	r2, [r3, #44]
+ 292:../os_core/os_mbox.c ****     OSTCBCur->OSTCBPendTO = FALSE;
+ 2210              		.loc 1 292 0
+ 2211 0494 E0309FE5 		ldr	r3, .L37+4
+ 2212 0498 003093E5 		ldr	r3, [r3, #0]
+ 2213 049c 0020A0E3 		mov	r2, #0
+ 2214 04a0 2D20C3E5 		strb	r2, [r3, #45]
+ 293:../os_core/os_mbox.c ****     OSTCBCur->OSTCBDly    = timeout;                  /* Load timeout in TCB                       
+ 2215              		.loc 1 293 0
+ 2216 04a4 D0309FE5 		ldr	r3, .L37+4
+ 2217 04a8 003093E5 		ldr	r3, [r3, #0]
+ 2218 04ac BA215BE1 		ldrh	r2, [fp, #-26]	@ movhi
+ 2219 04b0 BA22C3E1 		strh	r2, [r3, #42]	@ movhi
+ 294:../os_core/os_mbox.c ****     OS_EventTaskWait(pevent);                         /* Suspend task until event or timeout occurs
+ 2220              		.loc 1 294 0
+ 2221 04b4 18001BE5 		ldr	r0, [fp, #-24]
+ 2222 04b8 FEFFFFEB 		bl	OS_EventTaskWait
+ 295:../os_core/os_mbox.c ****     OS_EXIT_CRITICAL();
+ 2223              		.loc 1 295 0
+ 2224              	@ 295 "../os_core/os_mbox.c" 1
+ 2225 04bc 04009DE4 		ldmfd sp!, {r0}
+ 2226              	@ 0 "" 2
+ 2227              	@ 295 "../os_core/os_mbox.c" 1
+ 2228 04c0 00F021E1 		msr   cpsr_c, r0
+ 2229              	@ 0 "" 2
+ 296:../os_core/os_mbox.c ****     OS_Sched();                                       /* Find next highest priority task ready to r
+ 2230              		.loc 1 296 0
+ 2231 04c4 FEFFFFEB 		bl	OS_Sched
+ 297:../os_core/os_mbox.c ****     OS_ENTER_CRITICAL();
+ 2232              		.loc 1 297 0
+ 2233              	@ 297 "../os_core/os_mbox.c" 1
+ 2234 04c8 00000FE1 		mrs   r0, cpsr
+ 2235              	@ 0 "" 2
+ 2236              	@ 297 "../os_core/os_mbox.c" 1
+ 2237 04cc 04002DE5 		stmfd sp!, {r0}
+ 2238              	@ 0 "" 2
+ 2239              	@ 297 "../os_core/os_mbox.c" 1
+ 2240 04d0 C00080E3 		orr   r0, r0, #0b11000000
+ 2241              	@ 0 "" 2
+ 2242              	@ 297 "../os_core/os_mbox.c" 1
+ 2243 04d4 00F021E1 		msr   cpsr_c, r0
+ 2244              	@ 0 "" 2
+ 298:../os_core/os_mbox.c ****     if (OSTCBCur->OSTCBPendTO == TRUE) {              /* See if we were given the message          
+ 2245              		.loc 1 298 0
+ 2246 04d8 9C309FE5 		ldr	r3, .L37+4
+ 2247 04dc 003093E5 		ldr	r3, [r3, #0]
+ 2248 04e0 2D30D3E5 		ldrb	r3, [r3, #45]	@ zero_extendqisi2
+ 2249 04e4 010053E3 		cmp	r3, #1
+ 2250 04e8 0800001A 		bne	.L36
+ 299:../os_core/os_mbox.c ****         OS_EventTO(pevent);                           /* Timed out, Make task ready                
+ 2251              		.loc 1 299 0
+ 2252 04ec 18001BE5 		ldr	r0, [fp, #-24]
+ 2253 04f0 FEFFFFEB 		bl	OS_EventTO
+ 300:../os_core/os_mbox.c ****         OS_EXIT_CRITICAL();
+ 2254              		.loc 1 300 0
+ 2255              	@ 300 "../os_core/os_mbox.c" 1
+ 2256 04f4 04009DE4 		ldmfd sp!, {r0}
+ 2257              	@ 0 "" 2
+ 2258              	@ 300 "../os_core/os_mbox.c" 1
+ 2259 04f8 00F021E1 		msr   cpsr_c, r0
+ 2260              	@ 0 "" 2
+ 301:../os_core/os_mbox.c ****         *err = OS_TIMEOUT;                            /* Indicate that a timeout occured           
+ 2261              		.loc 1 301 0
+ 2262 04fc 20301BE5 		ldr	r3, [fp, #-32]
+ 2263 0500 0A20A0E3 		mov	r2, #10
+ 2264 0504 0020C3E5 		strb	r2, [r3, #0]
+ 302:../os_core/os_mbox.c ****         return ((void *)0);                           /* Return a NULL message                     
+ 2265              		.loc 1 302 0
+ 2266 0508 0030A0E3 		mov	r3, #0
+ 2267 050c 150000EA 		b	.L32
+ 2268              	.L36:
+ 303:../os_core/os_mbox.c ****     }
+ 304:../os_core/os_mbox.c ****     msg                     = OSTCBCur->OSTCBMsg;
+ 2269              		.loc 1 304 0
+ 2270 0510 64309FE5 		ldr	r3, .L37+4
+ 2271 0514 003093E5 		ldr	r3, [r3, #0]
+ 2272 0518 203093E5 		ldr	r3, [r3, #32]
+ 2273 051c 10300BE5 		str	r3, [fp, #-16]
+ 305:../os_core/os_mbox.c ****     OSTCBCur->OSTCBMsg      = (void *)0;              /* Yes, clear message received               
+ 2274              		.loc 1 305 0
+ 2275 0520 54309FE5 		ldr	r3, .L37+4
+ 2276 0524 003093E5 		ldr	r3, [r3, #0]
+ 2277 0528 0020A0E3 		mov	r2, #0
+ 2278 052c 202083E5 		str	r2, [r3, #32]
+ 306:../os_core/os_mbox.c ****     OSTCBCur->OSTCBStat     = OS_STAT_RDY;
+ 2279              		.loc 1 306 0
+ 2280 0530 44309FE5 		ldr	r3, .L37+4
+ 2281 0534 003093E5 		ldr	r3, [r3, #0]
+ 2282 0538 0020A0E3 		mov	r2, #0
+ 2283 053c 2C20C3E5 		strb	r2, [r3, #44]
+ 307:../os_core/os_mbox.c ****     OSTCBCur->OSTCBEventPtr = (OS_EVENT *)0;          /* No longer waiting for event               
+ 2284              		.loc 1 307 0
+ 2285 0540 34309FE5 		ldr	r3, .L37+4
+ 2286 0544 003093E5 		ldr	r3, [r3, #0]
+ 2287 0548 0020A0E3 		mov	r2, #0
+ 2288 054c 1C2083E5 		str	r2, [r3, #28]
+ 308:../os_core/os_mbox.c ****     OS_EXIT_CRITICAL();
+ 2289              		.loc 1 308 0
+ 2290              	@ 308 "../os_core/os_mbox.c" 1
+ 2291 0550 04009DE4 		ldmfd sp!, {r0}
+ 2292              	@ 0 "" 2
+ 2293              	@ 308 "../os_core/os_mbox.c" 1
+ 2294 0554 00F021E1 		msr   cpsr_c, r0
+ 2295              	@ 0 "" 2
+ 309:../os_core/os_mbox.c ****     *err                    = OS_NO_ERR;
+ 2296              		.loc 1 309 0
+ 2297 0558 20301BE5 		ldr	r3, [fp, #-32]
+ 2298 055c 0020A0E3 		mov	r2, #0
+ 2299 0560 0020C3E5 		strb	r2, [r3, #0]
+ 310:../os_core/os_mbox.c ****     return (msg);                                     /* Return the message received               
+ 2300              		.loc 1 310 0
+ 2301 0564 10301BE5 		ldr	r3, [fp, #-16]
+ 2302              	.L32:
+ 311:../os_core/os_mbox.c **** }
+ 2303              		.loc 1 311 0
+ 2304 0568 0300A0E1 		mov	r0, r3
+ 2305 056c 0CD04BE2 		sub	sp, fp, #12
+ 2306 0570 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2307 0574 1EFF2FE1 		bx	lr
+ 2308              	.L38:
+ 2309              		.align	2
+ 2310              	.L37:
+ 2311 0578 00000000 		.word	OSIntNesting
+ 2312 057c 00000000 		.word	OSTCBCur
+ 2313              		.cfi_endproc
+ 2314              	.LFE3:
+ 2316              		.align	2
+ 2317              		.global	OSMboxPost
+ 2319              	OSMboxPost:
+ 2320              	.LFB4:
+ 312:../os_core/os_mbox.c **** /*$PAGE*/
+ 313:../os_core/os_mbox.c **** /*
+ 314:../os_core/os_mbox.c **** ***************************************************************************************************
+ 315:../os_core/os_mbox.c **** *                                       POST MESSAGE TO A MAILBOX
+ 316:../os_core/os_mbox.c **** *
+ 317:../os_core/os_mbox.c **** * Description: This function sends a message to a mailbox
+ 318:../os_core/os_mbox.c **** *
+ 319:../os_core/os_mbox.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired ma
+ 320:../os_core/os_mbox.c **** *
+ 321:../os_core/os_mbox.c **** *              msg           is a pointer to the message to send.  You MUST NOT send a NULL pointer
+ 322:../os_core/os_mbox.c **** *
+ 323:../os_core/os_mbox.c **** * Returns    : OS_NO_ERR            The call was successful and the message was sent
+ 324:../os_core/os_mbox.c **** *              OS_MBOX_FULL         If the mailbox already contains a message.  You can can only se
+ 325:../os_core/os_mbox.c **** *                                   message at a time and thus, the message MUST be consumed before
+ 326:../os_core/os_mbox.c **** *                                   are allowed to send another one.
+ 327:../os_core/os_mbox.c **** *              OS_ERR_EVENT_TYPE    If you are attempting to post to a non mailbox.
+ 328:../os_core/os_mbox.c **** *              OS_ERR_PEVENT_NULL   If 'pevent' is a NULL pointer
+ 329:../os_core/os_mbox.c **** *              OS_ERR_POST_NULL_PTR If you are attempting to post a NULL pointer
+ 330:../os_core/os_mbox.c **** *
+ 331:../os_core/os_mbox.c **** * Note(s)    : 1) HPT means Highest Priority Task
+ 332:../os_core/os_mbox.c **** ***************************************************************************************************
+ 333:../os_core/os_mbox.c **** */
+ 334:../os_core/os_mbox.c **** 
+ 335:../os_core/os_mbox.c **** #if OS_MBOX_POST_EN > 0
+ 336:../os_core/os_mbox.c **** INT8U  OSMboxPost (OS_EVENT *pevent, void *msg)
+ 337:../os_core/os_mbox.c **** {
+ 2321              		.loc 1 337 0
+ 2322              		.cfi_startproc
+ 2323              		@ Function supports interworking.
+ 2324              		@ args = 0, pretend = 0, frame = 8
+ 2325              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2326 0580 0DC0A0E1 		mov	ip, sp
+ 2327              	.LCFI8:
+ 2328              		.cfi_def_cfa_register 12
+ 2329 0584 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2330 0588 04B04CE2 		sub	fp, ip, #4
+ 2331              		.cfi_offset 14, -8
+ 2332              		.cfi_offset 13, -12
+ 2333              		.cfi_offset 11, -16
+ 2334              	.LCFI9:
+ 2335              		.cfi_def_cfa 11, 4
+ 2336 058c 08D04DE2 		sub	sp, sp, #8
+ 2337 0590 10000BE5 		str	r0, [fp, #-16]
+ 2338 0594 14100BE5 		str	r1, [fp, #-20]
+ 338:../os_core/os_mbox.c **** #if OS_CRITICAL_METHOD == 3                           /* Allocate storage for CPU status register  
+ 339:../os_core/os_mbox.c ****     OS_CPU_SR  cpu_sr;
+ 340:../os_core/os_mbox.c ****     
+ 341:../os_core/os_mbox.c **** 
+ 342:../os_core/os_mbox.c ****     
+ 343:../os_core/os_mbox.c ****     cpu_sr = 0;                                       /* Prevent compiler warning                  
+ 344:../os_core/os_mbox.c **** #endif    
+ 345:../os_core/os_mbox.c **** #if OS_ARG_CHK_EN > 0
+ 346:../os_core/os_mbox.c ****     if (pevent == (OS_EVENT *)0) {                    /* Validate 'pevent'                         
+ 2339              		.loc 1 346 0
+ 2340 0598 10301BE5 		ldr	r3, [fp, #-16]
+ 2341 059c 000053E3 		cmp	r3, #0
+ 2342 05a0 0100001A 		bne	.L40
+ 347:../os_core/os_mbox.c ****         return (OS_ERR_PEVENT_NULL);
+ 2343              		.loc 1 347 0
+ 2344 05a4 0430A0E3 		mov	r3, #4
+ 2345 05a8 290000EA 		b	.L41
+ 2346              	.L40:
+ 348:../os_core/os_mbox.c ****     }
+ 349:../os_core/os_mbox.c ****     if (msg == (void *)0) {                           /* Make sure we are not posting a NULL pointe
+ 2347              		.loc 1 349 0
+ 2348 05ac 14301BE5 		ldr	r3, [fp, #-20]
+ 2349 05b0 000053E3 		cmp	r3, #0
+ 2350 05b4 0100001A 		bne	.L42
+ 350:../os_core/os_mbox.c ****         return (OS_ERR_POST_NULL_PTR);
+ 2351              		.loc 1 350 0
+ 2352 05b8 0330A0E3 		mov	r3, #3
+ 2353 05bc 240000EA 		b	.L41
+ 2354              	.L42:
+ 351:../os_core/os_mbox.c ****     }
+ 352:../os_core/os_mbox.c **** #endif
+ 353:../os_core/os_mbox.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_MBOX) {  /* Validate event block type                 
+ 2355              		.loc 1 353 0
+ 2356 05c0 10301BE5 		ldr	r3, [fp, #-16]
+ 2357 05c4 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2358 05c8 010053E3 		cmp	r3, #1
+ 2359 05cc 0100000A 		beq	.L43
+ 354:../os_core/os_mbox.c ****         return (OS_ERR_EVENT_TYPE);
+ 2360              		.loc 1 354 0
+ 2361 05d0 0130A0E3 		mov	r3, #1
+ 2362 05d4 1E0000EA 		b	.L41
+ 2363              	.L43:
+ 355:../os_core/os_mbox.c ****     }
+ 356:../os_core/os_mbox.c ****     OS_ENTER_CRITICAL();
+ 2364              		.loc 1 356 0
+ 2365              	@ 356 "../os_core/os_mbox.c" 1
+ 2366 05d8 00000FE1 		mrs   r0, cpsr
+ 2367              	@ 0 "" 2
+ 2368              	@ 356 "../os_core/os_mbox.c" 1
+ 2369 05dc 04002DE5 		stmfd sp!, {r0}
+ 2370              	@ 0 "" 2
+ 2371              	@ 356 "../os_core/os_mbox.c" 1
+ 2372 05e0 C00080E3 		orr   r0, r0, #0b11000000
+ 2373              	@ 0 "" 2
+ 2374              	@ 356 "../os_core/os_mbox.c" 1
+ 2375 05e4 00F021E1 		msr   cpsr_c, r0
+ 2376              	@ 0 "" 2
+ 357:../os_core/os_mbox.c ****     if (pevent->OSEventGrp != 0x00) {                     /* See if any task pending on mailbox    
+ 2377              		.loc 1 357 0
+ 2378 05e8 10301BE5 		ldr	r3, [fp, #-16]
+ 2379 05ec 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2380 05f0 000053E3 		cmp	r3, #0
+ 2381 05f4 0800000A 		beq	.L44
+ 358:../os_core/os_mbox.c ****         (void)OS_EventTaskRdy(pevent, msg, OS_STAT_MBOX); /* Ready HPT waiting on event            
+ 2382              		.loc 1 358 0
+ 2383 05f8 10001BE5 		ldr	r0, [fp, #-16]
+ 2384 05fc 14101BE5 		ldr	r1, [fp, #-20]
+ 2385 0600 0220A0E3 		mov	r2, #2
+ 2386 0604 FEFFFFEB 		bl	OS_EventTaskRdy
+ 359:../os_core/os_mbox.c ****         OS_EXIT_CRITICAL();
+ 2387              		.loc 1 359 0
+ 2388              	@ 359 "../os_core/os_mbox.c" 1
+ 2389 0608 04009DE4 		ldmfd sp!, {r0}
+ 2390              	@ 0 "" 2
+ 2391              	@ 359 "../os_core/os_mbox.c" 1
+ 2392 060c 00F021E1 		msr   cpsr_c, r0
+ 2393              	@ 0 "" 2
+ 360:../os_core/os_mbox.c ****         OS_Sched();                                   /* Find highest priority task ready to run   
+ 2394              		.loc 1 360 0
+ 2395 0610 FEFFFFEB 		bl	OS_Sched
+ 361:../os_core/os_mbox.c ****         return (OS_NO_ERR);
+ 2396              		.loc 1 361 0
+ 2397 0614 0030A0E3 		mov	r3, #0
+ 2398 0618 0D0000EA 		b	.L41
+ 2399              	.L44:
+ 362:../os_core/os_mbox.c ****     }
+ 363:../os_core/os_mbox.c ****     if (pevent->OSEventPtr != (void *)0) {            /* Make sure mailbox doesn't already have a m
+ 2400              		.loc 1 363 0
+ 2401 061c 10301BE5 		ldr	r3, [fp, #-16]
+ 2402 0620 043093E5 		ldr	r3, [r3, #4]
+ 2403 0624 000053E3 		cmp	r3, #0
+ 2404 0628 0300000A 		beq	.L45
+ 364:../os_core/os_mbox.c ****         OS_EXIT_CRITICAL();
+ 2405              		.loc 1 364 0
+ 2406              	@ 364 "../os_core/os_mbox.c" 1
+ 2407 062c 04009DE4 		ldmfd sp!, {r0}
+ 2408              	@ 0 "" 2
+ 2409              	@ 364 "../os_core/os_mbox.c" 1
+ 2410 0630 00F021E1 		msr   cpsr_c, r0
+ 2411              	@ 0 "" 2
+ 365:../os_core/os_mbox.c ****         return (OS_MBOX_FULL);
+ 2412              		.loc 1 365 0
+ 2413 0634 1430A0E3 		mov	r3, #20
+ 2414 0638 050000EA 		b	.L41
+ 2415              	.L45:
+ 366:../os_core/os_mbox.c ****     }
+ 367:../os_core/os_mbox.c ****     pevent->OSEventPtr = msg;                         /* Place message in mailbox                  
+ 2416              		.loc 1 367 0
+ 2417 063c 10301BE5 		ldr	r3, [fp, #-16]
+ 2418 0640 14201BE5 		ldr	r2, [fp, #-20]
+ 2419 0644 042083E5 		str	r2, [r3, #4]
+ 368:../os_core/os_mbox.c ****     OS_EXIT_CRITICAL();
+ 2420              		.loc 1 368 0
+ 2421              	@ 368 "../os_core/os_mbox.c" 1
+ 2422 0648 04009DE4 		ldmfd sp!, {r0}
+ 2423              	@ 0 "" 2
+ 2424              	@ 368 "../os_core/os_mbox.c" 1
+ 2425 064c 00F021E1 		msr   cpsr_c, r0
+ 2426              	@ 0 "" 2
+ 369:../os_core/os_mbox.c ****     return (OS_NO_ERR);
+ 2427              		.loc 1 369 0
+ 2428 0650 0030A0E3 		mov	r3, #0
+ 2429              	.L41:
+ 370:../os_core/os_mbox.c **** }
+ 2430              		.loc 1 370 0
+ 2431 0654 0300A0E1 		mov	r0, r3
+ 2432 0658 0CD04BE2 		sub	sp, fp, #12
+ 2433 065c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2434 0660 1EFF2FE1 		bx	lr
+ 2435              		.cfi_endproc
+ 2436              	.LFE4:
+ 2438              		.align	2
+ 2439              		.global	OSMboxPostOpt
+ 2441              	OSMboxPostOpt:
+ 2442              	.LFB5:
+ 371:../os_core/os_mbox.c **** #endif
+ 372:../os_core/os_mbox.c **** 
+ 373:../os_core/os_mbox.c **** /*$PAGE*/
+ 374:../os_core/os_mbox.c **** /*
+ 375:../os_core/os_mbox.c **** ***************************************************************************************************
+ 376:../os_core/os_mbox.c **** *                                       POST MESSAGE TO A MAILBOX
+ 377:../os_core/os_mbox.c **** *
+ 378:../os_core/os_mbox.c **** * Description: This function sends a message to a mailbox
+ 379:../os_core/os_mbox.c **** *
+ 380:../os_core/os_mbox.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired ma
+ 381:../os_core/os_mbox.c **** *
+ 382:../os_core/os_mbox.c **** *              msg           is a pointer to the message to send.  You MUST NOT send a NULL pointer
+ 383:../os_core/os_mbox.c **** *
+ 384:../os_core/os_mbox.c **** *              opt           determines the type of POST performed:
+ 385:../os_core/os_mbox.c **** *                            OS_POST_OPT_NONE         POST to a single waiting task 
+ 386:../os_core/os_mbox.c **** *                                                     (Identical to OSMboxPost())
+ 387:../os_core/os_mbox.c **** *                            OS_POST_OPT_BROADCAST    POST to ALL tasks that are waiting on the mai
+ 388:../os_core/os_mbox.c **** *
+ 389:../os_core/os_mbox.c **** * Returns    : OS_NO_ERR            The call was successful and the message was sent
+ 390:../os_core/os_mbox.c **** *              OS_MBOX_FULL         If the mailbox already contains a message.  You can can only se
+ 391:../os_core/os_mbox.c **** *                                   message at a time and thus, the message MUST be consumed before
+ 392:../os_core/os_mbox.c **** *                                   are allowed to send another one.
+ 393:../os_core/os_mbox.c **** *              OS_ERR_EVENT_TYPE    If you are attempting to post to a non mailbox.
+ 394:../os_core/os_mbox.c **** *              OS_ERR_PEVENT_NULL   If 'pevent' is a NULL pointer
+ 395:../os_core/os_mbox.c **** *              OS_ERR_POST_NULL_PTR If you are attempting to post a NULL pointer
+ 396:../os_core/os_mbox.c **** *
+ 397:../os_core/os_mbox.c **** * Note(s)    : 1) HPT means Highest Priority Task
+ 398:../os_core/os_mbox.c **** *
+ 399:../os_core/os_mbox.c **** * Warning    : Interrupts can be disabled for a long time if you do a 'broadcast'.  In fact, the 
+ 400:../os_core/os_mbox.c **** *              interrupt disable time is proportional to the number of tasks waiting on the mailbox
+ 401:../os_core/os_mbox.c **** ***************************************************************************************************
+ 402:../os_core/os_mbox.c **** */
+ 403:../os_core/os_mbox.c **** 
+ 404:../os_core/os_mbox.c **** #if OS_MBOX_POST_OPT_EN > 0
+ 405:../os_core/os_mbox.c **** INT8U  OSMboxPostOpt (OS_EVENT *pevent, void *msg, INT8U opt)
+ 406:../os_core/os_mbox.c **** {
+ 2443              		.loc 1 406 0
+ 2444              		.cfi_startproc
+ 2445              		@ Function supports interworking.
+ 2446              		@ args = 0, pretend = 0, frame = 16
+ 2447              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2448 0664 0DC0A0E1 		mov	ip, sp
+ 2449              	.LCFI10:
+ 2450              		.cfi_def_cfa_register 12
+ 2451 0668 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2452 066c 04B04CE2 		sub	fp, ip, #4
+ 2453              		.cfi_offset 14, -8
+ 2454              		.cfi_offset 13, -12
+ 2455              		.cfi_offset 11, -16
+ 2456              	.LCFI11:
+ 2457              		.cfi_def_cfa 11, 4
+ 2458 0670 10D04DE2 		sub	sp, sp, #16
+ 2459 0674 10000BE5 		str	r0, [fp, #-16]
+ 2460 0678 14100BE5 		str	r1, [fp, #-20]
+ 2461 067c 0230A0E1 		mov	r3, r2
+ 2462 0680 15304BE5 		strb	r3, [fp, #-21]
+ 407:../os_core/os_mbox.c **** #if OS_CRITICAL_METHOD == 3                           /* Allocate storage for CPU status register  
+ 408:../os_core/os_mbox.c ****     OS_CPU_SR  cpu_sr;
+ 409:../os_core/os_mbox.c ****     
+ 410:../os_core/os_mbox.c ****     
+ 411:../os_core/os_mbox.c **** 
+ 412:../os_core/os_mbox.c ****     cpu_sr = 0;                                       /* Prevent compiler warning                  
+ 413:../os_core/os_mbox.c **** #endif    
+ 414:../os_core/os_mbox.c **** #if OS_ARG_CHK_EN > 0
+ 415:../os_core/os_mbox.c ****     if (pevent == (OS_EVENT *)0) {                    /* Validate 'pevent'                         
+ 2463              		.loc 1 415 0
+ 2464 0684 10301BE5 		ldr	r3, [fp, #-16]
+ 2465 0688 000053E3 		cmp	r3, #0
+ 2466 068c 0100001A 		bne	.L47
+ 416:../os_core/os_mbox.c ****         return (OS_ERR_PEVENT_NULL);
+ 2467              		.loc 1 416 0
+ 2468 0690 0430A0E3 		mov	r3, #4
+ 2469 0694 380000EA 		b	.L48
+ 2470              	.L47:
+ 417:../os_core/os_mbox.c ****     }
+ 418:../os_core/os_mbox.c ****     if (msg == (void *)0) {                           /* Make sure we are not posting a NULL pointe
+ 2471              		.loc 1 418 0
+ 2472 0698 14301BE5 		ldr	r3, [fp, #-20]
+ 2473 069c 000053E3 		cmp	r3, #0
+ 2474 06a0 0100001A 		bne	.L49
+ 419:../os_core/os_mbox.c ****         return (OS_ERR_POST_NULL_PTR);
+ 2475              		.loc 1 419 0
+ 2476 06a4 0330A0E3 		mov	r3, #3
+ 2477 06a8 330000EA 		b	.L48
+ 2478              	.L49:
+ 420:../os_core/os_mbox.c ****     }
+ 421:../os_core/os_mbox.c **** #endif
+ 422:../os_core/os_mbox.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_MBOX) {  /* Validate event block type                 
+ 2479              		.loc 1 422 0
+ 2480 06ac 10301BE5 		ldr	r3, [fp, #-16]
+ 2481 06b0 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2482 06b4 010053E3 		cmp	r3, #1
+ 2483 06b8 0100000A 		beq	.L50
+ 423:../os_core/os_mbox.c ****         return (OS_ERR_EVENT_TYPE);
+ 2484              		.loc 1 423 0
+ 2485 06bc 0130A0E3 		mov	r3, #1
+ 2486 06c0 2D0000EA 		b	.L48
+ 2487              	.L50:
+ 424:../os_core/os_mbox.c ****     }
+ 425:../os_core/os_mbox.c ****     OS_ENTER_CRITICAL();
+ 2488              		.loc 1 425 0
+ 2489              	@ 425 "../os_core/os_mbox.c" 1
+ 2490 06c4 00000FE1 		mrs   r0, cpsr
+ 2491              	@ 0 "" 2
+ 2492              	@ 425 "../os_core/os_mbox.c" 1
+ 2493 06c8 04002DE5 		stmfd sp!, {r0}
+ 2494              	@ 0 "" 2
+ 2495              	@ 425 "../os_core/os_mbox.c" 1
+ 2496 06cc C00080E3 		orr   r0, r0, #0b11000000
+ 2497              	@ 0 "" 2
+ 2498              	@ 425 "../os_core/os_mbox.c" 1
+ 2499 06d0 00F021E1 		msr   cpsr_c, r0
+ 2500              	@ 0 "" 2
+ 426:../os_core/os_mbox.c ****     if (pevent->OSEventGrp != 0x00) {                 /* See if any task pending on mailbox        
+ 2501              		.loc 1 426 0
+ 2502 06d4 10301BE5 		ldr	r3, [fp, #-16]
+ 2503 06d8 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2504 06dc 000053E3 		cmp	r3, #0
+ 2505 06e0 1700000A 		beq	.L51
+ 427:../os_core/os_mbox.c ****         if ((opt & OS_POST_OPT_BROADCAST) != 0x00) {  /* Do we need to post msg to ALL waiting task
+ 2506              		.loc 1 427 0
+ 2507 06e4 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 2508 06e8 013003E2 		and	r3, r3, #1
+ 2509 06ec FF3003E2 		and	r3, r3, #255
+ 2510 06f0 000053E3 		cmp	r3, #0
+ 2511 06f4 0900000A 		beq	.L52
+ 428:../os_core/os_mbox.c ****             while (pevent->OSEventGrp != 0x00) {      /* Yes, Post to ALL tasks waiting on mailbox 
+ 2512              		.loc 1 428 0
+ 2513 06f8 030000EA 		b	.L53
+ 2514              	.L54:
+ 429:../os_core/os_mbox.c ****                 (void)OS_EventTaskRdy(pevent, msg, OS_STAT_MBOX);    
+ 2515              		.loc 1 429 0
+ 2516 06fc 10001BE5 		ldr	r0, [fp, #-16]
+ 2517 0700 14101BE5 		ldr	r1, [fp, #-20]
+ 2518 0704 0220A0E3 		mov	r2, #2
+ 2519 0708 FEFFFFEB 		bl	OS_EventTaskRdy
+ 2520              	.L53:
+ 428:../os_core/os_mbox.c ****             while (pevent->OSEventGrp != 0x00) {      /* Yes, Post to ALL tasks waiting on mailbox 
+ 2521              		.loc 1 428 0 discriminator 1
+ 2522 070c 10301BE5 		ldr	r3, [fp, #-16]
+ 2523 0710 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2524 0714 000053E3 		cmp	r3, #0
+ 2525 0718 F7FFFF1A 		bne	.L54
+ 428:../os_core/os_mbox.c ****             while (pevent->OSEventGrp != 0x00) {      /* Yes, Post to ALL tasks waiting on mailbox 
+ 2526              		.loc 1 428 0 is_stmt 0
+ 2527 071c 030000EA 		b	.L55
+ 2528              	.L52:
+ 430:../os_core/os_mbox.c ****             }
+ 431:../os_core/os_mbox.c ****         } else {
+ 432:../os_core/os_mbox.c ****             (void)OS_EventTaskRdy(pevent, msg, OS_STAT_MBOX);  /* No,  Post to HPT waiting on mbox 
+ 2529              		.loc 1 432 0 is_stmt 1
+ 2530 0720 10001BE5 		ldr	r0, [fp, #-16]
+ 2531 0724 14101BE5 		ldr	r1, [fp, #-20]
+ 2532 0728 0220A0E3 		mov	r2, #2
+ 2533 072c FEFFFFEB 		bl	OS_EventTaskRdy
+ 2534              	.L55:
+ 433:../os_core/os_mbox.c ****         }
+ 434:../os_core/os_mbox.c ****         OS_EXIT_CRITICAL();
+ 2535              		.loc 1 434 0
+ 2536              	@ 434 "../os_core/os_mbox.c" 1
+ 2537 0730 04009DE4 		ldmfd sp!, {r0}
+ 2538              	@ 0 "" 2
+ 2539              	@ 434 "../os_core/os_mbox.c" 1
+ 2540 0734 00F021E1 		msr   cpsr_c, r0
+ 2541              	@ 0 "" 2
+ 435:../os_core/os_mbox.c ****         OS_Sched();                                            /* Find HPT ready to run            
+ 2542              		.loc 1 435 0
+ 2543 0738 FEFFFFEB 		bl	OS_Sched
+ 436:../os_core/os_mbox.c ****         return (OS_NO_ERR);
+ 2544              		.loc 1 436 0
+ 2545 073c 0030A0E3 		mov	r3, #0
+ 2546 0740 0D0000EA 		b	.L48
+ 2547              	.L51:
+ 437:../os_core/os_mbox.c ****     }
+ 438:../os_core/os_mbox.c ****     if (pevent->OSEventPtr != (void *)0) {            /* Make sure mailbox doesn't already have a m
+ 2548              		.loc 1 438 0
+ 2549 0744 10301BE5 		ldr	r3, [fp, #-16]
+ 2550 0748 043093E5 		ldr	r3, [r3, #4]
+ 2551 074c 000053E3 		cmp	r3, #0
+ 2552 0750 0300000A 		beq	.L56
+ 439:../os_core/os_mbox.c ****         OS_EXIT_CRITICAL();
+ 2553              		.loc 1 439 0
+ 2554              	@ 439 "../os_core/os_mbox.c" 1
+ 2555 0754 04009DE4 		ldmfd sp!, {r0}
+ 2556              	@ 0 "" 2
+ 2557              	@ 439 "../os_core/os_mbox.c" 1
+ 2558 0758 00F021E1 		msr   cpsr_c, r0
+ 2559              	@ 0 "" 2
+ 440:../os_core/os_mbox.c ****         return (OS_MBOX_FULL);
+ 2560              		.loc 1 440 0
+ 2561 075c 1430A0E3 		mov	r3, #20
+ 2562 0760 050000EA 		b	.L48
+ 2563              	.L56:
+ 441:../os_core/os_mbox.c ****     }
+ 442:../os_core/os_mbox.c ****     pevent->OSEventPtr = msg;                         /* Place message in mailbox                  
+ 2564              		.loc 1 442 0
+ 2565 0764 10301BE5 		ldr	r3, [fp, #-16]
+ 2566 0768 14201BE5 		ldr	r2, [fp, #-20]
+ 2567 076c 042083E5 		str	r2, [r3, #4]
+ 443:../os_core/os_mbox.c ****     OS_EXIT_CRITICAL();
+ 2568              		.loc 1 443 0
+ 2569              	@ 443 "../os_core/os_mbox.c" 1
+ 2570 0770 04009DE4 		ldmfd sp!, {r0}
+ 2571              	@ 0 "" 2
+ 2572              	@ 443 "../os_core/os_mbox.c" 1
+ 2573 0774 00F021E1 		msr   cpsr_c, r0
+ 2574              	@ 0 "" 2
+ 444:../os_core/os_mbox.c ****     return (OS_NO_ERR);
+ 2575              		.loc 1 444 0
+ 2576 0778 0030A0E3 		mov	r3, #0
+ 2577              	.L48:
+ 445:../os_core/os_mbox.c **** }
+ 2578              		.loc 1 445 0
+ 2579 077c 0300A0E1 		mov	r0, r3
+ 2580 0780 0CD04BE2 		sub	sp, fp, #12
+ 2581 0784 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2582 0788 1EFF2FE1 		bx	lr
+ 2583              		.cfi_endproc
+ 2584              	.LFE5:
+ 2586              		.align	2
+ 2587              		.global	OSMboxQuery
+ 2589              	OSMboxQuery:
+ 2590              	.LFB6:
+ 446:../os_core/os_mbox.c **** #endif
+ 447:../os_core/os_mbox.c **** 
+ 448:../os_core/os_mbox.c **** /*$PAGE*/
+ 449:../os_core/os_mbox.c **** /*
+ 450:../os_core/os_mbox.c **** ***************************************************************************************************
+ 451:../os_core/os_mbox.c **** *                                        QUERY A MESSAGE MAILBOX
+ 452:../os_core/os_mbox.c **** *
+ 453:../os_core/os_mbox.c **** * Description: This function obtains information about a message mailbox.
+ 454:../os_core/os_mbox.c **** *
+ 455:../os_core/os_mbox.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired ma
+ 456:../os_core/os_mbox.c **** *
+ 457:../os_core/os_mbox.c **** *              p_mbox_data   is a pointer to a structure that will contain information about the me
+ 458:../os_core/os_mbox.c **** *                            mailbox.
+ 459:../os_core/os_mbox.c **** *
+ 460:../os_core/os_mbox.c **** * Returns    : OS_NO_ERR           The call was successful and the message was sent
+ 461:../os_core/os_mbox.c **** *              OS_ERR_EVENT_TYPE   If you are attempting to obtain data from a non mailbox.
+ 462:../os_core/os_mbox.c **** *              OS_ERR_PEVENT_NULL  If 'pevent' is a NULL pointer
+ 463:../os_core/os_mbox.c **** ***************************************************************************************************
+ 464:../os_core/os_mbox.c **** */
+ 465:../os_core/os_mbox.c **** 
+ 466:../os_core/os_mbox.c **** #if OS_MBOX_QUERY_EN > 0
+ 467:../os_core/os_mbox.c **** INT8U  OSMboxQuery (OS_EVENT *pevent, OS_MBOX_DATA *p_mbox_data)
+ 468:../os_core/os_mbox.c **** {
+ 2591              		.loc 1 468 0
+ 2592              		.cfi_startproc
+ 2593              		@ Function supports interworking.
+ 2594              		@ args = 0, pretend = 0, frame = 16
+ 2595              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2596 078c 0DC0A0E1 		mov	ip, sp
+ 2597              	.LCFI12:
+ 2598              		.cfi_def_cfa_register 12
+ 2599 0790 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2600 0794 04B04CE2 		sub	fp, ip, #4
+ 2601              		.cfi_offset 14, -8
+ 2602              		.cfi_offset 13, -12
+ 2603              		.cfi_offset 11, -16
+ 2604              	.LCFI13:
+ 2605              		.cfi_def_cfa 11, 4
+ 2606 0798 10D04DE2 		sub	sp, sp, #16
+ 2607 079c 18000BE5 		str	r0, [fp, #-24]
+ 2608 07a0 1C100BE5 		str	r1, [fp, #-28]
+ 469:../os_core/os_mbox.c ****     INT8U     *psrc;
+ 470:../os_core/os_mbox.c ****     INT8U     *pdest;
+ 471:../os_core/os_mbox.c **** #if OS_CRITICAL_METHOD == 3                                /* Allocate storage for CPU status regis
+ 472:../os_core/os_mbox.c ****     OS_CPU_SR  cpu_sr;
+ 473:../os_core/os_mbox.c **** 
+ 474:../os_core/os_mbox.c **** 
+ 475:../os_core/os_mbox.c **** 
+ 476:../os_core/os_mbox.c ****     cpu_sr = 0;                                            /* Prevent compiler warning             
+ 477:../os_core/os_mbox.c **** #endif    
+ 478:../os_core/os_mbox.c **** #if OS_ARG_CHK_EN > 0
+ 479:../os_core/os_mbox.c ****     if (pevent == (OS_EVENT *)0) {                         /* Validate 'pevent'                    
+ 2609              		.loc 1 479 0
+ 2610 07a4 18301BE5 		ldr	r3, [fp, #-24]
+ 2611 07a8 000053E3 		cmp	r3, #0
+ 2612 07ac 0100001A 		bne	.L58
+ 480:../os_core/os_mbox.c ****         return (OS_ERR_PEVENT_NULL);
+ 2613              		.loc 1 480 0
+ 2614 07b0 0430A0E3 		mov	r3, #4
+ 2615 07b4 640000EA 		b	.L59
+ 2616              	.L58:
+ 481:../os_core/os_mbox.c ****     }
+ 482:../os_core/os_mbox.c **** #endif
+ 483:../os_core/os_mbox.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_MBOX) {       /* Validate event block type            
+ 2617              		.loc 1 483 0
+ 2618 07b8 18301BE5 		ldr	r3, [fp, #-24]
+ 2619 07bc 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2620 07c0 010053E3 		cmp	r3, #1
+ 2621 07c4 0100000A 		beq	.L60
+ 484:../os_core/os_mbox.c ****         return (OS_ERR_EVENT_TYPE);
+ 2622              		.loc 1 484 0
+ 2623 07c8 0130A0E3 		mov	r3, #1
+ 2624 07cc 5E0000EA 		b	.L59
+ 2625              	.L60:
+ 485:../os_core/os_mbox.c ****     }
+ 486:../os_core/os_mbox.c ****     OS_ENTER_CRITICAL();
+ 2626              		.loc 1 486 0
+ 2627              	@ 486 "../os_core/os_mbox.c" 1
+ 2628 07d0 00000FE1 		mrs   r0, cpsr
+ 2629              	@ 0 "" 2
+ 2630              	@ 486 "../os_core/os_mbox.c" 1
+ 2631 07d4 04002DE5 		stmfd sp!, {r0}
+ 2632              	@ 0 "" 2
+ 2633              	@ 486 "../os_core/os_mbox.c" 1
+ 2634 07d8 C00080E3 		orr   r0, r0, #0b11000000
+ 2635              	@ 0 "" 2
+ 2636              	@ 486 "../os_core/os_mbox.c" 1
+ 2637 07dc 00F021E1 		msr   cpsr_c, r0
+ 2638              	@ 0 "" 2
+ 487:../os_core/os_mbox.c ****     p_mbox_data->OSEventGrp = pevent->OSEventGrp;          /* Copy message mailbox wait list       
+ 2639              		.loc 1 487 0
+ 2640 07e0 18301BE5 		ldr	r3, [fp, #-24]
+ 2641 07e4 0120D3E5 		ldrb	r2, [r3, #1]	@ zero_extendqisi2
+ 2642 07e8 1C301BE5 		ldr	r3, [fp, #-28]
+ 2643 07ec 0C20C3E5 		strb	r2, [r3, #12]
+ 488:../os_core/os_mbox.c ****     psrc                    = &pevent->OSEventTbl[0];
+ 2644              		.loc 1 488 0
+ 2645 07f0 18301BE5 		ldr	r3, [fp, #-24]
+ 2646 07f4 083083E2 		add	r3, r3, #8
+ 2647 07f8 10300BE5 		str	r3, [fp, #-16]
+ 489:../os_core/os_mbox.c ****     pdest                   = &p_mbox_data->OSEventTbl[0];
+ 2648              		.loc 1 489 0
+ 2649 07fc 1C301BE5 		ldr	r3, [fp, #-28]
+ 2650 0800 043083E2 		add	r3, r3, #4
+ 2651 0804 14300BE5 		str	r3, [fp, #-20]
+ 490:../os_core/os_mbox.c **** 
+ 491:../os_core/os_mbox.c **** #if OS_EVENT_TBL_SIZE > 0
+ 492:../os_core/os_mbox.c ****     *pdest++ = *psrc++;
+ 2652              		.loc 1 492 0
+ 2653 0808 10301BE5 		ldr	r3, [fp, #-16]
+ 2654 080c 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2655 0810 14301BE5 		ldr	r3, [fp, #-20]
+ 2656 0814 0020C3E5 		strb	r2, [r3, #0]
+ 2657 0818 14301BE5 		ldr	r3, [fp, #-20]
+ 2658 081c 013083E2 		add	r3, r3, #1
+ 2659 0820 14300BE5 		str	r3, [fp, #-20]
+ 2660 0824 10301BE5 		ldr	r3, [fp, #-16]
+ 2661 0828 013083E2 		add	r3, r3, #1
+ 2662 082c 10300BE5 		str	r3, [fp, #-16]
+ 493:../os_core/os_mbox.c **** #endif
+ 494:../os_core/os_mbox.c **** 
+ 495:../os_core/os_mbox.c **** #if OS_EVENT_TBL_SIZE > 1
+ 496:../os_core/os_mbox.c ****     *pdest++ = *psrc++;
+ 2663              		.loc 1 496 0
+ 2664 0830 10301BE5 		ldr	r3, [fp, #-16]
+ 2665 0834 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2666 0838 14301BE5 		ldr	r3, [fp, #-20]
+ 2667 083c 0020C3E5 		strb	r2, [r3, #0]
+ 2668 0840 14301BE5 		ldr	r3, [fp, #-20]
+ 2669 0844 013083E2 		add	r3, r3, #1
+ 2670 0848 14300BE5 		str	r3, [fp, #-20]
+ 2671 084c 10301BE5 		ldr	r3, [fp, #-16]
+ 2672 0850 013083E2 		add	r3, r3, #1
+ 2673 0854 10300BE5 		str	r3, [fp, #-16]
+ 497:../os_core/os_mbox.c **** #endif
+ 498:../os_core/os_mbox.c **** 
+ 499:../os_core/os_mbox.c **** #if OS_EVENT_TBL_SIZE > 2
+ 500:../os_core/os_mbox.c ****     *pdest++ = *psrc++;
+ 2674              		.loc 1 500 0
+ 2675 0858 10301BE5 		ldr	r3, [fp, #-16]
+ 2676 085c 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2677 0860 14301BE5 		ldr	r3, [fp, #-20]
+ 2678 0864 0020C3E5 		strb	r2, [r3, #0]
+ 2679 0868 14301BE5 		ldr	r3, [fp, #-20]
+ 2680 086c 013083E2 		add	r3, r3, #1
+ 2681 0870 14300BE5 		str	r3, [fp, #-20]
+ 2682 0874 10301BE5 		ldr	r3, [fp, #-16]
+ 2683 0878 013083E2 		add	r3, r3, #1
+ 2684 087c 10300BE5 		str	r3, [fp, #-16]
+ 501:../os_core/os_mbox.c **** #endif
+ 502:../os_core/os_mbox.c **** 
+ 503:../os_core/os_mbox.c **** #if OS_EVENT_TBL_SIZE > 3
+ 504:../os_core/os_mbox.c ****     *pdest++ = *psrc++;
+ 2685              		.loc 1 504 0
+ 2686 0880 10301BE5 		ldr	r3, [fp, #-16]
+ 2687 0884 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2688 0888 14301BE5 		ldr	r3, [fp, #-20]
+ 2689 088c 0020C3E5 		strb	r2, [r3, #0]
+ 2690 0890 14301BE5 		ldr	r3, [fp, #-20]
+ 2691 0894 013083E2 		add	r3, r3, #1
+ 2692 0898 14300BE5 		str	r3, [fp, #-20]
+ 2693 089c 10301BE5 		ldr	r3, [fp, #-16]
+ 2694 08a0 013083E2 		add	r3, r3, #1
+ 2695 08a4 10300BE5 		str	r3, [fp, #-16]
+ 505:../os_core/os_mbox.c **** #endif
+ 506:../os_core/os_mbox.c **** 
+ 507:../os_core/os_mbox.c **** #if OS_EVENT_TBL_SIZE > 4
+ 508:../os_core/os_mbox.c ****     *pdest++ = *psrc++;
+ 2696              		.loc 1 508 0
+ 2697 08a8 10301BE5 		ldr	r3, [fp, #-16]
+ 2698 08ac 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2699 08b0 14301BE5 		ldr	r3, [fp, #-20]
+ 2700 08b4 0020C3E5 		strb	r2, [r3, #0]
+ 2701 08b8 14301BE5 		ldr	r3, [fp, #-20]
+ 2702 08bc 013083E2 		add	r3, r3, #1
+ 2703 08c0 14300BE5 		str	r3, [fp, #-20]
+ 2704 08c4 10301BE5 		ldr	r3, [fp, #-16]
+ 2705 08c8 013083E2 		add	r3, r3, #1
+ 2706 08cc 10300BE5 		str	r3, [fp, #-16]
+ 509:../os_core/os_mbox.c **** #endif
+ 510:../os_core/os_mbox.c **** 
+ 511:../os_core/os_mbox.c **** #if OS_EVENT_TBL_SIZE > 5
+ 512:../os_core/os_mbox.c ****     *pdest++ = *psrc++;
+ 2707              		.loc 1 512 0
+ 2708 08d0 10301BE5 		ldr	r3, [fp, #-16]
+ 2709 08d4 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2710 08d8 14301BE5 		ldr	r3, [fp, #-20]
+ 2711 08dc 0020C3E5 		strb	r2, [r3, #0]
+ 2712 08e0 14301BE5 		ldr	r3, [fp, #-20]
+ 2713 08e4 013083E2 		add	r3, r3, #1
+ 2714 08e8 14300BE5 		str	r3, [fp, #-20]
+ 2715 08ec 10301BE5 		ldr	r3, [fp, #-16]
+ 2716 08f0 013083E2 		add	r3, r3, #1
+ 2717 08f4 10300BE5 		str	r3, [fp, #-16]
+ 513:../os_core/os_mbox.c **** #endif
+ 514:../os_core/os_mbox.c **** 
+ 515:../os_core/os_mbox.c **** #if OS_EVENT_TBL_SIZE > 6
+ 516:../os_core/os_mbox.c ****     *pdest++ = *psrc++;
+ 2718              		.loc 1 516 0
+ 2719 08f8 10301BE5 		ldr	r3, [fp, #-16]
+ 2720 08fc 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2721 0900 14301BE5 		ldr	r3, [fp, #-20]
+ 2722 0904 0020C3E5 		strb	r2, [r3, #0]
+ 2723 0908 14301BE5 		ldr	r3, [fp, #-20]
+ 2724 090c 013083E2 		add	r3, r3, #1
+ 2725 0910 14300BE5 		str	r3, [fp, #-20]
+ 2726 0914 10301BE5 		ldr	r3, [fp, #-16]
+ 2727 0918 013083E2 		add	r3, r3, #1
+ 2728 091c 10300BE5 		str	r3, [fp, #-16]
+ 517:../os_core/os_mbox.c **** #endif
+ 518:../os_core/os_mbox.c **** 
+ 519:../os_core/os_mbox.c **** #if OS_EVENT_TBL_SIZE > 7
+ 520:../os_core/os_mbox.c ****     *pdest   = *psrc;
+ 2729              		.loc 1 520 0
+ 2730 0920 10301BE5 		ldr	r3, [fp, #-16]
+ 2731 0924 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2732 0928 14301BE5 		ldr	r3, [fp, #-20]
+ 2733 092c 0020C3E5 		strb	r2, [r3, #0]
+ 521:../os_core/os_mbox.c **** #endif
+ 522:../os_core/os_mbox.c ****     p_mbox_data->OSMsg = pevent->OSEventPtr;               /* Get message from mailbox             
+ 2734              		.loc 1 522 0
+ 2735 0930 18301BE5 		ldr	r3, [fp, #-24]
+ 2736 0934 042093E5 		ldr	r2, [r3, #4]
+ 2737 0938 1C301BE5 		ldr	r3, [fp, #-28]
+ 2738 093c 002083E5 		str	r2, [r3, #0]
+ 523:../os_core/os_mbox.c ****     OS_EXIT_CRITICAL();
+ 2739              		.loc 1 523 0
+ 2740              	@ 523 "../os_core/os_mbox.c" 1
+ 2741 0940 04009DE4 		ldmfd sp!, {r0}
+ 2742              	@ 0 "" 2
+ 2743              	@ 523 "../os_core/os_mbox.c" 1
+ 2744 0944 00F021E1 		msr   cpsr_c, r0
+ 2745              	@ 0 "" 2
+ 524:../os_core/os_mbox.c ****     return (OS_NO_ERR);
+ 2746              		.loc 1 524 0
+ 2747 0948 0030A0E3 		mov	r3, #0
+ 2748              	.L59:
+ 525:../os_core/os_mbox.c **** }
+ 2749              		.loc 1 525 0
+ 2750 094c 0300A0E1 		mov	r0, r3
+ 2751 0950 0CD04BE2 		sub	sp, fp, #12
+ 2752 0954 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2753 0958 1EFF2FE1 		bx	lr
+ 2754              		.cfi_endproc
+ 2755              	.LFE6:
+ 2757              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 os_mbox.c
+C:\Users\Muadi\AppData\Local\Temp\ccUcWIK0.s:1662   .text:00000000 $a
+C:\Users\Muadi\AppData\Local\Temp\ccUcWIK0.s:1665   .text:00000000 OSMboxAccept
+C:\Users\Muadi\AppData\Local\Temp\ccUcWIK0.s:1743   .text:00000084 OSMboxCreate
+C:\Users\Muadi\AppData\Local\Temp\ccUcWIK0.s:1847   .text:00000160 $d
+C:\Users\Muadi\AppData\Local\Temp\ccUcWIK0.s:1852   .text:00000168 $a
+C:\Users\Muadi\AppData\Local\Temp\ccUcWIK0.s:1855   .text:00000168 OSMboxDel
+C:\Users\Muadi\AppData\Local\Temp\ccUcWIK0.s:2093   .text:00000394 $d
+C:\Users\Muadi\AppData\Local\Temp\ccUcWIK0.s:2098   .text:0000039c $a
+C:\Users\Muadi\AppData\Local\Temp\ccUcWIK0.s:2101   .text:0000039c OSMboxPend
+C:\Users\Muadi\AppData\Local\Temp\ccUcWIK0.s:2311   .text:00000578 $d
+C:\Users\Muadi\AppData\Local\Temp\ccUcWIK0.s:2316   .text:00000580 $a
+C:\Users\Muadi\AppData\Local\Temp\ccUcWIK0.s:2319   .text:00000580 OSMboxPost
+C:\Users\Muadi\AppData\Local\Temp\ccUcWIK0.s:2441   .text:00000664 OSMboxPostOpt
+C:\Users\Muadi\AppData\Local\Temp\ccUcWIK0.s:2589   .text:0000078c OSMboxQuery
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+OS_EventWaitListInit
+OSIntNesting
+OSEventFreeList
+OS_EventTaskRdy
+OS_Sched
+OS_EventTaskWait
+OS_EventTO
+OSTCBCur

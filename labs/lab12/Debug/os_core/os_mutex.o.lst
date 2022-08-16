@@ -1,0 +1,2203 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"os_mutex.c"
+  21              	.Ltext0:
+  22              		.file 1 "../os_core/os_mutex.c"
+ 1671              		.align	2
+ 1672              		.global	OSMutexAccept
+ 1674              	OSMutexAccept:
+ 1675              	.LFB0:
+   1:../os_core/os_mutex.c **** /*
+   2:../os_core/os_mutex.c **** ***************************************************************************************************
+   3:../os_core/os_mutex.c **** *                                                uC/OS-II
+   4:../os_core/os_mutex.c **** *                                          The Real-Time Kernel
+   5:../os_core/os_mutex.c **** *                                  MUTUAL EXCLUSION SEMAPHORE MANAGEMENT
+   6:../os_core/os_mutex.c **** *
+   7:../os_core/os_mutex.c **** *                          (c) Copyright 1992-2003, Jean J. Labrosse, Weston, FL
+   8:../os_core/os_mutex.c **** *                                           All Rights Reserved
+   9:../os_core/os_mutex.c **** *
+  10:../os_core/os_mutex.c **** * File    : OS_MUTEX.C
+  11:../os_core/os_mutex.c **** * By      : Jean J. Labrosse
+  12:../os_core/os_mutex.c **** * Version : V2.76
+  13:../os_core/os_mutex.c **** ***************************************************************************************************
+  14:../os_core/os_mutex.c **** */
+  15:../os_core/os_mutex.c **** 
+  16:../os_core/os_mutex.c **** #ifndef  OS_MASTER_FILE
+  17:../os_core/os_mutex.c **** #include "ucos_ii.h"
+  18:../os_core/os_mutex.c **** #endif
+  19:../os_core/os_mutex.c **** 
+  20:../os_core/os_mutex.c **** /*
+  21:../os_core/os_mutex.c **** ***************************************************************************************************
+  22:../os_core/os_mutex.c **** *                                            LOCAL CONSTANTS
+  23:../os_core/os_mutex.c **** ***************************************************************************************************
+  24:../os_core/os_mutex.c **** */
+  25:../os_core/os_mutex.c **** 
+  26:../os_core/os_mutex.c **** #define  OS_MUTEX_KEEP_LOWER_8   0x00FF
+  27:../os_core/os_mutex.c **** #define  OS_MUTEX_KEEP_UPPER_8   0xFF00
+  28:../os_core/os_mutex.c **** 
+  29:../os_core/os_mutex.c **** #define  OS_MUTEX_AVAILABLE      0x00FF
+  30:../os_core/os_mutex.c **** 
+  31:../os_core/os_mutex.c **** 
+  32:../os_core/os_mutex.c **** #if OS_MUTEX_EN > 0
+  33:../os_core/os_mutex.c **** /*
+  34:../os_core/os_mutex.c **** ***************************************************************************************************
+  35:../os_core/os_mutex.c **** *                                   ACCEPT MUTUAL EXCLUSION SEMAPHORE
+  36:../os_core/os_mutex.c **** *
+  37:../os_core/os_mutex.c **** * Description: This  function checks the mutual exclusion semaphore to see if a resource is availab
+  38:../os_core/os_mutex.c **** *              Unlike OSMutexPend(), OSMutexAccept() does not suspend the calling task if the resou
+  39:../os_core/os_mutex.c **** *              not available or the event did not occur.
+  40:../os_core/os_mutex.c **** *
+  41:../os_core/os_mutex.c **** * Arguments  : pevent     is a pointer to the event control block
+  42:../os_core/os_mutex.c **** *
+  43:../os_core/os_mutex.c **** *              err        is a pointer to an error code which will be returned to your application:
+  44:../os_core/os_mutex.c **** *                            OS_NO_ERR          if the call was successful.
+  45:../os_core/os_mutex.c **** *                            OS_ERR_EVENT_TYPE  if 'pevent' is not a pointer to a mutex
+  46:../os_core/os_mutex.c **** *                            OS_ERR_PEVENT_NULL 'pevent' is a NULL pointer
+  47:../os_core/os_mutex.c **** *                            OS_ERR_PEND_ISR     if you called this function from an ISR
+  48:../os_core/os_mutex.c **** *
+  49:../os_core/os_mutex.c **** * Returns    : == 1       if the resource is available, the mutual exclusion semaphore is acquired
+  50:../os_core/os_mutex.c **** *              == 0       a) if the resource is not available
+  51:../os_core/os_mutex.c **** *                         b) you didn't pass a pointer to a mutual exclusion semaphore
+  52:../os_core/os_mutex.c **** *                         c) you called this function from an ISR
+  53:../os_core/os_mutex.c **** *
+  54:../os_core/os_mutex.c **** * Warning(s) : This function CANNOT be called from an ISR because mutual exclusion semaphores are
+  55:../os_core/os_mutex.c **** *              intended to be used by tasks only.
+  56:../os_core/os_mutex.c **** ***************************************************************************************************
+  57:../os_core/os_mutex.c **** */
+  58:../os_core/os_mutex.c **** 
+  59:../os_core/os_mutex.c **** #if OS_MUTEX_ACCEPT_EN > 0
+  60:../os_core/os_mutex.c **** INT8U  OSMutexAccept (OS_EVENT *pevent, INT8U *err)
+  61:../os_core/os_mutex.c **** {
+ 1676              		.loc 1 61 0
+ 1677              		.cfi_startproc
+ 1678              		@ Function supports interworking.
+ 1679              		@ args = 0, pretend = 0, frame = 8
+ 1680              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1681 0000 0DC0A0E1 		mov	ip, sp
+ 1682              	.LCFI0:
+ 1683              		.cfi_def_cfa_register 12
+ 1684 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1685 0008 04B04CE2 		sub	fp, ip, #4
+ 1686              		.cfi_offset 14, -8
+ 1687              		.cfi_offset 13, -12
+ 1688              		.cfi_offset 11, -16
+ 1689              	.LCFI1:
+ 1690              		.cfi_def_cfa 11, 4
+ 1691 000c 08D04DE2 		sub	sp, sp, #8
+ 1692 0010 10000BE5 		str	r0, [fp, #-16]
+ 1693 0014 14100BE5 		str	r1, [fp, #-20]
+  62:../os_core/os_mutex.c **** #if OS_CRITICAL_METHOD == 3                            /* Allocate storage for CPU status register 
+  63:../os_core/os_mutex.c ****     OS_CPU_SR  cpu_sr;
+  64:../os_core/os_mutex.c **** 
+  65:../os_core/os_mutex.c ****     
+  66:../os_core/os_mutex.c ****     
+  67:../os_core/os_mutex.c ****     cpu_sr = 0;                                        /* Prevent compiler warning                 
+  68:../os_core/os_mutex.c **** #endif    
+  69:../os_core/os_mutex.c ****     if (OSIntNesting > 0) {                            /* Make sure it's not called from an ISR    
+ 1694              		.loc 1 69 0
+ 1695 0018 1C319FE5 		ldr	r3, .L7
+ 1696 001c 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1697 0020 000053E3 		cmp	r3, #0
+ 1698 0024 0400000A 		beq	.L2
+  70:../os_core/os_mutex.c ****         *err = OS_ERR_PEND_ISR;
+ 1699              		.loc 1 70 0
+ 1700 0028 14301BE5 		ldr	r3, [fp, #-20]
+ 1701 002c 0220A0E3 		mov	r2, #2
+ 1702 0030 0020C3E5 		strb	r2, [r3, #0]
+  71:../os_core/os_mutex.c ****         return (0);
+ 1703              		.loc 1 71 0
+ 1704 0034 0030A0E3 		mov	r3, #0
+ 1705 0038 3B0000EA 		b	.L3
+ 1706              	.L2:
+  72:../os_core/os_mutex.c ****     }
+  73:../os_core/os_mutex.c **** #if OS_ARG_CHK_EN > 0
+  74:../os_core/os_mutex.c ****     if (pevent == (OS_EVENT *)0) {                     /* Validate 'pevent'                        
+ 1707              		.loc 1 74 0
+ 1708 003c 10301BE5 		ldr	r3, [fp, #-16]
+ 1709 0040 000053E3 		cmp	r3, #0
+ 1710 0044 0400001A 		bne	.L4
+  75:../os_core/os_mutex.c ****         *err = OS_ERR_PEVENT_NULL;
+ 1711              		.loc 1 75 0
+ 1712 0048 14301BE5 		ldr	r3, [fp, #-20]
+ 1713 004c 0420A0E3 		mov	r2, #4
+ 1714 0050 0020C3E5 		strb	r2, [r3, #0]
+  76:../os_core/os_mutex.c ****         return (0);
+ 1715              		.loc 1 76 0
+ 1716 0054 0030A0E3 		mov	r3, #0
+ 1717 0058 330000EA 		b	.L3
+ 1718              	.L4:
+  77:../os_core/os_mutex.c ****     }
+  78:../os_core/os_mutex.c **** #endif                                                     
+  79:../os_core/os_mutex.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_MUTEX) {  /* Validate event block type                
+ 1719              		.loc 1 79 0
+ 1720 005c 10301BE5 		ldr	r3, [fp, #-16]
+ 1721 0060 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1722 0064 040053E3 		cmp	r3, #4
+ 1723 0068 0400000A 		beq	.L5
+  80:../os_core/os_mutex.c ****         *err = OS_ERR_EVENT_TYPE;
+ 1724              		.loc 1 80 0
+ 1725 006c 14301BE5 		ldr	r3, [fp, #-20]
+ 1726 0070 0120A0E3 		mov	r2, #1
+ 1727 0074 0020C3E5 		strb	r2, [r3, #0]
+  81:../os_core/os_mutex.c ****         return (0);
+ 1728              		.loc 1 81 0
+ 1729 0078 0030A0E3 		mov	r3, #0
+ 1730 007c 2A0000EA 		b	.L3
+ 1731              	.L5:
+  82:../os_core/os_mutex.c ****     }
+  83:../os_core/os_mutex.c ****     OS_ENTER_CRITICAL();							   /* Get value (0 or 1) of Mutex                  */
+ 1732              		.loc 1 83 0
+ 1733              	@ 83 "../os_core/os_mutex.c" 1
+ 1734 0080 00000FE1 		mrs   r0, cpsr
+ 1735              	@ 0 "" 2
+ 1736              	@ 83 "../os_core/os_mutex.c" 1
+ 1737 0084 04002DE5 		stmfd sp!, {r0}
+ 1738              	@ 0 "" 2
+ 1739              	@ 83 "../os_core/os_mutex.c" 1
+ 1740 0088 C00080E3 		orr   r0, r0, #0b11000000
+ 1741              	@ 0 "" 2
+ 1742              	@ 83 "../os_core/os_mutex.c" 1
+ 1743 008c 00F021E1 		msr   cpsr_c, r0
+ 1744              	@ 0 "" 2
+  84:../os_core/os_mutex.c ****     if ((pevent->OSEventCnt & OS_MUTEX_KEEP_LOWER_8) == OS_MUTEX_AVAILABLE) {     
+ 1745              		.loc 1 84 0
+ 1746 0090 10301BE5 		ldr	r3, [fp, #-16]
+ 1747 0094 B230D3E1 		ldrh	r3, [r3, #2]
+ 1748 0098 FF3003E2 		and	r3, r3, #255
+ 1749 009c FF0053E3 		cmp	r3, #255
+ 1750 00a0 1B00001A 		bne	.L6
+  85:../os_core/os_mutex.c ****         pevent->OSEventCnt &= OS_MUTEX_KEEP_UPPER_8;   /*      Mask off LSByte (Acquire Mutex)     
+ 1751              		.loc 1 85 0
+ 1752 00a4 10301BE5 		ldr	r3, [fp, #-16]
+ 1753 00a8 B230D3E1 		ldrh	r3, [r3, #2]
+ 1754 00ac FF30C3E3 		bic	r3, r3, #255
+ 1755 00b0 0338A0E1 		mov	r3, r3, asl #16
+ 1756 00b4 2328A0E1 		mov	r2, r3, lsr #16
+ 1757 00b8 10301BE5 		ldr	r3, [fp, #-16]
+ 1758 00bc B220C3E1 		strh	r2, [r3, #2]	@ movhi
+  86:../os_core/os_mutex.c ****         pevent->OSEventCnt |= OSTCBCur->OSTCBPrio;     /*      Save current task priority in LSByte
+ 1759              		.loc 1 86 0
+ 1760 00c0 10301BE5 		ldr	r3, [fp, #-16]
+ 1761 00c4 B220D3E1 		ldrh	r2, [r3, #2]
+ 1762 00c8 70309FE5 		ldr	r3, .L7+4
+ 1763 00cc 003093E5 		ldr	r3, [r3, #0]
+ 1764 00d0 2E30D3E5 		ldrb	r3, [r3, #46]	@ zero_extendqisi2
+ 1765 00d4 033082E1 		orr	r3, r2, r3
+ 1766 00d8 0338A0E1 		mov	r3, r3, asl #16
+ 1767 00dc 2328A0E1 		mov	r2, r3, lsr #16
+ 1768 00e0 10301BE5 		ldr	r3, [fp, #-16]
+ 1769 00e4 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+  87:../os_core/os_mutex.c ****         pevent->OSEventPtr  = (void *)OSTCBCur;        /*      Link TCB of task owning Mutex       
+ 1770              		.loc 1 87 0
+ 1771 00e8 50309FE5 		ldr	r3, .L7+4
+ 1772 00ec 002093E5 		ldr	r2, [r3, #0]
+ 1773 00f0 10301BE5 		ldr	r3, [fp, #-16]
+ 1774 00f4 042083E5 		str	r2, [r3, #4]
+  88:../os_core/os_mutex.c ****         OS_EXIT_CRITICAL();
+ 1775              		.loc 1 88 0
+ 1776              	@ 88 "../os_core/os_mutex.c" 1
+ 1777 00f8 04009DE4 		ldmfd sp!, {r0}
+ 1778              	@ 0 "" 2
+ 1779              	@ 88 "../os_core/os_mutex.c" 1
+ 1780 00fc 00F021E1 		msr   cpsr_c, r0
+ 1781              	@ 0 "" 2
+  89:../os_core/os_mutex.c ****         *err = OS_NO_ERR;
+ 1782              		.loc 1 89 0
+ 1783 0100 14301BE5 		ldr	r3, [fp, #-20]
+ 1784 0104 0020A0E3 		mov	r2, #0
+ 1785 0108 0020C3E5 		strb	r2, [r3, #0]
+  90:../os_core/os_mutex.c ****         return (1);
+ 1786              		.loc 1 90 0
+ 1787 010c 0130A0E3 		mov	r3, #1
+ 1788 0110 050000EA 		b	.L3
+ 1789              	.L6:
+  91:../os_core/os_mutex.c ****     }
+  92:../os_core/os_mutex.c ****     OS_EXIT_CRITICAL();
+ 1790              		.loc 1 92 0
+ 1791              	@ 92 "../os_core/os_mutex.c" 1
+ 1792 0114 04009DE4 		ldmfd sp!, {r0}
+ 1793              	@ 0 "" 2
+ 1794              	@ 92 "../os_core/os_mutex.c" 1
+ 1795 0118 00F021E1 		msr   cpsr_c, r0
+ 1796              	@ 0 "" 2
+  93:../os_core/os_mutex.c ****     *err = OS_NO_ERR;
+ 1797              		.loc 1 93 0
+ 1798 011c 14301BE5 		ldr	r3, [fp, #-20]
+ 1799 0120 0020A0E3 		mov	r2, #0
+ 1800 0124 0020C3E5 		strb	r2, [r3, #0]
+  94:../os_core/os_mutex.c ****     return (0);
+ 1801              		.loc 1 94 0
+ 1802 0128 0030A0E3 		mov	r3, #0
+ 1803              	.L3:
+  95:../os_core/os_mutex.c **** }
+ 1804              		.loc 1 95 0
+ 1805 012c 0300A0E1 		mov	r0, r3
+ 1806 0130 0CD04BE2 		sub	sp, fp, #12
+ 1807 0134 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1808 0138 1EFF2FE1 		bx	lr
+ 1809              	.L8:
+ 1810              		.align	2
+ 1811              	.L7:
+ 1812 013c 00000000 		.word	OSIntNesting
+ 1813 0140 00000000 		.word	OSTCBCur
+ 1814              		.cfi_endproc
+ 1815              	.LFE0:
+ 1817              		.align	2
+ 1818              		.global	OSMutexCreate
+ 1820              	OSMutexCreate:
+ 1821              	.LFB1:
+  96:../os_core/os_mutex.c **** #endif                                                     
+  97:../os_core/os_mutex.c **** 
+  98:../os_core/os_mutex.c **** /*$PAGE*/
+  99:../os_core/os_mutex.c **** /*
+ 100:../os_core/os_mutex.c **** ***************************************************************************************************
+ 101:../os_core/os_mutex.c **** *                                  CREATE A MUTUAL EXCLUSION SEMAPHORE
+ 102:../os_core/os_mutex.c **** *
+ 103:../os_core/os_mutex.c **** * Description: This function creates a mutual exclusion semaphore.
+ 104:../os_core/os_mutex.c **** *
+ 105:../os_core/os_mutex.c **** * Arguments  : prio          is the priority to use when accessing the mutual exclusion semaphore. 
+ 106:../os_core/os_mutex.c **** *                            other words, when the semaphore is acquired and a higher priority task
+ 107:../os_core/os_mutex.c **** *                            attempts to obtain the semaphore then the priority of the task owning 
+ 108:../os_core/os_mutex.c **** *                            semaphore is raised to this priority.  It is assumed that you will spe
+ 109:../os_core/os_mutex.c **** *                            a priority that is LOWER in value than ANY of the tasks competing for 
+ 110:../os_core/os_mutex.c **** *                            mutex.
+ 111:../os_core/os_mutex.c **** *
+ 112:../os_core/os_mutex.c **** *              err           is a pointer to an error code which will be returned to your applicati
+ 113:../os_core/os_mutex.c **** *                               OS_NO_ERR           if the call was successful.
+ 114:../os_core/os_mutex.c **** *                               OS_ERR_CREATE_ISR   if you attempted to create a MUTEX from an ISR
+ 115:../os_core/os_mutex.c **** *                               OS_PRIO_EXIST       if a task at the priority inheritance priority
+ 116:../os_core/os_mutex.c **** *                                                   already exist.
+ 117:../os_core/os_mutex.c **** *                               OS_ERR_PEVENT_NULL  No more event control blocks available.
+ 118:../os_core/os_mutex.c **** *                               OS_PRIO_INVALID     if the priority you specify is higher that the 
+ 119:../os_core/os_mutex.c **** *                                                   maximum allowed (i.e. > OS_LOWEST_PRIO)
+ 120:../os_core/os_mutex.c **** *
+ 121:../os_core/os_mutex.c **** * Returns    : != (void *)0  is a pointer to the event control clock (OS_EVENT) associated with the
+ 122:../os_core/os_mutex.c **** *                            created mutex.
+ 123:../os_core/os_mutex.c **** *              == (void *)0  if an error is detected.
+ 124:../os_core/os_mutex.c **** *
+ 125:../os_core/os_mutex.c **** * Note(s)    : 1) The LEAST significant 8 bits of '.OSEventCnt' are used to hold the priority numbe
+ 126:../os_core/os_mutex.c **** *                 of the task owning the mutex or 0xFF if no task owns the mutex.
+ 127:../os_core/os_mutex.c **** *              2) The MOST  significant 8 bits of '.OSEventCnt' are used to hold the priority numbe
+ 128:../os_core/os_mutex.c **** *                 to use to reduce priority inversion.
+ 129:../os_core/os_mutex.c **** ***************************************************************************************************
+ 130:../os_core/os_mutex.c **** */
+ 131:../os_core/os_mutex.c **** 
+ 132:../os_core/os_mutex.c **** OS_EVENT  *OSMutexCreate (INT8U prio, INT8U *err)
+ 133:../os_core/os_mutex.c **** {
+ 1822              		.loc 1 133 0
+ 1823              		.cfi_startproc
+ 1824              		@ Function supports interworking.
+ 1825              		@ args = 0, pretend = 0, frame = 16
+ 1826              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1827 0144 0DC0A0E1 		mov	ip, sp
+ 1828              	.LCFI2:
+ 1829              		.cfi_def_cfa_register 12
+ 1830 0148 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1831 014c 04B04CE2 		sub	fp, ip, #4
+ 1832              		.cfi_offset 14, -8
+ 1833              		.cfi_offset 13, -12
+ 1834              		.cfi_offset 11, -16
+ 1835              	.LCFI3:
+ 1836              		.cfi_def_cfa 11, 4
+ 1837 0150 10D04DE2 		sub	sp, sp, #16
+ 1838 0154 0030A0E1 		mov	r3, r0
+ 1839 0158 1C100BE5 		str	r1, [fp, #-28]
+ 1840 015c 15304BE5 		strb	r3, [fp, #-21]
+ 134:../os_core/os_mutex.c ****     OS_EVENT  *pevent;
+ 135:../os_core/os_mutex.c **** #if OS_CRITICAL_METHOD == 3                                /* Allocate storage for CPU status regis
+ 136:../os_core/os_mutex.c ****     OS_CPU_SR  cpu_sr;
+ 137:../os_core/os_mutex.c **** 
+ 138:../os_core/os_mutex.c **** 
+ 139:../os_core/os_mutex.c **** 
+ 140:../os_core/os_mutex.c ****     cpu_sr = 0;                                            /* Prevent compiler warning             
+ 141:../os_core/os_mutex.c **** #endif    
+ 142:../os_core/os_mutex.c ****     if (OSIntNesting > 0) {                                /* See if called from ISR ...           
+ 1841              		.loc 1 142 0
+ 1842 0160 74319FE5 		ldr	r3, .L15
+ 1843 0164 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1844 0168 000053E3 		cmp	r3, #0
+ 1845 016c 0400000A 		beq	.L10
+ 143:../os_core/os_mutex.c ****         *err = OS_ERR_CREATE_ISR;                          /* ... can't CREATE mutex from an ISR   
+ 1846              		.loc 1 143 0
+ 1847 0170 1C301BE5 		ldr	r3, [fp, #-28]
+ 1848 0174 7220E0E3 		mvn	r2, #114
+ 1849 0178 0020C3E5 		strb	r2, [r3, #0]
+ 144:../os_core/os_mutex.c ****         return ((OS_EVENT *)0);
+ 1850              		.loc 1 144 0
+ 1851 017c 0030A0E3 		mov	r3, #0
+ 1852 0180 510000EA 		b	.L11
+ 1853              	.L10:
+ 145:../os_core/os_mutex.c ****     }
+ 146:../os_core/os_mutex.c **** #if OS_ARG_CHK_EN > 0
+ 147:../os_core/os_mutex.c ****     if (prio >= OS_LOWEST_PRIO) {                          /* Validate PIP                         
+ 1854              		.loc 1 147 0
+ 1855 0184 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 1856 0188 3E0053E3 		cmp	r3, #62
+ 1857 018c 0400009A 		bls	.L12
+ 148:../os_core/os_mutex.c ****         *err = OS_PRIO_INVALID;
+ 1858              		.loc 1 148 0
+ 1859 0190 1C301BE5 		ldr	r3, [fp, #-28]
+ 1860 0194 2A20A0E3 		mov	r2, #42
+ 1861 0198 0020C3E5 		strb	r2, [r3, #0]
+ 149:../os_core/os_mutex.c ****         return ((OS_EVENT *)0);
+ 1862              		.loc 1 149 0
+ 1863 019c 0030A0E3 		mov	r3, #0
+ 1864 01a0 490000EA 		b	.L11
+ 1865              	.L12:
+ 150:../os_core/os_mutex.c ****     }
+ 151:../os_core/os_mutex.c **** #endif
+ 152:../os_core/os_mutex.c ****     OS_ENTER_CRITICAL();
+ 1866              		.loc 1 152 0
+ 1867              	@ 152 "../os_core/os_mutex.c" 1
+ 1868 01a4 00000FE1 		mrs   r0, cpsr
+ 1869              	@ 0 "" 2
+ 1870              	@ 152 "../os_core/os_mutex.c" 1
+ 1871 01a8 04002DE5 		stmfd sp!, {r0}
+ 1872              	@ 0 "" 2
+ 1873              	@ 152 "../os_core/os_mutex.c" 1
+ 1874 01ac C00080E3 		orr   r0, r0, #0b11000000
+ 1875              	@ 0 "" 2
+ 1876              	@ 152 "../os_core/os_mutex.c" 1
+ 1877 01b0 00F021E1 		msr   cpsr_c, r0
+ 1878              	@ 0 "" 2
+ 153:../os_core/os_mutex.c ****     if (OSTCBPrioTbl[prio] != (OS_TCB *)0) {               /* Mutex priority must not already exist
+ 1879              		.loc 1 153 0
+ 1880 01b4 15205BE5 		ldrb	r2, [fp, #-21]	@ zero_extendqisi2
+ 1881 01b8 20319FE5 		ldr	r3, .L15+4
+ 1882 01bc 023193E7 		ldr	r3, [r3, r2, asl #2]
+ 1883 01c0 000053E3 		cmp	r3, #0
+ 1884 01c4 0600000A 		beq	.L13
+ 154:../os_core/os_mutex.c ****         OS_EXIT_CRITICAL();                                /* Task already exist at priority ...   
+ 1885              		.loc 1 154 0
+ 1886              	@ 154 "../os_core/os_mutex.c" 1
+ 1887 01c8 04009DE4 		ldmfd sp!, {r0}
+ 1888              	@ 0 "" 2
+ 1889              	@ 154 "../os_core/os_mutex.c" 1
+ 1890 01cc 00F021E1 		msr   cpsr_c, r0
+ 1891              	@ 0 "" 2
+ 155:../os_core/os_mutex.c ****         *err = OS_PRIO_EXIST;                              /* ... inheritance priority             
+ 1892              		.loc 1 155 0
+ 1893 01d0 1C301BE5 		ldr	r3, [fp, #-28]
+ 1894 01d4 2820A0E3 		mov	r2, #40
+ 1895 01d8 0020C3E5 		strb	r2, [r3, #0]
+ 156:../os_core/os_mutex.c ****         return ((OS_EVENT *)0);                            
+ 1896              		.loc 1 156 0
+ 1897 01dc 0030A0E3 		mov	r3, #0
+ 1898 01e0 390000EA 		b	.L11
+ 1899              	.L13:
+ 157:../os_core/os_mutex.c ****     }
+ 158:../os_core/os_mutex.c ****     OSTCBPrioTbl[prio] = (OS_TCB *)1;                      /* Reserve the table entry              
+ 1900              		.loc 1 158 0
+ 1901 01e4 15205BE5 		ldrb	r2, [fp, #-21]	@ zero_extendqisi2
+ 1902 01e8 F0309FE5 		ldr	r3, .L15+4
+ 1903 01ec 0110A0E3 		mov	r1, #1
+ 1904 01f0 021183E7 		str	r1, [r3, r2, asl #2]
+ 159:../os_core/os_mutex.c ****     pevent             = OSEventFreeList;                  /* Get next free event control block    
+ 1905              		.loc 1 159 0
+ 1906 01f4 E8309FE5 		ldr	r3, .L15+8
+ 1907 01f8 003093E5 		ldr	r3, [r3, #0]
+ 1908 01fc 10300BE5 		str	r3, [fp, #-16]
+ 160:../os_core/os_mutex.c ****     if (pevent == (OS_EVENT *)0) {                         /* See if an ECB was available          
+ 1909              		.loc 1 160 0
+ 1910 0200 10301BE5 		ldr	r3, [fp, #-16]
+ 1911 0204 000053E3 		cmp	r3, #0
+ 1912 0208 0A00001A 		bne	.L14
+ 161:../os_core/os_mutex.c ****         OSTCBPrioTbl[prio] = (OS_TCB *)0;                  /* No, Release the table entry          
+ 1913              		.loc 1 161 0
+ 1914 020c 15205BE5 		ldrb	r2, [fp, #-21]	@ zero_extendqisi2
+ 1915 0210 C8309FE5 		ldr	r3, .L15+4
+ 1916 0214 0010A0E3 		mov	r1, #0
+ 1917 0218 021183E7 		str	r1, [r3, r2, asl #2]
+ 162:../os_core/os_mutex.c ****         OS_EXIT_CRITICAL();
+ 1918              		.loc 1 162 0
+ 1919              	@ 162 "../os_core/os_mutex.c" 1
+ 1920 021c 04009DE4 		ldmfd sp!, {r0}
+ 1921              	@ 0 "" 2
+ 1922              	@ 162 "../os_core/os_mutex.c" 1
+ 1923 0220 00F021E1 		msr   cpsr_c, r0
+ 1924              	@ 0 "" 2
+ 163:../os_core/os_mutex.c ****         *err               = OS_ERR_PEVENT_NULL;           /* No more event control blocks         
+ 1925              		.loc 1 163 0
+ 1926 0224 1C301BE5 		ldr	r3, [fp, #-28]
+ 1927 0228 0420A0E3 		mov	r2, #4
+ 1928 022c 0020C3E5 		strb	r2, [r3, #0]
+ 164:../os_core/os_mutex.c ****         return (pevent);
+ 1929              		.loc 1 164 0
+ 1930 0230 10301BE5 		ldr	r3, [fp, #-16]
+ 1931 0234 240000EA 		b	.L11
+ 1932              	.L14:
+ 165:../os_core/os_mutex.c ****     }
+ 166:../os_core/os_mutex.c ****     OSEventFreeList        = (OS_EVENT *)OSEventFreeList->OSEventPtr;   /* Adjust the free list    
+ 1933              		.loc 1 166 0
+ 1934 0238 A4309FE5 		ldr	r3, .L15+8
+ 1935 023c 003093E5 		ldr	r3, [r3, #0]
+ 1936 0240 043093E5 		ldr	r3, [r3, #4]
+ 1937 0244 0320A0E1 		mov	r2, r3
+ 1938 0248 94309FE5 		ldr	r3, .L15+8
+ 1939 024c 002083E5 		str	r2, [r3, #0]
+ 167:../os_core/os_mutex.c ****     OS_EXIT_CRITICAL();
+ 1940              		.loc 1 167 0
+ 1941              	@ 167 "../os_core/os_mutex.c" 1
+ 1942 0250 04009DE4 		ldmfd sp!, {r0}
+ 1943              	@ 0 "" 2
+ 1944              	@ 167 "../os_core/os_mutex.c" 1
+ 1945 0254 00F021E1 		msr   cpsr_c, r0
+ 1946              	@ 0 "" 2
+ 168:../os_core/os_mutex.c ****     pevent->OSEventType    = OS_EVENT_TYPE_MUTEX;
+ 1947              		.loc 1 168 0
+ 1948 0258 10301BE5 		ldr	r3, [fp, #-16]
+ 1949 025c 0420A0E3 		mov	r2, #4
+ 1950 0260 0020C3E5 		strb	r2, [r3, #0]
+ 169:../os_core/os_mutex.c ****     pevent->OSEventCnt     = ((INT16U)prio << 8) | OS_MUTEX_AVAILABLE;  /* Resource is available   
+ 1951              		.loc 1 169 0
+ 1952 0264 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 1953 0268 0334A0E1 		mov	r3, r3, asl #8
+ 1954 026c 0338A0E1 		mov	r3, r3, asl #16
+ 1955 0270 2338A0E1 		mov	r3, r3, lsr #16
+ 1956 0274 FF3083E3 		orr	r3, r3, #255
+ 1957 0278 0338A0E1 		mov	r3, r3, asl #16
+ 1958 027c 2338A0E1 		mov	r3, r3, lsr #16
+ 1959 0280 0338A0E1 		mov	r3, r3, asl #16
+ 1960 0284 2328A0E1 		mov	r2, r3, lsr #16
+ 1961 0288 10301BE5 		ldr	r3, [fp, #-16]
+ 1962 028c B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 170:../os_core/os_mutex.c ****     pevent->OSEventPtr     = (void *)0;                                 /* No task owning the mutex
+ 1963              		.loc 1 170 0
+ 1964 0290 10301BE5 		ldr	r3, [fp, #-16]
+ 1965 0294 0020A0E3 		mov	r2, #0
+ 1966 0298 042083E5 		str	r2, [r3, #4]
+ 171:../os_core/os_mutex.c **** #if OS_EVENT_NAME_SIZE > 1
+ 172:../os_core/os_mutex.c ****     pevent->OSEventName[0] = '?';
+ 1967              		.loc 1 172 0
+ 1968 029c 10301BE5 		ldr	r3, [fp, #-16]
+ 1969 02a0 3F20A0E3 		mov	r2, #63
+ 1970 02a4 1020C3E5 		strb	r2, [r3, #16]
+ 173:../os_core/os_mutex.c ****     pevent->OSEventName[1] = OS_ASCII_NUL;
+ 1971              		.loc 1 173 0
+ 1972 02a8 10301BE5 		ldr	r3, [fp, #-16]
+ 1973 02ac 0020A0E3 		mov	r2, #0
+ 1974 02b0 1120C3E5 		strb	r2, [r3, #17]
+ 174:../os_core/os_mutex.c **** #endif
+ 175:../os_core/os_mutex.c ****     OS_EventWaitListInit(pevent);
+ 1975              		.loc 1 175 0
+ 1976 02b4 10001BE5 		ldr	r0, [fp, #-16]
+ 1977 02b8 FEFFFFEB 		bl	OS_EventWaitListInit
+ 176:../os_core/os_mutex.c ****     *err                   = OS_NO_ERR;
+ 1978              		.loc 1 176 0
+ 1979 02bc 1C301BE5 		ldr	r3, [fp, #-28]
+ 1980 02c0 0020A0E3 		mov	r2, #0
+ 1981 02c4 0020C3E5 		strb	r2, [r3, #0]
+ 177:../os_core/os_mutex.c ****     return (pevent);
+ 1982              		.loc 1 177 0
+ 1983 02c8 10301BE5 		ldr	r3, [fp, #-16]
+ 1984              	.L11:
+ 178:../os_core/os_mutex.c **** }
+ 1985              		.loc 1 178 0
+ 1986 02cc 0300A0E1 		mov	r0, r3
+ 1987 02d0 0CD04BE2 		sub	sp, fp, #12
+ 1988 02d4 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1989 02d8 1EFF2FE1 		bx	lr
+ 1990              	.L16:
+ 1991              		.align	2
+ 1992              	.L15:
+ 1993 02dc 00000000 		.word	OSIntNesting
+ 1994 02e0 00000000 		.word	OSTCBPrioTbl
+ 1995 02e4 00000000 		.word	OSEventFreeList
+ 1996              		.cfi_endproc
+ 1997              	.LFE1:
+ 1999              		.align	2
+ 2000              		.global	OSMutexDel
+ 2002              	OSMutexDel:
+ 2003              	.LFB2:
+ 179:../os_core/os_mutex.c **** 
+ 180:../os_core/os_mutex.c **** /*$PAGE*/
+ 181:../os_core/os_mutex.c **** /*
+ 182:../os_core/os_mutex.c **** ***************************************************************************************************
+ 183:../os_core/os_mutex.c **** *                                          DELETE A MUTEX
+ 184:../os_core/os_mutex.c **** *
+ 185:../os_core/os_mutex.c **** * Description: This function deletes a mutual exclusion semaphore and readies all tasks pending on 
+ 186:../os_core/os_mutex.c **** *
+ 187:../os_core/os_mutex.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired mu
+ 188:../os_core/os_mutex.c **** *
+ 189:../os_core/os_mutex.c **** *              opt           determines delete options as follows:
+ 190:../os_core/os_mutex.c **** *                            opt == OS_DEL_NO_PEND   Delete mutex ONLY if no task pending
+ 191:../os_core/os_mutex.c **** *                            opt == OS_DEL_ALWAYS    Deletes the mutex even if tasks are waiting.
+ 192:../os_core/os_mutex.c **** *                                                    In this case, all the tasks pending will be re
+ 193:../os_core/os_mutex.c **** *
+ 194:../os_core/os_mutex.c **** *              err           is a pointer to an error code that can contain one of the following va
+ 195:../os_core/os_mutex.c **** *                            OS_NO_ERR               The call was successful and the mutex was dele
+ 196:../os_core/os_mutex.c **** *                            OS_ERR_DEL_ISR          If you attempted to delete the MUTEX from an I
+ 197:../os_core/os_mutex.c **** *                            OS_ERR_INVALID_OPT      An invalid option was specified
+ 198:../os_core/os_mutex.c **** *                            OS_ERR_TASK_WAITING     One or more tasks were waiting on the mutex
+ 199:../os_core/os_mutex.c **** *                            OS_ERR_EVENT_TYPE       If you didn't pass a pointer to a mutex
+ 200:../os_core/os_mutex.c **** *                            OS_ERR_PEVENT_NULL      If 'pevent' is a NULL pointer.
+ 201:../os_core/os_mutex.c **** *
+ 202:../os_core/os_mutex.c **** * Returns    : pevent        upon error
+ 203:../os_core/os_mutex.c **** *              (OS_EVENT *)0 if the mutex was successfully deleted.
+ 204:../os_core/os_mutex.c **** *
+ 205:../os_core/os_mutex.c **** * Note(s)    : 1) This function must be used with care.  Tasks that would normally expect the prese
+ 206:../os_core/os_mutex.c **** *                 the mutex MUST check the return code of OSMutexPend().
+ 207:../os_core/os_mutex.c **** *              2) This call can potentially disable interrupts for a long time.  The interrupt disa
+ 208:../os_core/os_mutex.c **** *                 time is directly proportional to the number of tasks waiting on the mutex.
+ 209:../os_core/os_mutex.c **** *              3) Because ALL tasks pending on the mutex will be readied, you MUST be careful becau
+ 210:../os_core/os_mutex.c **** *                 resource(s) will no longer be guarded by the mutex.
+ 211:../os_core/os_mutex.c **** ***************************************************************************************************
+ 212:../os_core/os_mutex.c **** */
+ 213:../os_core/os_mutex.c **** 
+ 214:../os_core/os_mutex.c **** #if OS_MUTEX_DEL_EN
+ 215:../os_core/os_mutex.c **** OS_EVENT  *OSMutexDel (OS_EVENT *pevent, INT8U opt, INT8U *err)
+ 216:../os_core/os_mutex.c **** {
+ 2004              		.loc 1 216 0
+ 2005              		.cfi_startproc
+ 2006              		@ Function supports interworking.
+ 2007              		@ args = 0, pretend = 0, frame = 24
+ 2008              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2009 02e8 0DC0A0E1 		mov	ip, sp
+ 2010              	.LCFI4:
+ 2011              		.cfi_def_cfa_register 12
+ 2012 02ec 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2013 02f0 04B04CE2 		sub	fp, ip, #4
+ 2014              		.cfi_offset 14, -8
+ 2015              		.cfi_offset 13, -12
+ 2016              		.cfi_offset 11, -16
+ 2017              	.LCFI5:
+ 2018              		.cfi_def_cfa 11, 4
+ 2019 02f4 18D04DE2 		sub	sp, sp, #24
+ 2020 02f8 18000BE5 		str	r0, [fp, #-24]
+ 2021 02fc 0130A0E1 		mov	r3, r1
+ 2022 0300 20200BE5 		str	r2, [fp, #-32]
+ 2023 0304 19304BE5 		strb	r3, [fp, #-25]
+ 217:../os_core/os_mutex.c ****     BOOLEAN    tasks_waiting;
+ 218:../os_core/os_mutex.c ****     INT8U      pip;
+ 219:../os_core/os_mutex.c **** #if OS_CRITICAL_METHOD == 3                                /* Allocate storage for CPU status regis
+ 220:../os_core/os_mutex.c ****     OS_CPU_SR  cpu_sr;
+ 221:../os_core/os_mutex.c **** 
+ 222:../os_core/os_mutex.c **** 
+ 223:../os_core/os_mutex.c **** 
+ 224:../os_core/os_mutex.c ****     cpu_sr = 0;                                            /* Prevent compiler warning             
+ 225:../os_core/os_mutex.c **** #endif    
+ 226:../os_core/os_mutex.c ****     if (OSIntNesting > 0) {                                /* See if called from ISR ...           
+ 2024              		.loc 1 226 0
+ 2025 0308 54329FE5 		ldr	r3, .L33
+ 2026 030c 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2027 0310 000053E3 		cmp	r3, #0
+ 2028 0314 0400000A 		beq	.L18
+ 227:../os_core/os_mutex.c ****         *err = OS_ERR_DEL_ISR;                             /* ... can't DELETE from an ISR         
+ 2029              		.loc 1 227 0
+ 2030 0318 20301BE5 		ldr	r3, [fp, #-32]
+ 2031 031c 7320E0E3 		mvn	r2, #115
+ 2032 0320 0020C3E5 		strb	r2, [r3, #0]
+ 228:../os_core/os_mutex.c ****         return (pevent);
+ 2033              		.loc 1 228 0
+ 2034 0324 18301BE5 		ldr	r3, [fp, #-24]
+ 2035 0328 890000EA 		b	.L19
+ 2036              	.L18:
+ 229:../os_core/os_mutex.c ****     }
+ 230:../os_core/os_mutex.c **** #if OS_ARG_CHK_EN > 0
+ 231:../os_core/os_mutex.c ****     if (pevent == (OS_EVENT *)0) {                         /* Validate 'pevent'                    
+ 2037              		.loc 1 231 0
+ 2038 032c 18301BE5 		ldr	r3, [fp, #-24]
+ 2039 0330 000053E3 		cmp	r3, #0
+ 2040 0334 0400001A 		bne	.L20
+ 232:../os_core/os_mutex.c ****         *err = OS_ERR_PEVENT_NULL;
+ 2041              		.loc 1 232 0
+ 2042 0338 20301BE5 		ldr	r3, [fp, #-32]
+ 2043 033c 0420A0E3 		mov	r2, #4
+ 2044 0340 0020C3E5 		strb	r2, [r3, #0]
+ 233:../os_core/os_mutex.c ****         return ((OS_EVENT *)0);
+ 2045              		.loc 1 233 0
+ 2046 0344 0030A0E3 		mov	r3, #0
+ 2047 0348 810000EA 		b	.L19
+ 2048              	.L20:
+ 234:../os_core/os_mutex.c ****     }
+ 235:../os_core/os_mutex.c **** #endif
+ 236:../os_core/os_mutex.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_MUTEX) {      /* Validate event block type            
+ 2049              		.loc 1 236 0
+ 2050 034c 18301BE5 		ldr	r3, [fp, #-24]
+ 2051 0350 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2052 0354 040053E3 		cmp	r3, #4
+ 2053 0358 0400000A 		beq	.L21
+ 237:../os_core/os_mutex.c ****         *err = OS_ERR_EVENT_TYPE;
+ 2054              		.loc 1 237 0
+ 2055 035c 20301BE5 		ldr	r3, [fp, #-32]
+ 2056 0360 0120A0E3 		mov	r2, #1
+ 2057 0364 0020C3E5 		strb	r2, [r3, #0]
+ 238:../os_core/os_mutex.c ****         return (pevent);
+ 2058              		.loc 1 238 0
+ 2059 0368 18301BE5 		ldr	r3, [fp, #-24]
+ 2060 036c 780000EA 		b	.L19
+ 2061              	.L21:
+ 239:../os_core/os_mutex.c ****     }
+ 240:../os_core/os_mutex.c ****     OS_ENTER_CRITICAL();
+ 2062              		.loc 1 240 0
+ 2063              	@ 240 "../os_core/os_mutex.c" 1
+ 2064 0370 00000FE1 		mrs   r0, cpsr
+ 2065              	@ 0 "" 2
+ 2066              	@ 240 "../os_core/os_mutex.c" 1
+ 2067 0374 04002DE5 		stmfd sp!, {r0}
+ 2068              	@ 0 "" 2
+ 2069              	@ 240 "../os_core/os_mutex.c" 1
+ 2070 0378 C00080E3 		orr   r0, r0, #0b11000000
+ 2071              	@ 0 "" 2
+ 2072              	@ 240 "../os_core/os_mutex.c" 1
+ 2073 037c 00F021E1 		msr   cpsr_c, r0
+ 2074              	@ 0 "" 2
+ 241:../os_core/os_mutex.c ****     if (pevent->OSEventGrp != 0x00) {                      /* See if any tasks waiting on mutex    
+ 2075              		.loc 1 241 0
+ 2076 0380 18301BE5 		ldr	r3, [fp, #-24]
+ 2077 0384 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2078 0388 000053E3 		cmp	r3, #0
+ 2079 038c 0200000A 		beq	.L22
+ 242:../os_core/os_mutex.c ****         tasks_waiting = TRUE;                              /* Yes                                  
+ 2080              		.loc 1 242 0
+ 2081 0390 0130A0E3 		mov	r3, #1
+ 2082 0394 0D304BE5 		strb	r3, [fp, #-13]
+ 2083 0398 010000EA 		b	.L23
+ 2084              	.L22:
+ 243:../os_core/os_mutex.c ****     } else {
+ 244:../os_core/os_mutex.c ****         tasks_waiting = FALSE;                             /* No                                   
+ 2085              		.loc 1 244 0
+ 2086 039c 0030A0E3 		mov	r3, #0
+ 2087 03a0 0D304BE5 		strb	r3, [fp, #-13]
+ 2088              	.L23:
+ 245:../os_core/os_mutex.c ****     }
+ 246:../os_core/os_mutex.c ****     switch (opt) {
+ 2089              		.loc 1 246 0
+ 2090 03a4 19305BE5 		ldrb	r3, [fp, #-25]	@ zero_extendqisi2
+ 2091 03a8 000053E3 		cmp	r3, #0
+ 2092 03ac 0200000A 		beq	.L25
+ 2093 03b0 010053E3 		cmp	r3, #1
+ 2094 03b4 3300000A 		beq	.L32
+ 2095 03b8 5F0000EA 		b	.L31
+ 2096              	.L25:
+ 247:../os_core/os_mutex.c ****         case OS_DEL_NO_PEND:                               /* Delete mutex only if no task waiting 
+ 248:../os_core/os_mutex.c ****              if (tasks_waiting == FALSE) {
+ 2097              		.loc 1 248 0
+ 2098 03bc 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2099 03c0 000053E3 		cmp	r3, #0
+ 2100 03c4 2300001A 		bne	.L27
+ 249:../os_core/os_mutex.c **** #if OS_EVENT_NAME_SIZE > 1
+ 250:../os_core/os_mutex.c ****                  pevent->OSEventName[0] = '?';             /* Unknown name                         
+ 2101              		.loc 1 250 0
+ 2102 03c8 18301BE5 		ldr	r3, [fp, #-24]
+ 2103 03cc 3F20A0E3 		mov	r2, #63
+ 2104 03d0 1020C3E5 		strb	r2, [r3, #16]
+ 251:../os_core/os_mutex.c ****                  pevent->OSEventName[1] = OS_ASCII_NUL;
+ 2105              		.loc 1 251 0
+ 2106 03d4 18301BE5 		ldr	r3, [fp, #-24]
+ 2107 03d8 0020A0E3 		mov	r2, #0
+ 2108 03dc 1120C3E5 		strb	r2, [r3, #17]
+ 252:../os_core/os_mutex.c **** #endif
+ 253:../os_core/os_mutex.c ****                  pip                 = (INT8U)(pevent->OSEventCnt >> 8);
+ 2109              		.loc 1 253 0
+ 2110 03e0 18301BE5 		ldr	r3, [fp, #-24]
+ 2111 03e4 B230D3E1 		ldrh	r3, [r3, #2]
+ 2112 03e8 2334A0E1 		mov	r3, r3, lsr #8
+ 2113 03ec 0338A0E1 		mov	r3, r3, asl #16
+ 2114 03f0 2338A0E1 		mov	r3, r3, lsr #16
+ 2115 03f4 0E304BE5 		strb	r3, [fp, #-14]
+ 254:../os_core/os_mutex.c ****                  OSTCBPrioTbl[pip]   = (OS_TCB *)0;        /* Free up the PIP                      
+ 2116              		.loc 1 254 0
+ 2117 03f8 0E205BE5 		ldrb	r2, [fp, #-14]	@ zero_extendqisi2
+ 2118 03fc 64319FE5 		ldr	r3, .L33+4
+ 2119 0400 0010A0E3 		mov	r1, #0
+ 2120 0404 021183E7 		str	r1, [r3, r2, asl #2]
+ 255:../os_core/os_mutex.c ****                  pevent->OSEventType = OS_EVENT_TYPE_UNUSED;
+ 2121              		.loc 1 255 0
+ 2122 0408 18301BE5 		ldr	r3, [fp, #-24]
+ 2123 040c 0020A0E3 		mov	r2, #0
+ 2124 0410 0020C3E5 		strb	r2, [r3, #0]
+ 256:../os_core/os_mutex.c ****                  pevent->OSEventPtr  = OSEventFreeList;    /* Return Event Control Block to free li
+ 2125              		.loc 1 256 0
+ 2126 0414 50319FE5 		ldr	r3, .L33+8
+ 2127 0418 002093E5 		ldr	r2, [r3, #0]
+ 2128 041c 18301BE5 		ldr	r3, [fp, #-24]
+ 2129 0420 042083E5 		str	r2, [r3, #4]
+ 257:../os_core/os_mutex.c ****                  pevent->OSEventCnt  = 0;
+ 2130              		.loc 1 257 0
+ 2131 0424 18301BE5 		ldr	r3, [fp, #-24]
+ 2132 0428 0020A0E3 		mov	r2, #0
+ 2133 042c B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 258:../os_core/os_mutex.c ****                  OSEventFreeList     = pevent;
+ 2134              		.loc 1 258 0
+ 2135 0430 34319FE5 		ldr	r3, .L33+8
+ 2136 0434 18201BE5 		ldr	r2, [fp, #-24]
+ 2137 0438 002083E5 		str	r2, [r3, #0]
+ 259:../os_core/os_mutex.c ****                  OS_EXIT_CRITICAL();
+ 2138              		.loc 1 259 0
+ 2139              	@ 259 "../os_core/os_mutex.c" 1
+ 2140 043c 04009DE4 		ldmfd sp!, {r0}
+ 2141              	@ 0 "" 2
+ 2142              	@ 259 "../os_core/os_mutex.c" 1
+ 2143 0440 00F021E1 		msr   cpsr_c, r0
+ 2144              	@ 0 "" 2
+ 260:../os_core/os_mutex.c ****                  *err                = OS_NO_ERR;
+ 2145              		.loc 1 260 0
+ 2146 0444 20301BE5 		ldr	r3, [fp, #-32]
+ 2147 0448 0020A0E3 		mov	r2, #0
+ 2148 044c 0020C3E5 		strb	r2, [r3, #0]
+ 261:../os_core/os_mutex.c ****                  return ((OS_EVENT *)0);                   /* Mutex has been deleted               
+ 2149              		.loc 1 261 0
+ 2150 0450 0030A0E3 		mov	r3, #0
+ 2151 0454 3E0000EA 		b	.L19
+ 2152              	.L27:
+ 262:../os_core/os_mutex.c ****              } else {
+ 263:../os_core/os_mutex.c ****                  OS_EXIT_CRITICAL();
+ 2153              		.loc 1 263 0
+ 2154              	@ 263 "../os_core/os_mutex.c" 1
+ 2155 0458 04009DE4 		ldmfd sp!, {r0}
+ 2156              	@ 0 "" 2
+ 2157              	@ 263 "../os_core/os_mutex.c" 1
+ 2158 045c 00F021E1 		msr   cpsr_c, r0
+ 2159              	@ 0 "" 2
+ 264:../os_core/os_mutex.c ****                  *err                = OS_ERR_TASK_WAITING;
+ 2160              		.loc 1 264 0
+ 2161 0460 20301BE5 		ldr	r3, [fp, #-32]
+ 2162 0464 0820A0E3 		mov	r2, #8
+ 2163 0468 0020C3E5 		strb	r2, [r3, #0]
+ 265:../os_core/os_mutex.c ****                  return (pevent);
+ 2164              		.loc 1 265 0
+ 2165 046c 18301BE5 		ldr	r3, [fp, #-24]
+ 2166 0470 370000EA 		b	.L19
+ 2167              	.L29:
+ 266:../os_core/os_mutex.c ****              }
+ 267:../os_core/os_mutex.c **** 
+ 268:../os_core/os_mutex.c ****         case OS_DEL_ALWAYS:                                /* Always delete the mutex              
+ 269:../os_core/os_mutex.c ****              while (pevent->OSEventGrp != 0x00) {          /* Ready ALL tasks waiting for mutex    
+ 270:../os_core/os_mutex.c ****                  (void)OS_EventTaskRdy(pevent, (void *)0, OS_STAT_MUTEX);
+ 2168              		.loc 1 270 0
+ 2169 0474 18001BE5 		ldr	r0, [fp, #-24]
+ 2170 0478 0010A0E3 		mov	r1, #0
+ 2171 047c 1020A0E3 		mov	r2, #16
+ 2172 0480 FEFFFFEB 		bl	OS_EventTaskRdy
+ 2173 0484 000000EA 		b	.L28
+ 2174              	.L32:
+ 269:../os_core/os_mutex.c ****              while (pevent->OSEventGrp != 0x00) {          /* Ready ALL tasks waiting for mutex    
+ 2175              		.loc 1 269 0
+ 2176 0488 0000A0E1 		mov	r0, r0	@ nop
+ 2177              	.L28:
+ 269:../os_core/os_mutex.c ****              while (pevent->OSEventGrp != 0x00) {          /* Ready ALL tasks waiting for mutex    
+ 2178              		.loc 1 269 0 is_stmt 0 discriminator 1
+ 2179 048c 18301BE5 		ldr	r3, [fp, #-24]
+ 2180 0490 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2181 0494 000053E3 		cmp	r3, #0
+ 2182 0498 F5FFFF1A 		bne	.L29
+ 271:../os_core/os_mutex.c ****              }
+ 272:../os_core/os_mutex.c **** #if OS_EVENT_NAME_SIZE > 1
+ 273:../os_core/os_mutex.c ****              pevent->OSEventName[0] = '?';                 /* Unknown name                         
+ 2183              		.loc 1 273 0 is_stmt 1
+ 2184 049c 18301BE5 		ldr	r3, [fp, #-24]
+ 2185 04a0 3F20A0E3 		mov	r2, #63
+ 2186 04a4 1020C3E5 		strb	r2, [r3, #16]
+ 274:../os_core/os_mutex.c ****              pevent->OSEventName[1] = OS_ASCII_NUL;
+ 2187              		.loc 1 274 0
+ 2188 04a8 18301BE5 		ldr	r3, [fp, #-24]
+ 2189 04ac 0020A0E3 		mov	r2, #0
+ 2190 04b0 1120C3E5 		strb	r2, [r3, #17]
+ 275:../os_core/os_mutex.c **** #endif
+ 276:../os_core/os_mutex.c ****              pip                 = (INT8U)(pevent->OSEventCnt >> 8);
+ 2191              		.loc 1 276 0
+ 2192 04b4 18301BE5 		ldr	r3, [fp, #-24]
+ 2193 04b8 B230D3E1 		ldrh	r3, [r3, #2]
+ 2194 04bc 2334A0E1 		mov	r3, r3, lsr #8
+ 2195 04c0 0338A0E1 		mov	r3, r3, asl #16
+ 2196 04c4 2338A0E1 		mov	r3, r3, lsr #16
+ 2197 04c8 0E304BE5 		strb	r3, [fp, #-14]
+ 277:../os_core/os_mutex.c ****              OSTCBPrioTbl[pip]   = (OS_TCB *)0;            /* Free up the PIP                      
+ 2198              		.loc 1 277 0
+ 2199 04cc 0E205BE5 		ldrb	r2, [fp, #-14]	@ zero_extendqisi2
+ 2200 04d0 90309FE5 		ldr	r3, .L33+4
+ 2201 04d4 0010A0E3 		mov	r1, #0
+ 2202 04d8 021183E7 		str	r1, [r3, r2, asl #2]
+ 278:../os_core/os_mutex.c ****              pevent->OSEventType = OS_EVENT_TYPE_UNUSED;
+ 2203              		.loc 1 278 0
+ 2204 04dc 18301BE5 		ldr	r3, [fp, #-24]
+ 2205 04e0 0020A0E3 		mov	r2, #0
+ 2206 04e4 0020C3E5 		strb	r2, [r3, #0]
+ 279:../os_core/os_mutex.c ****              pevent->OSEventPtr  = OSEventFreeList;        /* Return Event Control Block to free li
+ 2207              		.loc 1 279 0
+ 2208 04e8 7C309FE5 		ldr	r3, .L33+8
+ 2209 04ec 002093E5 		ldr	r2, [r3, #0]
+ 2210 04f0 18301BE5 		ldr	r3, [fp, #-24]
+ 2211 04f4 042083E5 		str	r2, [r3, #4]
+ 280:../os_core/os_mutex.c ****              pevent->OSEventCnt  = 0;
+ 2212              		.loc 1 280 0
+ 2213 04f8 18301BE5 		ldr	r3, [fp, #-24]
+ 2214 04fc 0020A0E3 		mov	r2, #0
+ 2215 0500 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 281:../os_core/os_mutex.c ****              OSEventFreeList     = pevent;                 /* Get next free event control block    
+ 2216              		.loc 1 281 0
+ 2217 0504 60309FE5 		ldr	r3, .L33+8
+ 2218 0508 18201BE5 		ldr	r2, [fp, #-24]
+ 2219 050c 002083E5 		str	r2, [r3, #0]
+ 282:../os_core/os_mutex.c ****              OS_EXIT_CRITICAL();
+ 2220              		.loc 1 282 0
+ 2221              	@ 282 "../os_core/os_mutex.c" 1
+ 2222 0510 04009DE4 		ldmfd sp!, {r0}
+ 2223              	@ 0 "" 2
+ 2224              	@ 282 "../os_core/os_mutex.c" 1
+ 2225 0514 00F021E1 		msr   cpsr_c, r0
+ 2226              	@ 0 "" 2
+ 283:../os_core/os_mutex.c ****              if (tasks_waiting == TRUE) {                  /* Reschedule only if task(s) were waiti
+ 2227              		.loc 1 283 0
+ 2228 0518 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2229 051c 010053E3 		cmp	r3, #1
+ 2230 0520 0000001A 		bne	.L30
+ 284:../os_core/os_mutex.c ****                  OS_Sched();                               /* Find highest priority task ready to r
+ 2231              		.loc 1 284 0
+ 2232 0524 FEFFFFEB 		bl	OS_Sched
+ 2233              	.L30:
+ 285:../os_core/os_mutex.c ****              }
+ 286:../os_core/os_mutex.c ****              *err = OS_NO_ERR;
+ 2234              		.loc 1 286 0
+ 2235 0528 20301BE5 		ldr	r3, [fp, #-32]
+ 2236 052c 0020A0E3 		mov	r2, #0
+ 2237 0530 0020C3E5 		strb	r2, [r3, #0]
+ 287:../os_core/os_mutex.c ****              return ((OS_EVENT *)0);                       /* Mutex has been deleted               
+ 2238              		.loc 1 287 0
+ 2239 0534 0030A0E3 		mov	r3, #0
+ 2240 0538 050000EA 		b	.L19
+ 2241              	.L31:
+ 288:../os_core/os_mutex.c **** 
+ 289:../os_core/os_mutex.c ****         default:
+ 290:../os_core/os_mutex.c ****              OS_EXIT_CRITICAL();
+ 2242              		.loc 1 290 0
+ 2243              	@ 290 "../os_core/os_mutex.c" 1
+ 2244 053c 04009DE4 		ldmfd sp!, {r0}
+ 2245              	@ 0 "" 2
+ 2246              	@ 290 "../os_core/os_mutex.c" 1
+ 2247 0540 00F021E1 		msr   cpsr_c, r0
+ 2248              	@ 0 "" 2
+ 291:../os_core/os_mutex.c ****              *err = OS_ERR_INVALID_OPT;
+ 2249              		.loc 1 291 0
+ 2250 0544 20301BE5 		ldr	r3, [fp, #-32]
+ 2251 0548 0720A0E3 		mov	r2, #7
+ 2252 054c 0020C3E5 		strb	r2, [r3, #0]
+ 292:../os_core/os_mutex.c ****              return (pevent);
+ 2253              		.loc 1 292 0
+ 2254 0550 18301BE5 		ldr	r3, [fp, #-24]
+ 2255              	.L19:
+ 293:../os_core/os_mutex.c ****     }
+ 294:../os_core/os_mutex.c **** }
+ 2256              		.loc 1 294 0
+ 2257 0554 0300A0E1 		mov	r0, r3
+ 2258 0558 0CD04BE2 		sub	sp, fp, #12
+ 2259 055c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2260 0560 1EFF2FE1 		bx	lr
+ 2261              	.L34:
+ 2262              		.align	2
+ 2263              	.L33:
+ 2264 0564 00000000 		.word	OSIntNesting
+ 2265 0568 00000000 		.word	OSTCBPrioTbl
+ 2266 056c 00000000 		.word	OSEventFreeList
+ 2267              		.cfi_endproc
+ 2268              	.LFE2:
+ 2270              		.align	2
+ 2271              		.global	OSMutexPend
+ 2273              	OSMutexPend:
+ 2274              	.LFB3:
+ 295:../os_core/os_mutex.c **** #endif
+ 296:../os_core/os_mutex.c **** 
+ 297:../os_core/os_mutex.c **** /*$PAGE*/
+ 298:../os_core/os_mutex.c **** /*
+ 299:../os_core/os_mutex.c **** ***************************************************************************************************
+ 300:../os_core/os_mutex.c **** *                                  PEND ON MUTUAL EXCLUSION SEMAPHORE
+ 301:../os_core/os_mutex.c **** *
+ 302:../os_core/os_mutex.c **** * Description: This function waits for a mutual exclusion semaphore.
+ 303:../os_core/os_mutex.c **** *
+ 304:../os_core/os_mutex.c **** * Arguments  : pevent        is a pointer to the event control block associated with the desired
+ 305:../os_core/os_mutex.c **** *                            mutex.
+ 306:../os_core/os_mutex.c **** *
+ 307:../os_core/os_mutex.c **** *              timeout       is an optional timeout period (in clock ticks).  If non-zero, your tas
+ 308:../os_core/os_mutex.c **** *                            wait for the resource up to the amount of time specified by this argum
+ 309:../os_core/os_mutex.c **** *                            If you specify 0, however, your task will wait forever at the specifie
+ 310:../os_core/os_mutex.c **** *                            mutex or, until the resource becomes available.
+ 311:../os_core/os_mutex.c **** *
+ 312:../os_core/os_mutex.c **** *              err           is a pointer to where an error message will be deposited.  Possible er
+ 313:../os_core/os_mutex.c **** *                            messages are:
+ 314:../os_core/os_mutex.c **** *                               OS_NO_ERR          The call was successful and your task owns the m
+ 315:../os_core/os_mutex.c **** *                               OS_TIMEOUT         The mutex was not available within the specified
+ 316:../os_core/os_mutex.c **** *                               OS_ERR_EVENT_TYPE  If you didn't pass a pointer to a mutex
+ 317:../os_core/os_mutex.c **** *                               OS_ERR_PEVENT_NULL 'pevent' is a NULL pointer
+ 318:../os_core/os_mutex.c **** *                               OS_ERR_PEND_ISR    If you called this function from an ISR and the 
+ 319:../os_core/os_mutex.c **** *                                                  would lead to a suspension.
+ 320:../os_core/os_mutex.c **** *
+ 321:../os_core/os_mutex.c **** * Returns    : none
+ 322:../os_core/os_mutex.c **** *
+ 323:../os_core/os_mutex.c **** * Note(s)    : 1) The task that owns the Mutex MUST NOT pend on any other event while it owns the m
+ 324:../os_core/os_mutex.c **** *              2) You MUST NOT change the priority of the task that owns the mutex
+ 325:../os_core/os_mutex.c **** ***************************************************************************************************
+ 326:../os_core/os_mutex.c **** */
+ 327:../os_core/os_mutex.c **** void  OSMutexPend (OS_EVENT *pevent, INT16U timeout, INT8U *err)
+ 328:../os_core/os_mutex.c **** {
+ 2275              		.loc 1 328 0
+ 2276              		.cfi_startproc
+ 2277              		@ Function supports interworking.
+ 2278              		@ args = 0, pretend = 0, frame = 32
+ 2279              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2280 0570 0DC0A0E1 		mov	ip, sp
+ 2281              	.LCFI6:
+ 2282              		.cfi_def_cfa_register 12
+ 2283 0574 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2284 0578 04B04CE2 		sub	fp, ip, #4
+ 2285              		.cfi_offset 14, -8
+ 2286              		.cfi_offset 13, -12
+ 2287              		.cfi_offset 11, -16
+ 2288              	.LCFI7:
+ 2289              		.cfi_def_cfa 11, 4
+ 2290 057c 20D04DE2 		sub	sp, sp, #32
+ 2291 0580 20000BE5 		str	r0, [fp, #-32]
+ 2292 0584 0130A0E1 		mov	r3, r1
+ 2293 0588 28200BE5 		str	r2, [fp, #-40]
+ 2294 058c B2324BE1 		strh	r3, [fp, #-34]	@ movhi
+ 329:../os_core/os_mutex.c ****     INT8U      pip;                                        /* Priority Inheritance Priority (PIP)  
+ 330:../os_core/os_mutex.c ****     INT8U      mprio;                                      /* Mutex owner priority                 
+ 331:../os_core/os_mutex.c ****     BOOLEAN    rdy;                                        /* Flag indicating task was ready       
+ 332:../os_core/os_mutex.c ****     OS_TCB    *ptcb;
+ 333:../os_core/os_mutex.c ****     OS_EVENT  *pevent2;
+ 334:../os_core/os_mutex.c ****     INT8U      y;
+ 335:../os_core/os_mutex.c **** #if OS_CRITICAL_METHOD == 3                                /* Allocate storage for CPU status regis
+ 336:../os_core/os_mutex.c ****     OS_CPU_SR  cpu_sr;
+ 337:../os_core/os_mutex.c **** 
+ 338:../os_core/os_mutex.c **** 
+ 339:../os_core/os_mutex.c **** 
+ 340:../os_core/os_mutex.c ****     cpu_sr = 0;                                            /* Prevent compiler warning             
+ 341:../os_core/os_mutex.c **** #endif    
+ 342:../os_core/os_mutex.c ****     if (OSIntNesting > 0) {                                /* See if called from ISR ...           
+ 2295              		.loc 1 342 0
+ 2296 0590 FC349FE5 		ldr	r3, .L49
+ 2297 0594 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2298 0598 000053E3 		cmp	r3, #0
+ 2299 059c 0300000A 		beq	.L36
+ 343:../os_core/os_mutex.c ****         *err = OS_ERR_PEND_ISR;                            /* ... can't PEND from an ISR           
+ 2300              		.loc 1 343 0
+ 2301 05a0 28301BE5 		ldr	r3, [fp, #-40]
+ 2302 05a4 0220A0E3 		mov	r2, #2
+ 2303 05a8 0020C3E5 		strb	r2, [r3, #0]
+ 344:../os_core/os_mutex.c ****         return;
+ 2304              		.loc 1 344 0
+ 2305 05ac 350100EA 		b	.L35
+ 2306              	.L36:
+ 345:../os_core/os_mutex.c ****     }
+ 346:../os_core/os_mutex.c **** #if OS_ARG_CHK_EN > 0
+ 347:../os_core/os_mutex.c ****     if (pevent == (OS_EVENT *)0) {                         /* Validate 'pevent'                    
+ 2307              		.loc 1 347 0
+ 2308 05b0 20301BE5 		ldr	r3, [fp, #-32]
+ 2309 05b4 000053E3 		cmp	r3, #0
+ 2310 05b8 0300001A 		bne	.L38
+ 348:../os_core/os_mutex.c ****         *err = OS_ERR_PEVENT_NULL;
+ 2311              		.loc 1 348 0
+ 2312 05bc 28301BE5 		ldr	r3, [fp, #-40]
+ 2313 05c0 0420A0E3 		mov	r2, #4
+ 2314 05c4 0020C3E5 		strb	r2, [r3, #0]
+ 349:../os_core/os_mutex.c ****         return;
+ 2315              		.loc 1 349 0
+ 2316 05c8 2E0100EA 		b	.L35
+ 2317              	.L38:
+ 350:../os_core/os_mutex.c ****     }
+ 351:../os_core/os_mutex.c **** #endif
+ 352:../os_core/os_mutex.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_MUTEX) {      /* Validate event block type            
+ 2318              		.loc 1 352 0
+ 2319 05cc 20301BE5 		ldr	r3, [fp, #-32]
+ 2320 05d0 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2321 05d4 040053E3 		cmp	r3, #4
+ 2322 05d8 0300000A 		beq	.L39
+ 353:../os_core/os_mutex.c ****         *err = OS_ERR_EVENT_TYPE;
+ 2323              		.loc 1 353 0
+ 2324 05dc 28301BE5 		ldr	r3, [fp, #-40]
+ 2325 05e0 0120A0E3 		mov	r2, #1
+ 2326 05e4 0020C3E5 		strb	r2, [r3, #0]
+ 354:../os_core/os_mutex.c ****         return;
+ 2327              		.loc 1 354 0
+ 2328 05e8 260100EA 		b	.L35
+ 2329              	.L39:
+ 355:../os_core/os_mutex.c ****     }
+ 356:../os_core/os_mutex.c ****     OS_ENTER_CRITICAL();								   /* Is Mutex available?                      */
+ 2330              		.loc 1 356 0
+ 2331              	@ 356 "../os_core/os_mutex.c" 1
+ 2332 05ec 00000FE1 		mrs   r0, cpsr
+ 2333              	@ 0 "" 2
+ 2334              	@ 356 "../os_core/os_mutex.c" 1
+ 2335 05f0 04002DE5 		stmfd sp!, {r0}
+ 2336              	@ 0 "" 2
+ 2337              	@ 356 "../os_core/os_mutex.c" 1
+ 2338 05f4 C00080E3 		orr   r0, r0, #0b11000000
+ 2339              	@ 0 "" 2
+ 2340              	@ 356 "../os_core/os_mutex.c" 1
+ 2341 05f8 00F021E1 		msr   cpsr_c, r0
+ 2342              	@ 0 "" 2
+ 357:../os_core/os_mutex.c ****     if ((INT8U)(pevent->OSEventCnt & OS_MUTEX_KEEP_LOWER_8) == OS_MUTEX_AVAILABLE) {
+ 2343              		.loc 1 357 0
+ 2344 05fc 20301BE5 		ldr	r3, [fp, #-32]
+ 2345 0600 B230D3E1 		ldrh	r3, [r3, #2]
+ 2346 0604 FF3003E2 		and	r3, r3, #255
+ 2347 0608 FF0053E3 		cmp	r3, #255
+ 2348 060c 1A00001A 		bne	.L40
+ 358:../os_core/os_mutex.c ****         pevent->OSEventCnt &= OS_MUTEX_KEEP_UPPER_8;       /* Yes, Acquire the resource            
+ 2349              		.loc 1 358 0
+ 2350 0610 20301BE5 		ldr	r3, [fp, #-32]
+ 2351 0614 B230D3E1 		ldrh	r3, [r3, #2]
+ 2352 0618 FF30C3E3 		bic	r3, r3, #255
+ 2353 061c 0338A0E1 		mov	r3, r3, asl #16
+ 2354 0620 2328A0E1 		mov	r2, r3, lsr #16
+ 2355 0624 20301BE5 		ldr	r3, [fp, #-32]
+ 2356 0628 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 359:../os_core/os_mutex.c ****         pevent->OSEventCnt |= OSTCBCur->OSTCBPrio;         /*      Save priority of owning task    
+ 2357              		.loc 1 359 0
+ 2358 062c 20301BE5 		ldr	r3, [fp, #-32]
+ 2359 0630 B220D3E1 		ldrh	r2, [r3, #2]
+ 2360 0634 5C349FE5 		ldr	r3, .L49+4
+ 2361 0638 003093E5 		ldr	r3, [r3, #0]
+ 2362 063c 2E30D3E5 		ldrb	r3, [r3, #46]	@ zero_extendqisi2
+ 2363 0640 033082E1 		orr	r3, r2, r3
+ 2364 0644 0338A0E1 		mov	r3, r3, asl #16
+ 2365 0648 2328A0E1 		mov	r2, r3, lsr #16
+ 2366 064c 20301BE5 		ldr	r3, [fp, #-32]
+ 2367 0650 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 360:../os_core/os_mutex.c ****         pevent->OSEventPtr  = (void *)OSTCBCur;            /*      Point to owning task's OS_TCB   
+ 2368              		.loc 1 360 0
+ 2369 0654 3C349FE5 		ldr	r3, .L49+4
+ 2370 0658 002093E5 		ldr	r2, [r3, #0]
+ 2371 065c 20301BE5 		ldr	r3, [fp, #-32]
+ 2372 0660 042083E5 		str	r2, [r3, #4]
+ 361:../os_core/os_mutex.c ****         OS_EXIT_CRITICAL();
+ 2373              		.loc 1 361 0
+ 2374              	@ 361 "../os_core/os_mutex.c" 1
+ 2375 0664 04009DE4 		ldmfd sp!, {r0}
+ 2376              	@ 0 "" 2
+ 2377              	@ 361 "../os_core/os_mutex.c" 1
+ 2378 0668 00F021E1 		msr   cpsr_c, r0
+ 2379              	@ 0 "" 2
+ 362:../os_core/os_mutex.c ****         *err  = OS_NO_ERR;
+ 2380              		.loc 1 362 0
+ 2381 066c 28301BE5 		ldr	r3, [fp, #-40]
+ 2382 0670 0020A0E3 		mov	r2, #0
+ 2383 0674 0020C3E5 		strb	r2, [r3, #0]
+ 363:../os_core/os_mutex.c ****         return;
+ 2384              		.loc 1 363 0
+ 2385 0678 020100EA 		b	.L35
+ 2386              	.L40:
+ 364:../os_core/os_mutex.c ****     }
+ 365:../os_core/os_mutex.c ****     pip   = (INT8U)(pevent->OSEventCnt >> 8);                     /* No, Get PIP from mutex        
+ 2387              		.loc 1 365 0
+ 2388 067c 20301BE5 		ldr	r3, [fp, #-32]
+ 2389 0680 B230D3E1 		ldrh	r3, [r3, #2]
+ 2390 0684 2334A0E1 		mov	r3, r3, lsr #8
+ 2391 0688 0338A0E1 		mov	r3, r3, asl #16
+ 2392 068c 2338A0E1 		mov	r3, r3, lsr #16
+ 2393 0690 0E304BE5 		strb	r3, [fp, #-14]
+ 366:../os_core/os_mutex.c ****     mprio = (INT8U)(pevent->OSEventCnt & OS_MUTEX_KEEP_LOWER_8);  /*     Get priority of mutex owne
+ 2394              		.loc 1 366 0
+ 2395 0694 20301BE5 		ldr	r3, [fp, #-32]
+ 2396 0698 B230D3E1 		ldrh	r3, [r3, #2]
+ 2397 069c 0F304BE5 		strb	r3, [fp, #-15]
+ 367:../os_core/os_mutex.c ****     ptcb  = (OS_TCB *)(pevent->OSEventPtr);                       /*     Point to TCB of mutex owne
+ 2398              		.loc 1 367 0
+ 2399 06a0 20301BE5 		ldr	r3, [fp, #-32]
+ 2400 06a4 043093E5 		ldr	r3, [r3, #4]
+ 2401 06a8 14300BE5 		str	r3, [fp, #-20]
+ 368:../os_core/os_mutex.c ****     if (ptcb->OSTCBPrio != pip) {                                 /*     Need to promote prio of ow
+ 2402              		.loc 1 368 0
+ 2403 06ac 14301BE5 		ldr	r3, [fp, #-20]
+ 2404 06b0 2E30D3E5 		ldrb	r3, [r3, #46]	@ zero_extendqisi2
+ 2405 06b4 0E205BE5 		ldrb	r2, [fp, #-14]	@ zero_extendqisi2
+ 2406 06b8 030052E1 		cmp	r2, r3
+ 2407 06bc C200000A 		beq	.L41
+ 369:../os_core/os_mutex.c ****         if (mprio > OSTCBCur->OSTCBPrio) {  
+ 2408              		.loc 1 369 0
+ 2409 06c0 D0339FE5 		ldr	r3, .L49+4
+ 2410 06c4 003093E5 		ldr	r3, [r3, #0]
+ 2411 06c8 2E30D3E5 		ldrb	r3, [r3, #46]	@ zero_extendqisi2
+ 2412 06cc 0F205BE5 		ldrb	r2, [fp, #-15]	@ zero_extendqisi2
+ 2413 06d0 030052E1 		cmp	r2, r3
+ 2414 06d4 BC00009A 		bls	.L41
+ 370:../os_core/os_mutex.c ****             y = ptcb->OSTCBY;                          
+ 2415              		.loc 1 370 0
+ 2416 06d8 14301BE5 		ldr	r3, [fp, #-20]
+ 2417 06dc 3030D3E5 		ldrb	r3, [r3, #48]
+ 2418 06e0 15304BE5 		strb	r3, [fp, #-21]
+ 371:../os_core/os_mutex.c ****             if ((OSRdyTbl[y] & ptcb->OSTCBBitX) != 0x00) {        /*     See if mutex owner is read
+ 2419              		.loc 1 371 0
+ 2420 06e4 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 2421 06e8 AC239FE5 		ldr	r2, .L49+8
+ 2422 06ec 0320D2E7 		ldrb	r2, [r2, r3]	@ zero_extendqisi2
+ 2423 06f0 14301BE5 		ldr	r3, [fp, #-20]
+ 2424 06f4 3130D3E5 		ldrb	r3, [r3, #49]	@ zero_extendqisi2
+ 2425 06f8 033002E0 		and	r3, r2, r3
+ 2426 06fc FF3003E2 		and	r3, r3, #255
+ 2427 0700 000053E3 		cmp	r3, #0
+ 2428 0704 2300000A 		beq	.L42
+ 372:../os_core/os_mutex.c ****                 OSRdyTbl[y] &= ~ptcb->OSTCBBitX;                  /*     Yes, Remove owner from Rdy
+ 2429              		.loc 1 372 0
+ 2430 0708 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 2431 070c 15205BE5 		ldrb	r2, [fp, #-21]	@ zero_extendqisi2
+ 2432 0710 84139FE5 		ldr	r1, .L49+8
+ 2433 0714 0220D1E7 		ldrb	r2, [r1, r2]	@ zero_extendqisi2
+ 2434 0718 FF1002E2 		and	r1, r2, #255
+ 2435 071c 14201BE5 		ldr	r2, [fp, #-20]
+ 2436 0720 3120D2E5 		ldrb	r2, [r2, #49]	@ zero_extendqisi2
+ 2437 0724 FF2002E2 		and	r2, r2, #255
+ 2438 0728 0220E0E1 		mvn	r2, r2
+ 2439 072c FF2002E2 		and	r2, r2, #255
+ 2440 0730 022001E0 		and	r2, r1, r2
+ 2441 0734 FF2002E2 		and	r2, r2, #255
+ 2442 0738 FF1002E2 		and	r1, r2, #255
+ 2443 073c 58239FE5 		ldr	r2, .L49+8
+ 2444 0740 0310C2E7 		strb	r1, [r2, r3]
+ 373:../os_core/os_mutex.c ****                 if (OSRdyTbl[y] == 0x00) {                        /*          ... list at current p
+ 2445              		.loc 1 373 0
+ 2446 0744 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 2447 0748 4C239FE5 		ldr	r2, .L49+8
+ 2448 074c 0330D2E7 		ldrb	r3, [r2, r3]	@ zero_extendqisi2
+ 2449 0750 000053E3 		cmp	r3, #0
+ 2450 0754 0C00001A 		bne	.L43
+ 374:../os_core/os_mutex.c ****                     OSRdyGrp &= ~ptcb->OSTCBBitY;
+ 2451              		.loc 1 374 0
+ 2452 0758 14301BE5 		ldr	r3, [fp, #-20]
+ 2453 075c 3230D3E5 		ldrb	r3, [r3, #50]	@ zero_extendqisi2
+ 2454 0760 FF3003E2 		and	r3, r3, #255
+ 2455 0764 0330E0E1 		mvn	r3, r3
+ 2456 0768 FF2003E2 		and	r2, r3, #255
+ 2457 076c 2C339FE5 		ldr	r3, .L49+12
+ 2458 0770 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2459 0774 FF3003E2 		and	r3, r3, #255
+ 2460 0778 033002E0 		and	r3, r2, r3
+ 2461 077c FF3003E2 		and	r3, r3, #255
+ 2462 0780 FF2003E2 		and	r2, r3, #255
+ 2463 0784 14339FE5 		ldr	r3, .L49+12
+ 2464 0788 0020C3E5 		strb	r2, [r3, #0]
+ 2465              	.L43:
+ 375:../os_core/os_mutex.c ****                 }
+ 376:../os_core/os_mutex.c ****                 rdy = TRUE;
+ 2466              		.loc 1 376 0
+ 2467 078c 0130A0E3 		mov	r3, #1
+ 2468 0790 0D304BE5 		strb	r3, [fp, #-13]
+ 2469 0794 330000EA 		b	.L44
+ 2470              	.L42:
+ 377:../os_core/os_mutex.c ****             } else {
+ 378:../os_core/os_mutex.c ****                 pevent2 = ptcb->OSTCBEventPtr;
+ 2471              		.loc 1 378 0
+ 2472 0798 14301BE5 		ldr	r3, [fp, #-20]
+ 2473 079c 1C3093E5 		ldr	r3, [r3, #28]
+ 2474 07a0 1C300BE5 		str	r3, [fp, #-28]
+ 379:../os_core/os_mutex.c ****                 if (pevent2 != (OS_EVENT *)0) {                   /* Remove from event wait list   
+ 2475              		.loc 1 379 0
+ 2476 07a4 1C301BE5 		ldr	r3, [fp, #-28]
+ 2477 07a8 000053E3 		cmp	r3, #0
+ 2478 07ac 2B00000A 		beq	.L45
+ 380:../os_core/os_mutex.c ****                     if ((pevent2->OSEventTbl[ptcb->OSTCBY] &= ~ptcb->OSTCBBitX) == 0) {
+ 2479              		.loc 1 380 0
+ 2480 07b0 14301BE5 		ldr	r3, [fp, #-20]
+ 2481 07b4 3030D3E5 		ldrb	r3, [r3, #48]	@ zero_extendqisi2
+ 2482 07b8 14201BE5 		ldr	r2, [fp, #-20]
+ 2483 07bc 3020D2E5 		ldrb	r2, [r2, #48]	@ zero_extendqisi2
+ 2484 07c0 0210A0E1 		mov	r1, r2
+ 2485 07c4 1C001BE5 		ldr	r0, [fp, #-28]
+ 2486 07c8 0820A0E3 		mov	r2, #8
+ 2487 07cc 011080E0 		add	r1, r0, r1
+ 2488 07d0 022081E0 		add	r2, r1, r2
+ 2489 07d4 0020D2E5 		ldrb	r2, [r2, #0]	@ zero_extendqisi2
+ 2490 07d8 FF1002E2 		and	r1, r2, #255
+ 2491 07dc 14201BE5 		ldr	r2, [fp, #-20]
+ 2492 07e0 3120D2E5 		ldrb	r2, [r2, #49]	@ zero_extendqisi2
+ 2493 07e4 FF2002E2 		and	r2, r2, #255
+ 2494 07e8 0220E0E1 		mvn	r2, r2
+ 2495 07ec FF2002E2 		and	r2, r2, #255
+ 2496 07f0 022001E0 		and	r2, r1, r2
+ 2497 07f4 FF2002E2 		and	r2, r2, #255
+ 2498 07f8 FF1002E2 		and	r1, r2, #255
+ 2499 07fc 1C001BE5 		ldr	r0, [fp, #-28]
+ 2500 0800 0820A0E3 		mov	r2, #8
+ 2501 0804 030080E0 		add	r0, r0, r3
+ 2502 0808 022080E0 		add	r2, r0, r2
+ 2503 080c 0010C2E5 		strb	r1, [r2, #0]
+ 2504 0810 1C101BE5 		ldr	r1, [fp, #-28]
+ 2505 0814 0820A0E3 		mov	r2, #8
+ 2506 0818 033081E0 		add	r3, r1, r3
+ 2507 081c 023083E0 		add	r3, r3, r2
+ 2508 0820 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2509 0824 000053E3 		cmp	r3, #0
+ 2510 0828 0C00001A 		bne	.L45
+ 381:../os_core/os_mutex.c ****                         pevent2->OSEventGrp &= ~ptcb->OSTCBBitY;
+ 2511              		.loc 1 381 0
+ 2512 082c 1C301BE5 		ldr	r3, [fp, #-28]
+ 2513 0830 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2514 0834 FF2003E2 		and	r2, r3, #255
+ 2515 0838 14301BE5 		ldr	r3, [fp, #-20]
+ 2516 083c 3230D3E5 		ldrb	r3, [r3, #50]	@ zero_extendqisi2
+ 2517 0840 FF3003E2 		and	r3, r3, #255
+ 2518 0844 0330E0E1 		mvn	r3, r3
+ 2519 0848 FF3003E2 		and	r3, r3, #255
+ 2520 084c 033002E0 		and	r3, r2, r3
+ 2521 0850 FF3003E2 		and	r3, r3, #255
+ 2522 0854 FF2003E2 		and	r2, r3, #255
+ 2523 0858 1C301BE5 		ldr	r3, [fp, #-28]
+ 2524 085c 0120C3E5 		strb	r2, [r3, #1]
+ 2525              	.L45:
+ 382:../os_core/os_mutex.c ****                     }
+ 383:../os_core/os_mutex.c ****                 }
+ 384:../os_core/os_mutex.c ****                 rdy = FALSE;                               /* No                                   
+ 2526              		.loc 1 384 0
+ 2527 0860 0030A0E3 		mov	r3, #0
+ 2528 0864 0D304BE5 		strb	r3, [fp, #-13]
+ 2529              	.L44:
+ 385:../os_core/os_mutex.c ****             }
+ 386:../os_core/os_mutex.c ****             ptcb->OSTCBPrio = pip;                         /* Change owner task prio to PIP        
+ 2530              		.loc 1 386 0
+ 2531 0868 14301BE5 		ldr	r3, [fp, #-20]
+ 2532 086c 0E205BE5 		ldrb	r2, [fp, #-14]
+ 2533 0870 2E20C3E5 		strb	r2, [r3, #46]
+ 387:../os_core/os_mutex.c ****             ptcb->OSTCBY    = ptcb->OSTCBPrio >> 3;
+ 2534              		.loc 1 387 0
+ 2535 0874 14301BE5 		ldr	r3, [fp, #-20]
+ 2536 0878 2E30D3E5 		ldrb	r3, [r3, #46]	@ zero_extendqisi2
+ 2537 087c A331A0E1 		mov	r3, r3, lsr #3
+ 2538 0880 FF2003E2 		and	r2, r3, #255
+ 2539 0884 14301BE5 		ldr	r3, [fp, #-20]
+ 2540 0888 3020C3E5 		strb	r2, [r3, #48]
+ 388:../os_core/os_mutex.c ****             ptcb->OSTCBBitY = OSMapTbl[ptcb->OSTCBY];
+ 2541              		.loc 1 388 0
+ 2542 088c 14301BE5 		ldr	r3, [fp, #-20]
+ 2543 0890 3030D3E5 		ldrb	r3, [r3, #48]	@ zero_extendqisi2
+ 2544 0894 08229FE5 		ldr	r2, .L49+16
+ 2545 0898 0320D2E7 		ldrb	r2, [r2, r3]	@ zero_extendqisi2
+ 2546 089c 14301BE5 		ldr	r3, [fp, #-20]
+ 2547 08a0 3220C3E5 		strb	r2, [r3, #50]
+ 389:../os_core/os_mutex.c ****             ptcb->OSTCBX    = ptcb->OSTCBPrio & 0x07;
+ 2548              		.loc 1 389 0
+ 2549 08a4 14301BE5 		ldr	r3, [fp, #-20]
+ 2550 08a8 2E30D3E5 		ldrb	r3, [r3, #46]	@ zero_extendqisi2
+ 2551 08ac 073003E2 		and	r3, r3, #7
+ 2552 08b0 FF2003E2 		and	r2, r3, #255
+ 2553 08b4 14301BE5 		ldr	r3, [fp, #-20]
+ 2554 08b8 2F20C3E5 		strb	r2, [r3, #47]
+ 390:../os_core/os_mutex.c ****             ptcb->OSTCBBitX = OSMapTbl[ptcb->OSTCBX];
+ 2555              		.loc 1 390 0
+ 2556 08bc 14301BE5 		ldr	r3, [fp, #-20]
+ 2557 08c0 2F30D3E5 		ldrb	r3, [r3, #47]	@ zero_extendqisi2
+ 2558 08c4 D8219FE5 		ldr	r2, .L49+16
+ 2559 08c8 0320D2E7 		ldrb	r2, [r2, r3]	@ zero_extendqisi2
+ 2560 08cc 14301BE5 		ldr	r3, [fp, #-20]
+ 2561 08d0 3120C3E5 		strb	r2, [r3, #49]
+ 391:../os_core/os_mutex.c ****             if (rdy == TRUE) {                             /* If task was ready at owner's priority
+ 2562              		.loc 1 391 0
+ 2563 08d4 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2564 08d8 010053E3 		cmp	r3, #1
+ 2565 08dc 1400001A 		bne	.L46
+ 392:../os_core/os_mutex.c ****                 OSRdyGrp               |= ptcb->OSTCBBitY; /* ... make it ready at new priority.   
+ 2566              		.loc 1 392 0
+ 2567 08e0 14301BE5 		ldr	r3, [fp, #-20]
+ 2568 08e4 3220D3E5 		ldrb	r2, [r3, #50]	@ zero_extendqisi2
+ 2569 08e8 B0319FE5 		ldr	r3, .L49+12
+ 2570 08ec 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2571 08f0 033082E1 		orr	r3, r2, r3
+ 2572 08f4 FF2003E2 		and	r2, r3, #255
+ 2573 08f8 A0319FE5 		ldr	r3, .L49+12
+ 2574 08fc 0020C3E5 		strb	r2, [r3, #0]
+ 393:../os_core/os_mutex.c ****                 OSRdyTbl[ptcb->OSTCBY] |= ptcb->OSTCBBitX;
+ 2575              		.loc 1 393 0
+ 2576 0900 14301BE5 		ldr	r3, [fp, #-20]
+ 2577 0904 3030D3E5 		ldrb	r3, [r3, #48]	@ zero_extendqisi2
+ 2578 0908 14201BE5 		ldr	r2, [fp, #-20]
+ 2579 090c 3020D2E5 		ldrb	r2, [r2, #48]	@ zero_extendqisi2
+ 2580 0910 84119FE5 		ldr	r1, .L49+8
+ 2581 0914 0210D1E7 		ldrb	r1, [r1, r2]	@ zero_extendqisi2
+ 2582 0918 14201BE5 		ldr	r2, [fp, #-20]
+ 2583 091c 3120D2E5 		ldrb	r2, [r2, #49]	@ zero_extendqisi2
+ 2584 0920 022081E1 		orr	r2, r1, r2
+ 2585 0924 FF1002E2 		and	r1, r2, #255
+ 2586 0928 6C219FE5 		ldr	r2, .L49+8
+ 2587 092c 0310C2E7 		strb	r1, [r2, r3]
+ 2588 0930 210000EA 		b	.L47
+ 2589              	.L46:
+ 394:../os_core/os_mutex.c ****             } else {
+ 395:../os_core/os_mutex.c ****                 pevent2 = ptcb->OSTCBEventPtr;
+ 2590              		.loc 1 395 0
+ 2591 0934 14301BE5 		ldr	r3, [fp, #-20]
+ 2592 0938 1C3093E5 		ldr	r3, [r3, #28]
+ 2593 093c 1C300BE5 		str	r3, [fp, #-28]
+ 396:../os_core/os_mutex.c ****                 if (pevent2 != (OS_EVENT *)0) {            /* Remove from event wait list          
+ 2594              		.loc 1 396 0
+ 2595 0940 1C301BE5 		ldr	r3, [fp, #-28]
+ 2596 0944 000053E3 		cmp	r3, #0
+ 2597 0948 1B00000A 		beq	.L47
+ 397:../os_core/os_mutex.c ****                     pevent2->OSEventGrp               |= ptcb->OSTCBBitY;
+ 2598              		.loc 1 397 0
+ 2599 094c 1C301BE5 		ldr	r3, [fp, #-28]
+ 2600 0950 0120D3E5 		ldrb	r2, [r3, #1]	@ zero_extendqisi2
+ 2601 0954 14301BE5 		ldr	r3, [fp, #-20]
+ 2602 0958 3230D3E5 		ldrb	r3, [r3, #50]	@ zero_extendqisi2
+ 2603 095c 033082E1 		orr	r3, r2, r3
+ 2604 0960 FF2003E2 		and	r2, r3, #255
+ 2605 0964 1C301BE5 		ldr	r3, [fp, #-28]
+ 2606 0968 0120C3E5 		strb	r2, [r3, #1]
+ 398:../os_core/os_mutex.c ****                     pevent2->OSEventTbl[ptcb->OSTCBY] |= ptcb->OSTCBBitX;
+ 2607              		.loc 1 398 0
+ 2608 096c 14301BE5 		ldr	r3, [fp, #-20]
+ 2609 0970 3030D3E5 		ldrb	r3, [r3, #48]	@ zero_extendqisi2
+ 2610 0974 0310A0E1 		mov	r1, r3
+ 2611 0978 14301BE5 		ldr	r3, [fp, #-20]
+ 2612 097c 3030D3E5 		ldrb	r3, [r3, #48]	@ zero_extendqisi2
+ 2613 0980 0320A0E1 		mov	r2, r3
+ 2614 0984 1C001BE5 		ldr	r0, [fp, #-28]
+ 2615 0988 0830A0E3 		mov	r3, #8
+ 2616 098c 022080E0 		add	r2, r0, r2
+ 2617 0990 033082E0 		add	r3, r2, r3
+ 2618 0994 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2619 0998 14301BE5 		ldr	r3, [fp, #-20]
+ 2620 099c 3130D3E5 		ldrb	r3, [r3, #49]	@ zero_extendqisi2
+ 2621 09a0 033082E1 		orr	r3, r2, r3
+ 2622 09a4 FF2003E2 		and	r2, r3, #255
+ 2623 09a8 1C001BE5 		ldr	r0, [fp, #-28]
+ 2624 09ac 0830A0E3 		mov	r3, #8
+ 2625 09b0 011080E0 		add	r1, r0, r1
+ 2626 09b4 033081E0 		add	r3, r1, r3
+ 2627 09b8 0020C3E5 		strb	r2, [r3, #0]
+ 2628              	.L47:
+ 399:../os_core/os_mutex.c ****                 }
+ 400:../os_core/os_mutex.c ****             }
+ 401:../os_core/os_mutex.c ****             OSTCBPrioTbl[pip] = (OS_TCB *)ptcb;
+ 2629              		.loc 1 401 0
+ 2630 09bc 0E205BE5 		ldrb	r2, [fp, #-14]	@ zero_extendqisi2
+ 2631 09c0 E0309FE5 		ldr	r3, .L49+20
+ 2632 09c4 14101BE5 		ldr	r1, [fp, #-20]
+ 2633 09c8 021183E7 		str	r1, [r3, r2, asl #2]
+ 2634              	.L41:
+ 402:../os_core/os_mutex.c ****         }
+ 403:../os_core/os_mutex.c ****     }
+ 404:../os_core/os_mutex.c ****     OSTCBCur->OSTCBStat   |= OS_STAT_MUTEX;           /* Mutex not available, pend current task    
+ 2635              		.loc 1 404 0
+ 2636 09cc C4309FE5 		ldr	r3, .L49+4
+ 2637 09d0 003093E5 		ldr	r3, [r3, #0]
+ 2638 09d4 BC209FE5 		ldr	r2, .L49+4
+ 2639 09d8 002092E5 		ldr	r2, [r2, #0]
+ 2640 09dc 2C20D2E5 		ldrb	r2, [r2, #44]	@ zero_extendqisi2
+ 2641 09e0 102082E3 		orr	r2, r2, #16
+ 2642 09e4 FF2002E2 		and	r2, r2, #255
+ 2643 09e8 2C20C3E5 		strb	r2, [r3, #44]
+ 405:../os_core/os_mutex.c ****     OSTCBCur->OSTCBPendTO  = FALSE;
+ 2644              		.loc 1 405 0
+ 2645 09ec A4309FE5 		ldr	r3, .L49+4
+ 2646 09f0 003093E5 		ldr	r3, [r3, #0]
+ 2647 09f4 0020A0E3 		mov	r2, #0
+ 2648 09f8 2D20C3E5 		strb	r2, [r3, #45]
+ 406:../os_core/os_mutex.c ****     OSTCBCur->OSTCBDly     = timeout;                 /* Store timeout in current task's TCB       
+ 2649              		.loc 1 406 0
+ 2650 09fc 94309FE5 		ldr	r3, .L49+4
+ 2651 0a00 003093E5 		ldr	r3, [r3, #0]
+ 2652 0a04 B2225BE1 		ldrh	r2, [fp, #-34]	@ movhi
+ 2653 0a08 BA22C3E1 		strh	r2, [r3, #42]	@ movhi
+ 407:../os_core/os_mutex.c ****     OS_EventTaskWait(pevent);                         /* Suspend task until event or timeout occurs
+ 2654              		.loc 1 407 0
+ 2655 0a0c 20001BE5 		ldr	r0, [fp, #-32]
+ 2656 0a10 FEFFFFEB 		bl	OS_EventTaskWait
+ 408:../os_core/os_mutex.c ****     OS_EXIT_CRITICAL();
+ 2657              		.loc 1 408 0
+ 2658              	@ 408 "../os_core/os_mutex.c" 1
+ 2659 0a14 04009DE4 		ldmfd sp!, {r0}
+ 2660              	@ 0 "" 2
+ 2661              	@ 408 "../os_core/os_mutex.c" 1
+ 2662 0a18 00F021E1 		msr   cpsr_c, r0
+ 2663              	@ 0 "" 2
+ 409:../os_core/os_mutex.c ****     OS_Sched();                                       /* Find next highest priority task ready     
+ 2664              		.loc 1 409 0
+ 2665 0a1c FEFFFFEB 		bl	OS_Sched
+ 410:../os_core/os_mutex.c ****     OS_ENTER_CRITICAL();
+ 2666              		.loc 1 410 0
+ 2667              	@ 410 "../os_core/os_mutex.c" 1
+ 2668 0a20 00000FE1 		mrs   r0, cpsr
+ 2669              	@ 0 "" 2
+ 2670              	@ 410 "../os_core/os_mutex.c" 1
+ 2671 0a24 04002DE5 		stmfd sp!, {r0}
+ 2672              	@ 0 "" 2
+ 2673              	@ 410 "../os_core/os_mutex.c" 1
+ 2674 0a28 C00080E3 		orr   r0, r0, #0b11000000
+ 2675              	@ 0 "" 2
+ 2676              	@ 410 "../os_core/os_mutex.c" 1
+ 2677 0a2c 00F021E1 		msr   cpsr_c, r0
+ 2678              	@ 0 "" 2
+ 411:../os_core/os_mutex.c ****     if (OSTCBCur->OSTCBPendTO == TRUE) {              /* See if we timed out during the pend       
+ 2679              		.loc 1 411 0
+ 2680 0a30 60309FE5 		ldr	r3, .L49+4
+ 2681 0a34 003093E5 		ldr	r3, [r3, #0]
+ 2682 0a38 2D30D3E5 		ldrb	r3, [r3, #45]	@ zero_extendqisi2
+ 2683 0a3c 010053E3 		cmp	r3, #1
+ 2684 0a40 0700001A 		bne	.L48
+ 412:../os_core/os_mutex.c ****         OS_EventTO(pevent);
+ 2685              		.loc 1 412 0
+ 2686 0a44 20001BE5 		ldr	r0, [fp, #-32]
+ 2687 0a48 FEFFFFEB 		bl	OS_EventTO
+ 413:../os_core/os_mutex.c ****         OS_EXIT_CRITICAL();
+ 2688              		.loc 1 413 0
+ 2689              	@ 413 "../os_core/os_mutex.c" 1
+ 2690 0a4c 04009DE4 		ldmfd sp!, {r0}
+ 2691              	@ 0 "" 2
+ 2692              	@ 413 "../os_core/os_mutex.c" 1
+ 2693 0a50 00F021E1 		msr   cpsr_c, r0
+ 2694              	@ 0 "" 2
+ 414:../os_core/os_mutex.c ****         *err = OS_TIMEOUT;                            /* Indicate that we didn't get mutex within T
+ 2695              		.loc 1 414 0
+ 2696 0a54 28301BE5 		ldr	r3, [fp, #-40]
+ 2697 0a58 0A20A0E3 		mov	r2, #10
+ 2698 0a5c 0020C3E5 		strb	r2, [r3, #0]
+ 415:../os_core/os_mutex.c ****         return;
+ 2699              		.loc 1 415 0
+ 2700 0a60 080000EA 		b	.L35
+ 2701              	.L48:
+ 416:../os_core/os_mutex.c ****     }
+ 417:../os_core/os_mutex.c ****     OSTCBCur->OSTCBEventPtr = (OS_EVENT *)0;
+ 2702              		.loc 1 417 0
+ 2703 0a64 2C309FE5 		ldr	r3, .L49+4
+ 2704 0a68 003093E5 		ldr	r3, [r3, #0]
+ 2705 0a6c 0020A0E3 		mov	r2, #0
+ 2706 0a70 1C2083E5 		str	r2, [r3, #28]
+ 418:../os_core/os_mutex.c ****     OS_EXIT_CRITICAL();
+ 2707              		.loc 1 418 0
+ 2708              	@ 418 "../os_core/os_mutex.c" 1
+ 2709 0a74 04009DE4 		ldmfd sp!, {r0}
+ 2710              	@ 0 "" 2
+ 2711              	@ 418 "../os_core/os_mutex.c" 1
+ 2712 0a78 00F021E1 		msr   cpsr_c, r0
+ 2713              	@ 0 "" 2
+ 419:../os_core/os_mutex.c ****     *err = OS_NO_ERR;
+ 2714              		.loc 1 419 0
+ 2715 0a7c 28301BE5 		ldr	r3, [fp, #-40]
+ 2716 0a80 0020A0E3 		mov	r2, #0
+ 2717 0a84 0020C3E5 		strb	r2, [r3, #0]
+ 2718              	.L35:
+ 420:../os_core/os_mutex.c **** }
+ 2719              		.loc 1 420 0
+ 2720 0a88 0CD04BE2 		sub	sp, fp, #12
+ 2721 0a8c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2722 0a90 1EFF2FE1 		bx	lr
+ 2723              	.L50:
+ 2724              		.align	2
+ 2725              	.L49:
+ 2726 0a94 00000000 		.word	OSIntNesting
+ 2727 0a98 00000000 		.word	OSTCBCur
+ 2728 0a9c 00000000 		.word	OSRdyTbl
+ 2729 0aa0 00000000 		.word	OSRdyGrp
+ 2730 0aa4 00000000 		.word	OSMapTbl
+ 2731 0aa8 00000000 		.word	OSTCBPrioTbl
+ 2732              		.cfi_endproc
+ 2733              	.LFE3:
+ 2735              		.align	2
+ 2736              		.global	OSMutexPost
+ 2738              	OSMutexPost:
+ 2739              	.LFB4:
+ 421:../os_core/os_mutex.c **** /*$PAGE*/
+ 422:../os_core/os_mutex.c **** /*
+ 423:../os_core/os_mutex.c **** ***************************************************************************************************
+ 424:../os_core/os_mutex.c **** *                                  POST TO A MUTUAL EXCLUSION SEMAPHORE
+ 425:../os_core/os_mutex.c **** *
+ 426:../os_core/os_mutex.c **** * Description: This function signals a mutual exclusion semaphore
+ 427:../os_core/os_mutex.c **** *
+ 428:../os_core/os_mutex.c **** * Arguments  : pevent              is a pointer to the event control block associated with the desi
+ 429:../os_core/os_mutex.c **** *                                  mutex.
+ 430:../os_core/os_mutex.c **** *
+ 431:../os_core/os_mutex.c **** * Returns    : OS_NO_ERR               The call was successful and the mutex was signaled.
+ 432:../os_core/os_mutex.c **** *              OS_ERR_EVENT_TYPE       If you didn't pass a pointer to a mutex
+ 433:../os_core/os_mutex.c **** *              OS_ERR_PEVENT_NULL      'pevent' is a NULL pointer
+ 434:../os_core/os_mutex.c **** *              OS_ERR_POST_ISR         Attempted to post from an ISR (not valid for MUTEXes)
+ 435:../os_core/os_mutex.c **** *              OS_ERR_NOT_MUTEX_OWNER  The task that did the post is NOT the owner of the MUTEX.
+ 436:../os_core/os_mutex.c **** ***************************************************************************************************
+ 437:../os_core/os_mutex.c **** */
+ 438:../os_core/os_mutex.c **** 
+ 439:../os_core/os_mutex.c **** INT8U  OSMutexPost (OS_EVENT *pevent)
+ 440:../os_core/os_mutex.c **** {
+ 2740              		.loc 1 440 0
+ 2741              		.cfi_startproc
+ 2742              		@ Function supports interworking.
+ 2743              		@ args = 0, pretend = 0, frame = 16
+ 2744              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2745 0aac 0DC0A0E1 		mov	ip, sp
+ 2746              	.LCFI8:
+ 2747              		.cfi_def_cfa_register 12
+ 2748 0ab0 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2749 0ab4 04B04CE2 		sub	fp, ip, #4
+ 2750              		.cfi_offset 14, -8
+ 2751              		.cfi_offset 13, -12
+ 2752              		.cfi_offset 11, -16
+ 2753              	.LCFI9:
+ 2754              		.cfi_def_cfa 11, 4
+ 2755 0ab8 10D04DE2 		sub	sp, sp, #16
+ 2756 0abc 18000BE5 		str	r0, [fp, #-24]
+ 441:../os_core/os_mutex.c ****     INT8U      pip;                                   /* Priority inheritance priority             
+ 442:../os_core/os_mutex.c ****     INT8U      prio;
+ 443:../os_core/os_mutex.c ****     INT8U      y;
+ 444:../os_core/os_mutex.c **** #if OS_CRITICAL_METHOD == 3                           /* Allocate storage for CPU status register  
+ 445:../os_core/os_mutex.c ****     OS_CPU_SR  cpu_sr;
+ 446:../os_core/os_mutex.c **** 
+ 447:../os_core/os_mutex.c **** 
+ 448:../os_core/os_mutex.c **** 
+ 449:../os_core/os_mutex.c ****     cpu_sr = 0;                                       /* Prevent compiler warning                  
+ 450:../os_core/os_mutex.c **** #endif    
+ 451:../os_core/os_mutex.c ****     if (OSIntNesting > 0) {                           /* See if called from ISR ...                
+ 2757              		.loc 1 451 0
+ 2758 0ac0 2C339FE5 		ldr	r3, .L60
+ 2759 0ac4 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2760 0ac8 000053E3 		cmp	r3, #0
+ 2761 0acc 0100000A 		beq	.L52
+ 452:../os_core/os_mutex.c ****         return (OS_ERR_POST_ISR);                     /* ... can't POST mutex from an ISR          
+ 2762              		.loc 1 452 0
+ 2763 0ad0 0530A0E3 		mov	r3, #5
+ 2764 0ad4 C20000EA 		b	.L53
+ 2765              	.L52:
+ 453:../os_core/os_mutex.c ****     }
+ 454:../os_core/os_mutex.c **** #if OS_ARG_CHK_EN > 0
+ 455:../os_core/os_mutex.c ****     if (pevent == (OS_EVENT *)0) {                    /* Validate 'pevent'                         
+ 2766              		.loc 1 455 0
+ 2767 0ad8 18301BE5 		ldr	r3, [fp, #-24]
+ 2768 0adc 000053E3 		cmp	r3, #0
+ 2769 0ae0 0100001A 		bne	.L54
+ 456:../os_core/os_mutex.c ****         return (OS_ERR_PEVENT_NULL);
+ 2770              		.loc 1 456 0
+ 2771 0ae4 0430A0E3 		mov	r3, #4
+ 2772 0ae8 BD0000EA 		b	.L53
+ 2773              	.L54:
+ 457:../os_core/os_mutex.c ****     }
+ 458:../os_core/os_mutex.c **** #endif
+ 459:../os_core/os_mutex.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_MUTEX) { /* Validate event block type                 
+ 2774              		.loc 1 459 0
+ 2775 0aec 18301BE5 		ldr	r3, [fp, #-24]
+ 2776 0af0 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2777 0af4 040053E3 		cmp	r3, #4
+ 2778 0af8 0100000A 		beq	.L55
+ 460:../os_core/os_mutex.c ****         return (OS_ERR_EVENT_TYPE);
+ 2779              		.loc 1 460 0
+ 2780 0afc 0130A0E3 		mov	r3, #1
+ 2781 0b00 B70000EA 		b	.L53
+ 2782              	.L55:
+ 461:../os_core/os_mutex.c ****     }                                                 
+ 462:../os_core/os_mutex.c ****     OS_ENTER_CRITICAL();
+ 2783              		.loc 1 462 0
+ 2784              	@ 462 "../os_core/os_mutex.c" 1
+ 2785 0b04 00000FE1 		mrs   r0, cpsr
+ 2786              	@ 0 "" 2
+ 2787              	@ 462 "../os_core/os_mutex.c" 1
+ 2788 0b08 04002DE5 		stmfd sp!, {r0}
+ 2789              	@ 0 "" 2
+ 2790              	@ 462 "../os_core/os_mutex.c" 1
+ 2791 0b0c C00080E3 		orr   r0, r0, #0b11000000
+ 2792              	@ 0 "" 2
+ 2793              	@ 462 "../os_core/os_mutex.c" 1
+ 2794 0b10 00F021E1 		msr   cpsr_c, r0
+ 2795              	@ 0 "" 2
+ 463:../os_core/os_mutex.c ****     pip  = (INT8U)(pevent->OSEventCnt >> 8);          /* Get priority inheritance priority of mutex
+ 2796              		.loc 1 463 0
+ 2797 0b14 18301BE5 		ldr	r3, [fp, #-24]
+ 2798 0b18 B230D3E1 		ldrh	r3, [r3, #2]
+ 2799 0b1c 2334A0E1 		mov	r3, r3, lsr #8
+ 2800 0b20 0338A0E1 		mov	r3, r3, asl #16
+ 2801 0b24 2338A0E1 		mov	r3, r3, lsr #16
+ 2802 0b28 0D304BE5 		strb	r3, [fp, #-13]
+ 464:../os_core/os_mutex.c ****     prio = (INT8U)(pevent->OSEventCnt & OS_MUTEX_KEEP_LOWER_8);  /* Get owner's original priority  
+ 2803              		.loc 1 464 0
+ 2804 0b2c 18301BE5 		ldr	r3, [fp, #-24]
+ 2805 0b30 B230D3E1 		ldrh	r3, [r3, #2]
+ 2806 0b34 0E304BE5 		strb	r3, [fp, #-14]
+ 465:../os_core/os_mutex.c ****     if (OSTCBCur != (OS_TCB *)pevent->OSEventPtr) {   /* See if posting task owns the MUTEX        
+ 2807              		.loc 1 465 0
+ 2808 0b38 18301BE5 		ldr	r3, [fp, #-24]
+ 2809 0b3c 043093E5 		ldr	r3, [r3, #4]
+ 2810 0b40 0320A0E1 		mov	r2, r3
+ 2811 0b44 AC329FE5 		ldr	r3, .L60+4
+ 2812 0b48 003093E5 		ldr	r3, [r3, #0]
+ 2813 0b4c 030052E1 		cmp	r2, r3
+ 2814 0b50 0300000A 		beq	.L56
+ 466:../os_core/os_mutex.c ****         OS_EXIT_CRITICAL();
+ 2815              		.loc 1 466 0
+ 2816              	@ 466 "../os_core/os_mutex.c" 1
+ 2817 0b54 04009DE4 		ldmfd sp!, {r0}
+ 2818              	@ 0 "" 2
+ 2819              	@ 466 "../os_core/os_mutex.c" 1
+ 2820 0b58 00F021E1 		msr   cpsr_c, r0
+ 2821              	@ 0 "" 2
+ 467:../os_core/os_mutex.c ****         return (OS_ERR_NOT_MUTEX_OWNER);
+ 2822              		.loc 1 467 0
+ 2823 0b5c 7830A0E3 		mov	r3, #120
+ 2824 0b60 9F0000EA 		b	.L53
+ 2825              	.L56:
+ 468:../os_core/os_mutex.c ****     }
+ 469:../os_core/os_mutex.c ****     if (OSTCBCur->OSTCBPrio == pip) {                 /* Did we have to raise current task's priori
+ 2826              		.loc 1 469 0
+ 2827 0b64 8C329FE5 		ldr	r3, .L60+4
+ 2828 0b68 003093E5 		ldr	r3, [r3, #0]
+ 2829 0b6c 2E30D3E5 		ldrb	r3, [r3, #46]	@ zero_extendqisi2
+ 2830 0b70 0D205BE5 		ldrb	r2, [fp, #-13]	@ zero_extendqisi2
+ 2831 0b74 030052E1 		cmp	r2, r3
+ 2832 0b78 6300001A 		bne	.L57
+ 470:../os_core/os_mutex.c ****         y            = OSTCBCur->OSTCBY;              /* Yes, Return to original priority          
+ 2833              		.loc 1 470 0
+ 2834 0b7c 74329FE5 		ldr	r3, .L60+4
+ 2835 0b80 003093E5 		ldr	r3, [r3, #0]
+ 2836 0b84 3030D3E5 		ldrb	r3, [r3, #48]
+ 2837 0b88 0F304BE5 		strb	r3, [fp, #-15]
+ 471:../os_core/os_mutex.c ****         OSRdyTbl[y] &= ~OSTCBCur->OSTCBBitX;          /*      Remove owner from ready list at 'pip'
+ 2838              		.loc 1 471 0
+ 2839 0b8c 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 2840 0b90 0F205BE5 		ldrb	r2, [fp, #-15]	@ zero_extendqisi2
+ 2841 0b94 60129FE5 		ldr	r1, .L60+8
+ 2842 0b98 0220D1E7 		ldrb	r2, [r1, r2]	@ zero_extendqisi2
+ 2843 0b9c FF1002E2 		and	r1, r2, #255
+ 2844 0ba0 50229FE5 		ldr	r2, .L60+4
+ 2845 0ba4 002092E5 		ldr	r2, [r2, #0]
+ 2846 0ba8 3120D2E5 		ldrb	r2, [r2, #49]	@ zero_extendqisi2
+ 2847 0bac FF2002E2 		and	r2, r2, #255
+ 2848 0bb0 0220E0E1 		mvn	r2, r2
+ 2849 0bb4 FF2002E2 		and	r2, r2, #255
+ 2850 0bb8 022001E0 		and	r2, r1, r2
+ 2851 0bbc FF2002E2 		and	r2, r2, #255
+ 2852 0bc0 FF1002E2 		and	r1, r2, #255
+ 2853 0bc4 30229FE5 		ldr	r2, .L60+8
+ 2854 0bc8 0310C2E7 		strb	r1, [r2, r3]
+ 472:../os_core/os_mutex.c ****         if (OSRdyTbl[y] == 0) {
+ 2855              		.loc 1 472 0
+ 2856 0bcc 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 2857 0bd0 24229FE5 		ldr	r2, .L60+8
+ 2858 0bd4 0330D2E7 		ldrb	r3, [r2, r3]	@ zero_extendqisi2
+ 2859 0bd8 000053E3 		cmp	r3, #0
+ 2860 0bdc 0D00001A 		bne	.L58
+ 473:../os_core/os_mutex.c ****             OSRdyGrp &= ~OSTCBCur->OSTCBBitY;
+ 2861              		.loc 1 473 0
+ 2862 0be0 10329FE5 		ldr	r3, .L60+4
+ 2863 0be4 003093E5 		ldr	r3, [r3, #0]
+ 2864 0be8 3230D3E5 		ldrb	r3, [r3, #50]	@ zero_extendqisi2
+ 2865 0bec FF3003E2 		and	r3, r3, #255
+ 2866 0bf0 0330E0E1 		mvn	r3, r3
+ 2867 0bf4 FF2003E2 		and	r2, r3, #255
+ 2868 0bf8 00329FE5 		ldr	r3, .L60+12
+ 2869 0bfc 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2870 0c00 FF3003E2 		and	r3, r3, #255
+ 2871 0c04 033002E0 		and	r3, r2, r3
+ 2872 0c08 FF3003E2 		and	r3, r3, #255
+ 2873 0c0c FF2003E2 		and	r2, r3, #255
+ 2874 0c10 E8319FE5 		ldr	r3, .L60+12
+ 2875 0c14 0020C3E5 		strb	r2, [r3, #0]
+ 2876              	.L58:
+ 474:../os_core/os_mutex.c ****         }
+ 475:../os_core/os_mutex.c ****         OSTCBCur->OSTCBPrio         = prio;
+ 2877              		.loc 1 475 0
+ 2878 0c18 D8319FE5 		ldr	r3, .L60+4
+ 2879 0c1c 003093E5 		ldr	r3, [r3, #0]
+ 2880 0c20 0E205BE5 		ldrb	r2, [fp, #-14]
+ 2881 0c24 2E20C3E5 		strb	r2, [r3, #46]
+ 476:../os_core/os_mutex.c ****         OSTCBCur->OSTCBY            = prio >> 3;
+ 2882              		.loc 1 476 0
+ 2883 0c28 C8319FE5 		ldr	r3, .L60+4
+ 2884 0c2c 003093E5 		ldr	r3, [r3, #0]
+ 2885 0c30 0E205BE5 		ldrb	r2, [fp, #-14]	@ zero_extendqisi2
+ 2886 0c34 A221A0E1 		mov	r2, r2, lsr #3
+ 2887 0c38 FF2002E2 		and	r2, r2, #255
+ 2888 0c3c 3020C3E5 		strb	r2, [r3, #48]
+ 477:../os_core/os_mutex.c ****         OSTCBCur->OSTCBBitY         = OSMapTbl[OSTCBCur->OSTCBY];
+ 2889              		.loc 1 477 0
+ 2890 0c40 B0319FE5 		ldr	r3, .L60+4
+ 2891 0c44 003093E5 		ldr	r3, [r3, #0]
+ 2892 0c48 A8219FE5 		ldr	r2, .L60+4
+ 2893 0c4c 002092E5 		ldr	r2, [r2, #0]
+ 2894 0c50 3020D2E5 		ldrb	r2, [r2, #48]	@ zero_extendqisi2
+ 2895 0c54 A8119FE5 		ldr	r1, .L60+16
+ 2896 0c58 0220D1E7 		ldrb	r2, [r1, r2]	@ zero_extendqisi2
+ 2897 0c5c 3220C3E5 		strb	r2, [r3, #50]
+ 478:../os_core/os_mutex.c ****         OSTCBCur->OSTCBX            = prio & 0x07;
+ 2898              		.loc 1 478 0
+ 2899 0c60 90319FE5 		ldr	r3, .L60+4
+ 2900 0c64 003093E5 		ldr	r3, [r3, #0]
+ 2901 0c68 0E205BE5 		ldrb	r2, [fp, #-14]
+ 2902 0c6c 072002E2 		and	r2, r2, #7
+ 2903 0c70 FF2002E2 		and	r2, r2, #255
+ 2904 0c74 2F20C3E5 		strb	r2, [r3, #47]
+ 479:../os_core/os_mutex.c ****         OSTCBCur->OSTCBBitX         = OSMapTbl[OSTCBCur->OSTCBX];
+ 2905              		.loc 1 479 0
+ 2906 0c78 78319FE5 		ldr	r3, .L60+4
+ 2907 0c7c 003093E5 		ldr	r3, [r3, #0]
+ 2908 0c80 70219FE5 		ldr	r2, .L60+4
+ 2909 0c84 002092E5 		ldr	r2, [r2, #0]
+ 2910 0c88 2F20D2E5 		ldrb	r2, [r2, #47]	@ zero_extendqisi2
+ 2911 0c8c 70119FE5 		ldr	r1, .L60+16
+ 2912 0c90 0220D1E7 		ldrb	r2, [r1, r2]	@ zero_extendqisi2
+ 2913 0c94 3120C3E5 		strb	r2, [r3, #49]
+ 480:../os_core/os_mutex.c ****         OSRdyGrp                   |= OSTCBCur->OSTCBBitY;
+ 2914              		.loc 1 480 0
+ 2915 0c98 58319FE5 		ldr	r3, .L60+4
+ 2916 0c9c 003093E5 		ldr	r3, [r3, #0]
+ 2917 0ca0 3220D3E5 		ldrb	r2, [r3, #50]	@ zero_extendqisi2
+ 2918 0ca4 54319FE5 		ldr	r3, .L60+12
+ 2919 0ca8 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2920 0cac 033082E1 		orr	r3, r2, r3
+ 2921 0cb0 FF2003E2 		and	r2, r3, #255
+ 2922 0cb4 44319FE5 		ldr	r3, .L60+12
+ 2923 0cb8 0020C3E5 		strb	r2, [r3, #0]
+ 481:../os_core/os_mutex.c ****         OSRdyTbl[OSTCBCur->OSTCBY] |= OSTCBCur->OSTCBBitX;
+ 2924              		.loc 1 481 0
+ 2925 0cbc 34319FE5 		ldr	r3, .L60+4
+ 2926 0cc0 003093E5 		ldr	r3, [r3, #0]
+ 2927 0cc4 3030D3E5 		ldrb	r3, [r3, #48]	@ zero_extendqisi2
+ 2928 0cc8 28219FE5 		ldr	r2, .L60+4
+ 2929 0ccc 002092E5 		ldr	r2, [r2, #0]
+ 2930 0cd0 3020D2E5 		ldrb	r2, [r2, #48]	@ zero_extendqisi2
+ 2931 0cd4 20119FE5 		ldr	r1, .L60+8
+ 2932 0cd8 0210D1E7 		ldrb	r1, [r1, r2]	@ zero_extendqisi2
+ 2933 0cdc 14219FE5 		ldr	r2, .L60+4
+ 2934 0ce0 002092E5 		ldr	r2, [r2, #0]
+ 2935 0ce4 3120D2E5 		ldrb	r2, [r2, #49]	@ zero_extendqisi2
+ 2936 0ce8 022081E1 		orr	r2, r1, r2
+ 2937 0cec FF1002E2 		and	r1, r2, #255
+ 2938 0cf0 04219FE5 		ldr	r2, .L60+8
+ 2939 0cf4 0310C2E7 		strb	r1, [r2, r3]
+ 482:../os_core/os_mutex.c ****         OSTCBPrioTbl[prio]          = (OS_TCB *)OSTCBCur;
+ 2940              		.loc 1 482 0
+ 2941 0cf8 0E205BE5 		ldrb	r2, [fp, #-14]	@ zero_extendqisi2
+ 2942 0cfc F4309FE5 		ldr	r3, .L60+4
+ 2943 0d00 001093E5 		ldr	r1, [r3, #0]
+ 2944 0d04 FC309FE5 		ldr	r3, .L60+20
+ 2945 0d08 021183E7 		str	r1, [r3, r2, asl #2]
+ 2946              	.L57:
+ 483:../os_core/os_mutex.c ****     }
+ 484:../os_core/os_mutex.c ****     OSTCBPrioTbl[pip] = (OS_TCB *)1;                  /* Reserve table entry                       
+ 2947              		.loc 1 484 0
+ 2948 0d0c 0D205BE5 		ldrb	r2, [fp, #-13]	@ zero_extendqisi2
+ 2949 0d10 F0309FE5 		ldr	r3, .L60+20
+ 2950 0d14 0110A0E3 		mov	r1, #1
+ 2951 0d18 021183E7 		str	r1, [r3, r2, asl #2]
+ 485:../os_core/os_mutex.c ****     if (pevent->OSEventGrp != 0x00) {                 /* Any task waiting for the mutex?           
+ 2952              		.loc 1 485 0
+ 2953 0d1c 18301BE5 		ldr	r3, [fp, #-24]
+ 2954 0d20 0130D3E5 		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2955 0d24 000053E3 		cmp	r3, #0
+ 2956 0d28 2000000A 		beq	.L59
+ 486:../os_core/os_mutex.c ****                                                       /* Yes, Make HPT waiting for mutex ready     
+ 487:../os_core/os_mutex.c ****         prio                = OS_EventTaskRdy(pevent, (void *)0, OS_STAT_MUTEX);
+ 2957              		.loc 1 487 0
+ 2958 0d2c 18001BE5 		ldr	r0, [fp, #-24]
+ 2959 0d30 0010A0E3 		mov	r1, #0
+ 2960 0d34 1020A0E3 		mov	r2, #16
+ 2961 0d38 FEFFFFEB 		bl	OS_EventTaskRdy
+ 2962 0d3c 0030A0E1 		mov	r3, r0
+ 2963 0d40 0E304BE5 		strb	r3, [fp, #-14]
+ 488:../os_core/os_mutex.c ****         pevent->OSEventCnt &= OS_MUTEX_KEEP_UPPER_8;  /*      Save priority of mutex's new owner   
+ 2964              		.loc 1 488 0
+ 2965 0d44 18301BE5 		ldr	r3, [fp, #-24]
+ 2966 0d48 B230D3E1 		ldrh	r3, [r3, #2]
+ 2967 0d4c FF30C3E3 		bic	r3, r3, #255
+ 2968 0d50 0338A0E1 		mov	r3, r3, asl #16
+ 2969 0d54 2328A0E1 		mov	r2, r3, lsr #16
+ 2970 0d58 18301BE5 		ldr	r3, [fp, #-24]
+ 2971 0d5c B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 489:../os_core/os_mutex.c ****         pevent->OSEventCnt |= prio;
+ 2972              		.loc 1 489 0
+ 2973 0d60 18301BE5 		ldr	r3, [fp, #-24]
+ 2974 0d64 B220D3E1 		ldrh	r2, [r3, #2]
+ 2975 0d68 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 2976 0d6c 0338A0E1 		mov	r3, r3, asl #16
+ 2977 0d70 2338A0E1 		mov	r3, r3, lsr #16
+ 2978 0d74 033082E1 		orr	r3, r2, r3
+ 2979 0d78 0338A0E1 		mov	r3, r3, asl #16
+ 2980 0d7c 2328A0E1 		mov	r2, r3, lsr #16
+ 2981 0d80 18301BE5 		ldr	r3, [fp, #-24]
+ 2982 0d84 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 490:../os_core/os_mutex.c ****         pevent->OSEventPtr  = OSTCBPrioTbl[prio];     /*      Link to mutex owner's OS_TCB         
+ 2983              		.loc 1 490 0
+ 2984 0d88 0E205BE5 		ldrb	r2, [fp, #-14]	@ zero_extendqisi2
+ 2985 0d8c 74309FE5 		ldr	r3, .L60+20
+ 2986 0d90 022193E7 		ldr	r2, [r3, r2, asl #2]
+ 2987 0d94 18301BE5 		ldr	r3, [fp, #-24]
+ 2988 0d98 042083E5 		str	r2, [r3, #4]
+ 491:../os_core/os_mutex.c ****         OS_EXIT_CRITICAL();
+ 2989              		.loc 1 491 0
+ 2990              	@ 491 "../os_core/os_mutex.c" 1
+ 2991 0d9c 04009DE4 		ldmfd sp!, {r0}
+ 2992              	@ 0 "" 2
+ 2993              	@ 491 "../os_core/os_mutex.c" 1
+ 2994 0da0 00F021E1 		msr   cpsr_c, r0
+ 2995              	@ 0 "" 2
+ 492:../os_core/os_mutex.c ****         OS_Sched();                                   /*      Find highest priority task ready to r
+ 2996              		.loc 1 492 0
+ 2997 0da4 FEFFFFEB 		bl	OS_Sched
+ 493:../os_core/os_mutex.c ****         return (OS_NO_ERR);
+ 2998              		.loc 1 493 0
+ 2999 0da8 0030A0E3 		mov	r3, #0
+ 3000 0dac 0C0000EA 		b	.L53
+ 3001              	.L59:
+ 494:../os_core/os_mutex.c ****     }
+ 495:../os_core/os_mutex.c ****     pevent->OSEventCnt |= OS_MUTEX_AVAILABLE;         /* No,  Mutex is now available               
+ 3002              		.loc 1 495 0
+ 3003 0db0 18301BE5 		ldr	r3, [fp, #-24]
+ 3004 0db4 B230D3E1 		ldrh	r3, [r3, #2]
+ 3005 0db8 FF3083E3 		orr	r3, r3, #255
+ 3006 0dbc 0338A0E1 		mov	r3, r3, asl #16
+ 3007 0dc0 2328A0E1 		mov	r2, r3, lsr #16
+ 3008 0dc4 18301BE5 		ldr	r3, [fp, #-24]
+ 3009 0dc8 B220C3E1 		strh	r2, [r3, #2]	@ movhi
+ 496:../os_core/os_mutex.c ****     pevent->OSEventPtr  = (void *)0;
+ 3010              		.loc 1 496 0
+ 3011 0dcc 18301BE5 		ldr	r3, [fp, #-24]
+ 3012 0dd0 0020A0E3 		mov	r2, #0
+ 3013 0dd4 042083E5 		str	r2, [r3, #4]
+ 497:../os_core/os_mutex.c ****     OS_EXIT_CRITICAL();
+ 3014              		.loc 1 497 0
+ 3015              	@ 497 "../os_core/os_mutex.c" 1
+ 3016 0dd8 04009DE4 		ldmfd sp!, {r0}
+ 3017              	@ 0 "" 2
+ 3018              	@ 497 "../os_core/os_mutex.c" 1
+ 3019 0ddc 00F021E1 		msr   cpsr_c, r0
+ 3020              	@ 0 "" 2
+ 498:../os_core/os_mutex.c ****     return (OS_NO_ERR);
+ 3021              		.loc 1 498 0
+ 3022 0de0 0030A0E3 		mov	r3, #0
+ 3023              	.L53:
+ 499:../os_core/os_mutex.c **** }
+ 3024              		.loc 1 499 0
+ 3025 0de4 0300A0E1 		mov	r0, r3
+ 3026 0de8 0CD04BE2 		sub	sp, fp, #12
+ 3027 0dec 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3028 0df0 1EFF2FE1 		bx	lr
+ 3029              	.L61:
+ 3030              		.align	2
+ 3031              	.L60:
+ 3032 0df4 00000000 		.word	OSIntNesting
+ 3033 0df8 00000000 		.word	OSTCBCur
+ 3034 0dfc 00000000 		.word	OSRdyTbl
+ 3035 0e00 00000000 		.word	OSRdyGrp
+ 3036 0e04 00000000 		.word	OSMapTbl
+ 3037 0e08 00000000 		.word	OSTCBPrioTbl
+ 3038              		.cfi_endproc
+ 3039              	.LFE4:
+ 3041              		.align	2
+ 3042              		.global	OSMutexQuery
+ 3044              	OSMutexQuery:
+ 3045              	.LFB5:
+ 500:../os_core/os_mutex.c **** /*$PAGE*/
+ 501:../os_core/os_mutex.c **** /*
+ 502:../os_core/os_mutex.c **** ***************************************************************************************************
+ 503:../os_core/os_mutex.c **** *                                     QUERY A MUTUAL EXCLUSION SEMAPHORE
+ 504:../os_core/os_mutex.c **** *
+ 505:../os_core/os_mutex.c **** * Description: This function obtains information about a mutex
+ 506:../os_core/os_mutex.c **** *
+ 507:../os_core/os_mutex.c **** * Arguments  : pevent          is a pointer to the event control block associated with the desired 
+ 508:../os_core/os_mutex.c **** *
+ 509:../os_core/os_mutex.c **** *              p_mutex_data    is a pointer to a structure that will contain information about the 
+ 510:../os_core/os_mutex.c **** *
+ 511:../os_core/os_mutex.c **** * Returns    : OS_NO_ERR            The call was successful and the message was sent
+ 512:../os_core/os_mutex.c **** *              OS_ERR_QUERY_ISR     If you called this function from an ISR
+ 513:../os_core/os_mutex.c **** *              OS_ERR_PEVENT_NULL   'pevent' is a NULL pointer
+ 514:../os_core/os_mutex.c **** *              OS_ERR_EVENT_TYPE    If you are attempting to obtain data from a non mutex.
+ 515:../os_core/os_mutex.c **** ***************************************************************************************************
+ 516:../os_core/os_mutex.c **** */
+ 517:../os_core/os_mutex.c **** 
+ 518:../os_core/os_mutex.c **** #if OS_MUTEX_QUERY_EN > 0
+ 519:../os_core/os_mutex.c **** INT8U  OSMutexQuery (OS_EVENT *pevent, OS_MUTEX_DATA *p_mutex_data)
+ 520:../os_core/os_mutex.c **** {
+ 3046              		.loc 1 520 0
+ 3047              		.cfi_startproc
+ 3048              		@ Function supports interworking.
+ 3049              		@ args = 0, pretend = 0, frame = 16
+ 3050              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3051 0e0c 0DC0A0E1 		mov	ip, sp
+ 3052              	.LCFI10:
+ 3053              		.cfi_def_cfa_register 12
+ 3054 0e10 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3055 0e14 04B04CE2 		sub	fp, ip, #4
+ 3056              		.cfi_offset 14, -8
+ 3057              		.cfi_offset 13, -12
+ 3058              		.cfi_offset 11, -16
+ 3059              	.LCFI11:
+ 3060              		.cfi_def_cfa 11, 4
+ 3061 0e18 10D04DE2 		sub	sp, sp, #16
+ 3062 0e1c 18000BE5 		str	r0, [fp, #-24]
+ 3063 0e20 1C100BE5 		str	r1, [fp, #-28]
+ 521:../os_core/os_mutex.c ****     INT8U     *psrc;
+ 522:../os_core/os_mutex.c ****     INT8U     *pdest;
+ 523:../os_core/os_mutex.c **** #if OS_CRITICAL_METHOD == 3                      /* Allocate storage for CPU status register       
+ 524:../os_core/os_mutex.c ****     OS_CPU_SR  cpu_sr;
+ 525:../os_core/os_mutex.c **** 
+ 526:../os_core/os_mutex.c **** 
+ 527:../os_core/os_mutex.c **** 
+ 528:../os_core/os_mutex.c ****     cpu_sr = 0;                                            /* Prevent compiler warning             
+ 529:../os_core/os_mutex.c **** #endif    
+ 530:../os_core/os_mutex.c ****     if (OSIntNesting > 0) {                                /* See if called from ISR ...           
+ 3064              		.loc 1 530 0
+ 3065 0e24 14329FE5 		ldr	r3, .L69
+ 3066 0e28 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 3067 0e2c 000053E3 		cmp	r3, #0
+ 3068 0e30 0100000A 		beq	.L63
+ 531:../os_core/os_mutex.c ****         return (OS_ERR_QUERY_ISR);                         /* ... can't QUERY mutex from an ISR    
+ 3069              		.loc 1 531 0
+ 3070 0e34 0630A0E3 		mov	r3, #6
+ 3071 0e38 7C0000EA 		b	.L64
+ 3072              	.L63:
+ 532:../os_core/os_mutex.c ****     }
+ 533:../os_core/os_mutex.c **** #if OS_ARG_CHK_EN > 0
+ 534:../os_core/os_mutex.c ****     if (pevent == (OS_EVENT *)0) {                         /* Validate 'pevent'                    
+ 3073              		.loc 1 534 0
+ 3074 0e3c 18301BE5 		ldr	r3, [fp, #-24]
+ 3075 0e40 000053E3 		cmp	r3, #0
+ 3076 0e44 0100001A 		bne	.L65
+ 535:../os_core/os_mutex.c ****         return (OS_ERR_PEVENT_NULL);
+ 3077              		.loc 1 535 0
+ 3078 0e48 0430A0E3 		mov	r3, #4
+ 3079 0e4c 770000EA 		b	.L64
+ 3080              	.L65:
+ 536:../os_core/os_mutex.c ****     }
+ 537:../os_core/os_mutex.c **** #endif
+ 538:../os_core/os_mutex.c ****     if (pevent->OSEventType != OS_EVENT_TYPE_MUTEX) {      /* Validate event block type            
+ 3081              		.loc 1 538 0
+ 3082 0e50 18301BE5 		ldr	r3, [fp, #-24]
+ 3083 0e54 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 3084 0e58 040053E3 		cmp	r3, #4
+ 3085 0e5c 0100000A 		beq	.L66
+ 539:../os_core/os_mutex.c ****         return (OS_ERR_EVENT_TYPE);
+ 3086              		.loc 1 539 0
+ 3087 0e60 0130A0E3 		mov	r3, #1
+ 3088 0e64 710000EA 		b	.L64
+ 3089              	.L66:
+ 540:../os_core/os_mutex.c ****     }
+ 541:../os_core/os_mutex.c ****     OS_ENTER_CRITICAL();
+ 3090              		.loc 1 541 0
+ 3091              	@ 541 "../os_core/os_mutex.c" 1
+ 3092 0e68 00000FE1 		mrs   r0, cpsr
+ 3093              	@ 0 "" 2
+ 3094              	@ 541 "../os_core/os_mutex.c" 1
+ 3095 0e6c 04002DE5 		stmfd sp!, {r0}
+ 3096              	@ 0 "" 2
+ 3097              	@ 541 "../os_core/os_mutex.c" 1
+ 3098 0e70 C00080E3 		orr   r0, r0, #0b11000000
+ 3099              	@ 0 "" 2
+ 3100              	@ 541 "../os_core/os_mutex.c" 1
+ 3101 0e74 00F021E1 		msr   cpsr_c, r0
+ 3102              	@ 0 "" 2
+ 542:../os_core/os_mutex.c ****     p_mutex_data->OSMutexPIP  = (INT8U)(pevent->OSEventCnt >> 8);
+ 3103              		.loc 1 542 0
+ 3104 0e78 18301BE5 		ldr	r3, [fp, #-24]
+ 3105 0e7c B230D3E1 		ldrh	r3, [r3, #2]
+ 3106 0e80 2334A0E1 		mov	r3, r3, lsr #8
+ 3107 0e84 0338A0E1 		mov	r3, r3, asl #16
+ 3108 0e88 2338A0E1 		mov	r3, r3, lsr #16
+ 3109 0e8c FF2003E2 		and	r2, r3, #255
+ 3110 0e90 1C301BE5 		ldr	r3, [fp, #-28]
+ 3111 0e94 0B20C3E5 		strb	r2, [r3, #11]
+ 543:../os_core/os_mutex.c ****     p_mutex_data->OSOwnerPrio = (INT8U)(pevent->OSEventCnt & OS_MUTEX_KEEP_LOWER_8);
+ 3112              		.loc 1 543 0
+ 3113 0e98 18301BE5 		ldr	r3, [fp, #-24]
+ 3114 0e9c B230D3E1 		ldrh	r3, [r3, #2]
+ 3115 0ea0 FF2003E2 		and	r2, r3, #255
+ 3116 0ea4 1C301BE5 		ldr	r3, [fp, #-28]
+ 3117 0ea8 0A20C3E5 		strb	r2, [r3, #10]
+ 544:../os_core/os_mutex.c ****     if (p_mutex_data->OSOwnerPrio == 0xFF) {
+ 3118              		.loc 1 544 0
+ 3119 0eac 1C301BE5 		ldr	r3, [fp, #-28]
+ 3120 0eb0 0A30D3E5 		ldrb	r3, [r3, #10]	@ zero_extendqisi2
+ 3121 0eb4 FF0053E3 		cmp	r3, #255
+ 3122 0eb8 0300001A 		bne	.L67
+ 545:../os_core/os_mutex.c ****         p_mutex_data->OSValue = 1;
+ 3123              		.loc 1 545 0
+ 3124 0ebc 1C301BE5 		ldr	r3, [fp, #-28]
+ 3125 0ec0 0120A0E3 		mov	r2, #1
+ 3126 0ec4 0920C3E5 		strb	r2, [r3, #9]
+ 3127 0ec8 020000EA 		b	.L68
+ 3128              	.L67:
+ 546:../os_core/os_mutex.c ****     } else {
+ 547:../os_core/os_mutex.c ****         p_mutex_data->OSValue = 0;
+ 3129              		.loc 1 547 0
+ 3130 0ecc 1C301BE5 		ldr	r3, [fp, #-28]
+ 3131 0ed0 0020A0E3 		mov	r2, #0
+ 3132 0ed4 0920C3E5 		strb	r2, [r3, #9]
+ 3133              	.L68:
+ 548:../os_core/os_mutex.c ****     }
+ 549:../os_core/os_mutex.c ****     p_mutex_data->OSEventGrp  = pevent->OSEventGrp;        /* Copy wait list                       
+ 3134              		.loc 1 549 0
+ 3135 0ed8 18301BE5 		ldr	r3, [fp, #-24]
+ 3136 0edc 0120D3E5 		ldrb	r2, [r3, #1]	@ zero_extendqisi2
+ 3137 0ee0 1C301BE5 		ldr	r3, [fp, #-28]
+ 3138 0ee4 0820C3E5 		strb	r2, [r3, #8]
+ 550:../os_core/os_mutex.c ****     psrc                      = &pevent->OSEventTbl[0];
+ 3139              		.loc 1 550 0
+ 3140 0ee8 18301BE5 		ldr	r3, [fp, #-24]
+ 3141 0eec 083083E2 		add	r3, r3, #8
+ 3142 0ef0 10300BE5 		str	r3, [fp, #-16]
+ 551:../os_core/os_mutex.c ****     pdest                     = &p_mutex_data->OSEventTbl[0];
+ 3143              		.loc 1 551 0
+ 3144 0ef4 1C301BE5 		ldr	r3, [fp, #-28]
+ 3145 0ef8 14300BE5 		str	r3, [fp, #-20]
+ 552:../os_core/os_mutex.c **** #if OS_EVENT_TBL_SIZE > 0
+ 553:../os_core/os_mutex.c ****     *pdest++ = *psrc++;
+ 3146              		.loc 1 553 0
+ 3147 0efc 10301BE5 		ldr	r3, [fp, #-16]
+ 3148 0f00 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 3149 0f04 14301BE5 		ldr	r3, [fp, #-20]
+ 3150 0f08 0020C3E5 		strb	r2, [r3, #0]
+ 3151 0f0c 14301BE5 		ldr	r3, [fp, #-20]
+ 3152 0f10 013083E2 		add	r3, r3, #1
+ 3153 0f14 14300BE5 		str	r3, [fp, #-20]
+ 3154 0f18 10301BE5 		ldr	r3, [fp, #-16]
+ 3155 0f1c 013083E2 		add	r3, r3, #1
+ 3156 0f20 10300BE5 		str	r3, [fp, #-16]
+ 554:../os_core/os_mutex.c **** #endif
+ 555:../os_core/os_mutex.c **** 
+ 556:../os_core/os_mutex.c **** #if OS_EVENT_TBL_SIZE > 1
+ 557:../os_core/os_mutex.c ****     *pdest++ = *psrc++;
+ 3157              		.loc 1 557 0
+ 3158 0f24 10301BE5 		ldr	r3, [fp, #-16]
+ 3159 0f28 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 3160 0f2c 14301BE5 		ldr	r3, [fp, #-20]
+ 3161 0f30 0020C3E5 		strb	r2, [r3, #0]
+ 3162 0f34 14301BE5 		ldr	r3, [fp, #-20]
+ 3163 0f38 013083E2 		add	r3, r3, #1
+ 3164 0f3c 14300BE5 		str	r3, [fp, #-20]
+ 3165 0f40 10301BE5 		ldr	r3, [fp, #-16]
+ 3166 0f44 013083E2 		add	r3, r3, #1
+ 3167 0f48 10300BE5 		str	r3, [fp, #-16]
+ 558:../os_core/os_mutex.c **** #endif
+ 559:../os_core/os_mutex.c **** 
+ 560:../os_core/os_mutex.c **** #if OS_EVENT_TBL_SIZE > 2
+ 561:../os_core/os_mutex.c ****     *pdest++ = *psrc++;
+ 3168              		.loc 1 561 0
+ 3169 0f4c 10301BE5 		ldr	r3, [fp, #-16]
+ 3170 0f50 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 3171 0f54 14301BE5 		ldr	r3, [fp, #-20]
+ 3172 0f58 0020C3E5 		strb	r2, [r3, #0]
+ 3173 0f5c 14301BE5 		ldr	r3, [fp, #-20]
+ 3174 0f60 013083E2 		add	r3, r3, #1
+ 3175 0f64 14300BE5 		str	r3, [fp, #-20]
+ 3176 0f68 10301BE5 		ldr	r3, [fp, #-16]
+ 3177 0f6c 013083E2 		add	r3, r3, #1
+ 3178 0f70 10300BE5 		str	r3, [fp, #-16]
+ 562:../os_core/os_mutex.c **** #endif
+ 563:../os_core/os_mutex.c **** 
+ 564:../os_core/os_mutex.c **** #if OS_EVENT_TBL_SIZE > 3
+ 565:../os_core/os_mutex.c ****     *pdest++ = *psrc++;
+ 3179              		.loc 1 565 0
+ 3180 0f74 10301BE5 		ldr	r3, [fp, #-16]
+ 3181 0f78 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 3182 0f7c 14301BE5 		ldr	r3, [fp, #-20]
+ 3183 0f80 0020C3E5 		strb	r2, [r3, #0]
+ 3184 0f84 14301BE5 		ldr	r3, [fp, #-20]
+ 3185 0f88 013083E2 		add	r3, r3, #1
+ 3186 0f8c 14300BE5 		str	r3, [fp, #-20]
+ 3187 0f90 10301BE5 		ldr	r3, [fp, #-16]
+ 3188 0f94 013083E2 		add	r3, r3, #1
+ 3189 0f98 10300BE5 		str	r3, [fp, #-16]
+ 566:../os_core/os_mutex.c **** #endif
+ 567:../os_core/os_mutex.c **** 
+ 568:../os_core/os_mutex.c **** #if OS_EVENT_TBL_SIZE > 4
+ 569:../os_core/os_mutex.c ****     *pdest++ = *psrc++;
+ 3190              		.loc 1 569 0
+ 3191 0f9c 10301BE5 		ldr	r3, [fp, #-16]
+ 3192 0fa0 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 3193 0fa4 14301BE5 		ldr	r3, [fp, #-20]
+ 3194 0fa8 0020C3E5 		strb	r2, [r3, #0]
+ 3195 0fac 14301BE5 		ldr	r3, [fp, #-20]
+ 3196 0fb0 013083E2 		add	r3, r3, #1
+ 3197 0fb4 14300BE5 		str	r3, [fp, #-20]
+ 3198 0fb8 10301BE5 		ldr	r3, [fp, #-16]
+ 3199 0fbc 013083E2 		add	r3, r3, #1
+ 3200 0fc0 10300BE5 		str	r3, [fp, #-16]
+ 570:../os_core/os_mutex.c **** #endif
+ 571:../os_core/os_mutex.c **** 
+ 572:../os_core/os_mutex.c **** #if OS_EVENT_TBL_SIZE > 5
+ 573:../os_core/os_mutex.c ****     *pdest++ = *psrc++;
+ 3201              		.loc 1 573 0
+ 3202 0fc4 10301BE5 		ldr	r3, [fp, #-16]
+ 3203 0fc8 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 3204 0fcc 14301BE5 		ldr	r3, [fp, #-20]
+ 3205 0fd0 0020C3E5 		strb	r2, [r3, #0]
+ 3206 0fd4 14301BE5 		ldr	r3, [fp, #-20]
+ 3207 0fd8 013083E2 		add	r3, r3, #1
+ 3208 0fdc 14300BE5 		str	r3, [fp, #-20]
+ 3209 0fe0 10301BE5 		ldr	r3, [fp, #-16]
+ 3210 0fe4 013083E2 		add	r3, r3, #1
+ 3211 0fe8 10300BE5 		str	r3, [fp, #-16]
+ 574:../os_core/os_mutex.c **** #endif
+ 575:../os_core/os_mutex.c **** 
+ 576:../os_core/os_mutex.c **** #if OS_EVENT_TBL_SIZE > 6
+ 577:../os_core/os_mutex.c ****     *pdest++ = *psrc++;
+ 3212              		.loc 1 577 0
+ 3213 0fec 10301BE5 		ldr	r3, [fp, #-16]
+ 3214 0ff0 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 3215 0ff4 14301BE5 		ldr	r3, [fp, #-20]
+ 3216 0ff8 0020C3E5 		strb	r2, [r3, #0]
+ 3217 0ffc 14301BE5 		ldr	r3, [fp, #-20]
+ 3218 1000 013083E2 		add	r3, r3, #1
+ 3219 1004 14300BE5 		str	r3, [fp, #-20]
+ 3220 1008 10301BE5 		ldr	r3, [fp, #-16]
+ 3221 100c 013083E2 		add	r3, r3, #1
+ 3222 1010 10300BE5 		str	r3, [fp, #-16]
+ 578:../os_core/os_mutex.c **** #endif
+ 579:../os_core/os_mutex.c **** 
+ 580:../os_core/os_mutex.c **** #if OS_EVENT_TBL_SIZE > 7
+ 581:../os_core/os_mutex.c ****     *pdest   = *psrc;
+ 3223              		.loc 1 581 0
+ 3224 1014 10301BE5 		ldr	r3, [fp, #-16]
+ 3225 1018 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 3226 101c 14301BE5 		ldr	r3, [fp, #-20]
+ 3227 1020 0020C3E5 		strb	r2, [r3, #0]
+ 582:../os_core/os_mutex.c **** #endif
+ 583:../os_core/os_mutex.c ****     OS_EXIT_CRITICAL();
+ 3228              		.loc 1 583 0
+ 3229              	@ 583 "../os_core/os_mutex.c" 1
+ 3230 1024 04009DE4 		ldmfd sp!, {r0}
+ 3231              	@ 0 "" 2
+ 3232              	@ 583 "../os_core/os_mutex.c" 1
+ 3233 1028 00F021E1 		msr   cpsr_c, r0
+ 3234              	@ 0 "" 2
+ 584:../os_core/os_mutex.c ****     return (OS_NO_ERR);
+ 3235              		.loc 1 584 0
+ 3236 102c 0030A0E3 		mov	r3, #0
+ 3237              	.L64:
+ 585:../os_core/os_mutex.c **** }
+ 3238              		.loc 1 585 0
+ 3239 1030 0300A0E1 		mov	r0, r3
+ 3240 1034 0CD04BE2 		sub	sp, fp, #12
+ 3241 1038 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3242 103c 1EFF2FE1 		bx	lr
+ 3243              	.L70:
+ 3244              		.align	2
+ 3245              	.L69:
+ 3246 1040 00000000 		.word	OSIntNesting
+ 3247              		.cfi_endproc
+ 3248              	.LFE5:
+ 3250              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 os_mutex.c
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:1671   .text:00000000 $a
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:1674   .text:00000000 OSMutexAccept
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:1812   .text:0000013c $d
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:1817   .text:00000144 $a
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:1820   .text:00000144 OSMutexCreate
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:1993   .text:000002dc $d
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:1999   .text:000002e8 $a
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:2002   .text:000002e8 OSMutexDel
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:2264   .text:00000564 $d
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:2270   .text:00000570 $a
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:2273   .text:00000570 OSMutexPend
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:2726   .text:00000a94 $d
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:2735   .text:00000aac $a
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:2738   .text:00000aac OSMutexPost
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:3032   .text:00000df4 $d
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:3041   .text:00000e0c $a
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:3044   .text:00000e0c OSMutexQuery
+C:\Users\Muadi\AppData\Local\Temp\ccDT57CE.s:3246   .text:00001040 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+OSIntNesting
+OSTCBCur
+OS_EventWaitListInit
+OSTCBPrioTbl
+OSEventFreeList
+OS_EventTaskRdy
+OS_Sched
+OS_EventTaskWait
+OS_EventTO
+OSRdyTbl
+OSRdyGrp
+OSMapTbl

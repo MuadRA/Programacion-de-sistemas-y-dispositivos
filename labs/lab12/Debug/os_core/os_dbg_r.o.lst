@@ -1,0 +1,712 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"os_dbg_r.c"
+  21              	.Ltext0:
+  22              		.file 1 "../os_core/os_dbg_r.c"
+ 1663              		.align	1
+ 1666              	OSDebugEn:
+ 1667 0000 0100     		.short	1
+ 1668              		.global	OSEndiannessTest
+ 1669 0002 0000     		.align	2
+ 1672              	OSEndiannessTest:
+ 1673 0004 78563412 		.word	305419896
+ 1674              		.global	OSEventEn
+ 1675              		.align	1
+ 1678              	OSEventEn:
+ 1679 0008 0100     		.short	1
+ 1680              		.global	OSEventMax
+ 1681              		.align	1
+ 1684              	OSEventMax:
+ 1685 000a 0A00     		.short	10
+ 1686              		.global	OSEventNameSize
+ 1687              		.align	1
+ 1690              	OSEventNameSize:
+ 1691 000c 2000     		.short	32
+ 1692              		.global	OSEventSize
+ 1693              		.align	1
+ 1696              	OSEventSize:
+ 1697 000e 3000     		.short	48
+ 1698              		.global	OSEventTblSize
+ 1699              		.align	1
+ 1702              	OSEventTblSize:
+ 1703 0010 E001     		.short	480
+ 1704              		.global	OSFlagEn
+ 1705              		.align	1
+ 1708              	OSFlagEn:
+ 1709 0012 0100     		.short	1
+ 1710              		.global	OSFlagGrpSize
+ 1711              		.align	1
+ 1714              	OSFlagGrpSize:
+ 1715 0014 2C00     		.short	44
+ 1716              		.global	OSFlagNodeSize
+ 1717              		.align	1
+ 1720              	OSFlagNodeSize:
+ 1721 0016 1400     		.short	20
+ 1722              		.global	OSFlagWidth
+ 1723              		.align	1
+ 1726              	OSFlagWidth:
+ 1727 0018 0200     		.short	2
+ 1728              		.global	OSFlagMax
+ 1729              		.align	1
+ 1732              	OSFlagMax:
+ 1733 001a 0500     		.short	5
+ 1734              		.global	OSFlagNameSize
+ 1735              		.align	1
+ 1738              	OSFlagNameSize:
+ 1739 001c 2000     		.short	32
+ 1740              		.global	OSLowestPrio
+ 1741              		.align	1
+ 1744              	OSLowestPrio:
+ 1745 001e 3F00     		.short	63
+ 1746              		.global	OSMboxEn
+ 1747              		.align	1
+ 1750              	OSMboxEn:
+ 1751 0020 0100     		.short	1
+ 1752              		.global	OSMemEn
+ 1753              		.align	1
+ 1756              	OSMemEn:
+ 1757 0022 0100     		.short	1
+ 1758              		.global	OSMemMax
+ 1759              		.align	1
+ 1762              	OSMemMax:
+ 1763 0024 0500     		.short	5
+ 1764              		.global	OSMemNameSize
+ 1765              		.align	1
+ 1768              	OSMemNameSize:
+ 1769 0026 2000     		.short	32
+ 1770              		.global	OSMemSize
+ 1771              		.align	1
+ 1774              	OSMemSize:
+ 1775 0028 3400     		.short	52
+ 1776              		.global	OSMemTblSize
+ 1777              		.align	1
+ 1780              	OSMemTblSize:
+ 1781 002a 0401     		.short	260
+ 1782              		.global	OSMutexEn
+ 1783              		.align	1
+ 1786              	OSMutexEn:
+ 1787 002c 0100     		.short	1
+ 1788              		.global	OSPtrSize
+ 1789              		.align	1
+ 1792              	OSPtrSize:
+ 1793 002e 0400     		.short	4
+ 1794              		.global	OSQEn
+ 1795              		.align	1
+ 1798              	OSQEn:
+ 1799 0030 0100     		.short	1
+ 1800              		.global	OSQMax
+ 1801              		.align	1
+ 1804              	OSQMax:
+ 1805 0032 0400     		.short	4
+ 1806              		.global	OSQSize
+ 1807              		.align	1
+ 1810              	OSQSize:
+ 1811 0034 1800     		.short	24
+ 1812              		.global	OSRdyTblSize
+ 1813              		.align	1
+ 1816              	OSRdyTblSize:
+ 1817 0036 0800     		.short	8
+ 1818              		.global	OSSemEn
+ 1819              		.align	1
+ 1822              	OSSemEn:
+ 1823 0038 0100     		.short	1
+ 1824              		.global	OSStkWidth
+ 1825              		.align	1
+ 1828              	OSStkWidth:
+ 1829 003a 0400     		.short	4
+ 1830              		.global	OSTaskCreateEn
+ 1831              		.align	1
+ 1834              	OSTaskCreateEn:
+ 1835 003c 0100     		.short	1
+ 1836              		.global	OSTaskCreateExtEn
+ 1837              		.align	1
+ 1840              	OSTaskCreateExtEn:
+ 1841 003e 0100     		.short	1
+ 1842              		.global	OSTaskDelEn
+ 1843              		.align	1
+ 1846              	OSTaskDelEn:
+ 1847 0040 0100     		.short	1
+ 1848              		.global	OSTaskIdleStkSize
+ 1849              		.align	1
+ 1852              	OSTaskIdleStkSize:
+ 1853 0042 0002     		.short	512
+ 1854              		.global	OSTaskProfileEn
+ 1855              		.align	1
+ 1858              	OSTaskProfileEn:
+ 1859 0044 0100     		.short	1
+ 1860              		.global	OSTaskMax
+ 1861              		.align	1
+ 1864              	OSTaskMax:
+ 1865 0046 1600     		.short	22
+ 1866              		.global	OSTaskNameSize
+ 1867              		.align	1
+ 1870              	OSTaskNameSize:
+ 1871 0048 2000     		.short	32
+ 1872              		.global	OSTaskStatEn
+ 1873              		.align	1
+ 1876              	OSTaskStatEn:
+ 1877 004a 0100     		.short	1
+ 1878              		.global	OSTaskStatStkSize
+ 1879              		.align	1
+ 1882              	OSTaskStatStkSize:
+ 1883 004c 0002     		.short	512
+ 1884              		.global	OSTaskStatStkChkEn
+ 1885              		.align	1
+ 1888              	OSTaskStatStkChkEn:
+ 1889 004e 0100     		.short	1
+ 1890              		.global	OSTaskSwHookEn
+ 1891              		.align	1
+ 1894              	OSTaskSwHookEn:
+ 1895 0050 0100     		.short	1
+ 1896              		.global	OSTCBPrioTblMax
+ 1897              		.align	1
+ 1900              	OSTCBPrioTblMax:
+ 1901 0052 4000     		.short	64
+ 1902              		.global	OSTCBSize
+ 1903              		.align	1
+ 1906              	OSTCBSize:
+ 1907 0054 6800     		.short	104
+ 1908              		.global	OSTicksPerSec
+ 1909              		.align	1
+ 1912              	OSTicksPerSec:
+ 1913 0056 6400     		.short	100
+ 1914              		.global	OSTimeTickHookEn
+ 1915              		.align	1
+ 1918              	OSTimeTickHookEn:
+ 1919 0058 0100     		.short	1
+ 1920              		.global	OSVersionNbr
+ 1921              		.align	1
+ 1924              	OSVersionNbr:
+ 1925 005a 1401     		.short	276
+ 1926              		.global	OSDataSize
+ 1927              		.align	1
+ 1930              	OSDataSize:
+ 1931 005c 561E     		.short	7766
+ 1932 005e 0000     		.text
+ 1933              		.align	2
+ 1934              		.global	OSDebugInit
+ 1936              	OSDebugInit:
+ 1937              	.LFB0:
+   1:../os_core/os_dbg_r.c **** /*
+   2:../os_core/os_dbg_r.c **** ***************************************************************************************************
+   3:../os_core/os_dbg_r.c **** *                                                uC/OS-II
+   4:../os_core/os_dbg_r.c **** *                                          The Real-Time Kernel
+   5:../os_core/os_dbg_r.c **** *                                           DEBUGGER CONSTANTS
+   6:../os_core/os_dbg_r.c **** *
+   7:../os_core/os_dbg_r.c **** *                             (c) Copyright 2003, Jean J. Labrosse, Weston, FL
+   8:../os_core/os_dbg_r.c **** *                                           All Rights Reserved
+   9:../os_core/os_dbg_r.c **** *
+  10:../os_core/os_dbg_r.c **** * File    : OS_DBG.C
+  11:../os_core/os_dbg_r.c **** * By      : Jean J. Labrosse
+  12:../os_core/os_dbg_r.c **** * Version : V2.76
+  13:../os_core/os_dbg_r.c **** ***************************************************************************************************
+  14:../os_core/os_dbg_r.c **** */
+  15:../os_core/os_dbg_r.c **** 
+  16:../os_core/os_dbg_r.c **** #include "ucos_ii.h"
+  17:../os_core/os_dbg_r.c **** 
+  18:../os_core/os_dbg_r.c **** /*
+  19:../os_core/os_dbg_r.c **** ***************************************************************************************************
+  20:../os_core/os_dbg_r.c **** *                                             DEBUG DATA
+  21:../os_core/os_dbg_r.c **** ***************************************************************************************************
+  22:../os_core/os_dbg_r.c **** */
+  23:../os_core/os_dbg_r.c **** 
+  24:../os_core/os_dbg_r.c **** INT16U  const  OSDebugEn          = OS_DEBUG_EN;                /* Debug constants are defined belo
+  25:../os_core/os_dbg_r.c **** 
+  26:../os_core/os_dbg_r.c **** #if OS_DEBUG_EN > 0
+  27:../os_core/os_dbg_r.c **** 
+  28:../os_core/os_dbg_r.c **** INT32U  const  OSEndiannessTest   = 0x12345678L;                /* Variable to test CPU endianness 
+  29:../os_core/os_dbg_r.c **** 
+  30:../os_core/os_dbg_r.c **** INT16U  const  OSEventEn          = OS_EVENT_EN;
+  31:../os_core/os_dbg_r.c **** INT16U  const  OSEventMax         = OS_MAX_EVENTS;              /* Number of event control blocks  
+  32:../os_core/os_dbg_r.c **** INT16U  const  OSEventNameSize    = OS_EVENT_NAME_SIZE;         /* Size (in bytes) of event names  
+  33:../os_core/os_dbg_r.c **** #if (OS_EVENT_EN > 0) && (OS_MAX_EVENTS > 0)
+  34:../os_core/os_dbg_r.c **** INT16U  const  OSEventSize        = sizeof(OS_EVENT);           /* Size in Bytes of OS_EVENT       
+  35:../os_core/os_dbg_r.c **** INT16U  const  OSEventTblSize     = sizeof(OSEventTbl);         /* Size of OSEventTbl[] in bytes   
+  36:../os_core/os_dbg_r.c **** #else
+  37:../os_core/os_dbg_r.c **** INT16U  const  OSEventSize        = 0;
+  38:../os_core/os_dbg_r.c **** INT16U  const  OSEventTblSize     = 0;
+  39:../os_core/os_dbg_r.c **** #endif
+  40:../os_core/os_dbg_r.c **** 
+  41:../os_core/os_dbg_r.c **** INT16U  const  OSFlagEn           = OS_FLAG_EN;
+  42:../os_core/os_dbg_r.c **** #if (OS_FLAG_EN > 0) && (OS_MAX_FLAGS > 0)
+  43:../os_core/os_dbg_r.c **** INT16U  const  OSFlagGrpSize      = sizeof(OS_FLAG_GRP);        /* Size in Bytes of OS_FLAG_GRP    
+  44:../os_core/os_dbg_r.c **** INT16U  const  OSFlagNodeSize     = sizeof(OS_FLAG_NODE);       /* Size in Bytes of OS_FLAG_NODE   
+  45:../os_core/os_dbg_r.c **** INT16U  const  OSFlagWidth        = sizeof(OS_FLAGS);           /* Width (in bytes) of OS_FLAGS    
+  46:../os_core/os_dbg_r.c **** #else
+  47:../os_core/os_dbg_r.c **** INT16U  const  OSFlagGrpSize      = 0;
+  48:../os_core/os_dbg_r.c **** INT16U  const  OSFlagNodeSize     = 0;
+  49:../os_core/os_dbg_r.c **** INT16U  const  OSFlagWidth        = 0;
+  50:../os_core/os_dbg_r.c **** #endif
+  51:../os_core/os_dbg_r.c **** INT16U  const  OSFlagMax          = OS_MAX_FLAGS;
+  52:../os_core/os_dbg_r.c **** INT16U  const  OSFlagNameSize     = OS_FLAG_NAME_SIZE;          /* Size (in bytes) of flag names   
+  53:../os_core/os_dbg_r.c **** 
+  54:../os_core/os_dbg_r.c **** INT16U  const  OSLowestPrio       = OS_LOWEST_PRIO;
+  55:../os_core/os_dbg_r.c **** 
+  56:../os_core/os_dbg_r.c **** INT16U  const  OSMboxEn           = OS_MBOX_EN;
+  57:../os_core/os_dbg_r.c **** 
+  58:../os_core/os_dbg_r.c **** INT16U  const  OSMemEn            = OS_MEM_EN;
+  59:../os_core/os_dbg_r.c **** INT16U  const  OSMemMax           = OS_MAX_MEM_PART;            /* Number of memory partitions     
+  60:../os_core/os_dbg_r.c **** INT16U  const  OSMemNameSize      = OS_MEM_NAME_SIZE;           /* Size (in bytes) of partition nam
+  61:../os_core/os_dbg_r.c **** #if (OS_MEM_EN > 0) && (OS_MAX_MEM_PART > 0)
+  62:../os_core/os_dbg_r.c **** INT16U  const  OSMemSize          = sizeof(OS_MEM);             /* Mem. Partition header sine (byte
+  63:../os_core/os_dbg_r.c **** INT16U  const  OSMemTblSize       = sizeof(OSMemTbl);
+  64:../os_core/os_dbg_r.c **** #else
+  65:../os_core/os_dbg_r.c **** INT16U  const  OSMemSize          = 0;
+  66:../os_core/os_dbg_r.c **** INT16U  const  OSMemTblSize       = 0;
+  67:../os_core/os_dbg_r.c **** #endif
+  68:../os_core/os_dbg_r.c **** INT16U  const  OSMutexEn          = OS_MUTEX_EN;
+  69:../os_core/os_dbg_r.c **** 
+  70:../os_core/os_dbg_r.c **** INT16U  const  OSPtrSize          = sizeof(void *);             /* Size in Bytes of a pointer      
+  71:../os_core/os_dbg_r.c **** 
+  72:../os_core/os_dbg_r.c **** INT16U  const  OSQEn              = OS_Q_EN;
+  73:../os_core/os_dbg_r.c **** INT16U  const  OSQMax             = OS_MAX_QS;                  /* Number of queues                
+  74:../os_core/os_dbg_r.c **** #if (OS_Q_EN > 0) && (OS_MAX_QS > 0)
+  75:../os_core/os_dbg_r.c **** INT16U  const  OSQSize            = sizeof(OS_Q);               /* Size in bytes of OS_Q structure 
+  76:../os_core/os_dbg_r.c **** #else
+  77:../os_core/os_dbg_r.c **** INT16U  const  OSQSize            = 0;
+  78:../os_core/os_dbg_r.c **** #endif
+  79:../os_core/os_dbg_r.c **** 
+  80:../os_core/os_dbg_r.c **** INT16U  const  OSRdyTblSize       = OS_RDY_TBL_SIZE;            /* Number of bytes in the ready tab
+  81:../os_core/os_dbg_r.c **** 
+  82:../os_core/os_dbg_r.c **** INT16U  const  OSSemEn            = OS_SEM_EN;
+  83:../os_core/os_dbg_r.c **** 
+  84:../os_core/os_dbg_r.c **** INT16U  const  OSStkWidth         = sizeof(OS_STK);             /* Size in Bytes of a stack entry  
+  85:../os_core/os_dbg_r.c **** 
+  86:../os_core/os_dbg_r.c **** INT16U  const  OSTaskCreateEn     = OS_TASK_CREATE_EN;
+  87:../os_core/os_dbg_r.c **** INT16U  const  OSTaskCreateExtEn  = OS_TASK_CREATE_EXT_EN;
+  88:../os_core/os_dbg_r.c **** INT16U  const  OSTaskDelEn        = OS_TASK_DEL_EN;
+  89:../os_core/os_dbg_r.c **** INT16U  const  OSTaskIdleStkSize  = OS_TASK_IDLE_STK_SIZE;
+  90:../os_core/os_dbg_r.c **** INT16U  const  OSTaskProfileEn    = OS_TASK_PROFILE_EN;
+  91:../os_core/os_dbg_r.c **** INT16U  const  OSTaskMax          = OS_MAX_TASKS + OS_N_SYS_TASKS;  /* Total max. number of tasks  
+  92:../os_core/os_dbg_r.c **** INT16U  const  OSTaskNameSize     = OS_TASK_NAME_SIZE;              /* Size (in bytes) of task name
+  93:../os_core/os_dbg_r.c **** INT16U  const  OSTaskStatEn       = OS_TASK_STAT_EN;
+  94:../os_core/os_dbg_r.c **** INT16U  const  OSTaskStatStkSize  = OS_TASK_STAT_STK_SIZE;
+  95:../os_core/os_dbg_r.c **** INT16U  const  OSTaskStatStkChkEn = OS_TASK_STAT_STK_CHK_EN;
+  96:../os_core/os_dbg_r.c **** INT16U  const  OSTaskSwHookEn     = OS_TASK_SW_HOOK_EN;
+  97:../os_core/os_dbg_r.c **** 
+  98:../os_core/os_dbg_r.c **** INT16U  const  OSTCBPrioTblMax    = OS_LOWEST_PRIO + 1;         /* Number of entries in OSTCBPrioTb
+  99:../os_core/os_dbg_r.c **** INT16U  const  OSTCBSize          = sizeof(OS_TCB);             /* Size in Bytes of OS_TCB         
+ 100:../os_core/os_dbg_r.c **** INT16U  const  OSTicksPerSec      = OS_TICKS_PER_SEC;
+ 101:../os_core/os_dbg_r.c **** INT16U  const  OSTimeTickHookEn   = OS_TIME_TICK_HOOK_EN;
+ 102:../os_core/os_dbg_r.c **** INT16U  const  OSVersionNbr       = OS_VERSION;
+ 103:../os_core/os_dbg_r.c **** 
+ 104:../os_core/os_dbg_r.c **** #endif
+ 105:../os_core/os_dbg_r.c **** 
+ 106:../os_core/os_dbg_r.c **** /*$PAGE*/
+ 107:../os_core/os_dbg_r.c **** /*
+ 108:../os_core/os_dbg_r.c **** ***************************************************************************************************
+ 109:../os_core/os_dbg_r.c **** *                                             DEBUG DATA
+ 110:../os_core/os_dbg_r.c **** *                            TOTAL DATA SPACE (i.e. RAM) USED BY uC/OS-II
+ 111:../os_core/os_dbg_r.c **** ***************************************************************************************************
+ 112:../os_core/os_dbg_r.c **** */
+ 113:../os_core/os_dbg_r.c **** #if OS_DEBUG_EN > 0
+ 114:../os_core/os_dbg_r.c **** 
+ 115:../os_core/os_dbg_r.c **** INT16U  const  OSDataSize = sizeof(OSCtxSwCtr)
+ 116:../os_core/os_dbg_r.c **** #if (OS_EVENT_EN > 0) && (OS_MAX_EVENTS > 0)
+ 117:../os_core/os_dbg_r.c ****                           + sizeof(OSEventFreeList)
+ 118:../os_core/os_dbg_r.c ****                           + sizeof(OSEventTbl)
+ 119:../os_core/os_dbg_r.c **** #endif
+ 120:../os_core/os_dbg_r.c **** #if (OS_VERSION >= 251) && (OS_FLAG_EN > 0) && (OS_MAX_FLAGS > 0)
+ 121:../os_core/os_dbg_r.c ****                           + sizeof(OSFlagTbl)
+ 122:../os_core/os_dbg_r.c ****                           + sizeof(OSFlagFreeList)
+ 123:../os_core/os_dbg_r.c **** #endif
+ 124:../os_core/os_dbg_r.c **** #if OS_TASK_STAT_EN > 0
+ 125:../os_core/os_dbg_r.c ****                           + sizeof(OSCPUUsage)
+ 126:../os_core/os_dbg_r.c ****                           + sizeof(OSIdleCtrMax)
+ 127:../os_core/os_dbg_r.c ****                           + sizeof(OSIdleCtrRun)
+ 128:../os_core/os_dbg_r.c ****                           + sizeof(OSStatRdy)
+ 129:../os_core/os_dbg_r.c ****                           + sizeof(OSTaskStatStk)
+ 130:../os_core/os_dbg_r.c **** #endif
+ 131:../os_core/os_dbg_r.c **** #if OS_TICK_STEP_EN > 0
+ 132:../os_core/os_dbg_r.c ****                           + sizeof(OSTickStepState)
+ 133:../os_core/os_dbg_r.c **** #endif
+ 134:../os_core/os_dbg_r.c **** #if (OS_MEM_EN > 0) && (OS_MAX_MEM_PART > 0)
+ 135:../os_core/os_dbg_r.c ****                           + sizeof(OSMemFreeList)
+ 136:../os_core/os_dbg_r.c ****                           + sizeof(OSMemTbl)
+ 137:../os_core/os_dbg_r.c **** #endif
+ 138:../os_core/os_dbg_r.c **** #if (OS_Q_EN > 0) && (OS_MAX_QS > 0)
+ 139:../os_core/os_dbg_r.c ****                           + sizeof(OSQFreeList)
+ 140:../os_core/os_dbg_r.c ****                           + sizeof(OSQTbl)
+ 141:../os_core/os_dbg_r.c **** #endif
+ 142:../os_core/os_dbg_r.c **** #if OS_TIME_GET_SET_EN > 0   
+ 143:../os_core/os_dbg_r.c ****                           + sizeof(OSTime)
+ 144:../os_core/os_dbg_r.c **** #endif
+ 145:../os_core/os_dbg_r.c ****                           + sizeof(OSIntNesting)
+ 146:../os_core/os_dbg_r.c ****                           + sizeof(OSLockNesting)
+ 147:../os_core/os_dbg_r.c ****                           + sizeof(OSPrioCur)
+ 148:../os_core/os_dbg_r.c ****                           + sizeof(OSPrioHighRdy)
+ 149:../os_core/os_dbg_r.c ****                           + sizeof(OSRdyGrp)
+ 150:../os_core/os_dbg_r.c ****                           + sizeof(OSRdyTbl)
+ 151:../os_core/os_dbg_r.c ****                           + sizeof(OSRunning)
+ 152:../os_core/os_dbg_r.c ****                           + sizeof(OSTaskCtr)
+ 153:../os_core/os_dbg_r.c ****                           + sizeof(OSIdleCtr)
+ 154:../os_core/os_dbg_r.c ****                           + sizeof(OSTaskIdleStk)
+ 155:../os_core/os_dbg_r.c ****                           + sizeof(OSTCBCur)
+ 156:../os_core/os_dbg_r.c ****                           + sizeof(OSTCBFreeList)
+ 157:../os_core/os_dbg_r.c ****                           + sizeof(OSTCBHighRdy)
+ 158:../os_core/os_dbg_r.c ****                           + sizeof(OSTCBList)
+ 159:../os_core/os_dbg_r.c ****                           + sizeof(OSTCBPrioTbl)
+ 160:../os_core/os_dbg_r.c ****                           + sizeof(OSTCBTbl);
+ 161:../os_core/os_dbg_r.c **** 
+ 162:../os_core/os_dbg_r.c **** #endif
+ 163:../os_core/os_dbg_r.c **** 
+ 164:../os_core/os_dbg_r.c **** /*$PAGE*/
+ 165:../os_core/os_dbg_r.c **** /*
+ 166:../os_core/os_dbg_r.c **** ***************************************************************************************************
+ 167:../os_core/os_dbg_r.c **** *                                        OS DEBUG INITIALIZATION
+ 168:../os_core/os_dbg_r.c **** *
+ 169:../os_core/os_dbg_r.c **** * Description: This function is used to make sure that debug variables that are unused in the appli
+ 170:../os_core/os_dbg_r.c **** *              are not optimized away.  This function might not be necessary for all compilers.  In
+ 171:../os_core/os_dbg_r.c **** *              case, you should simply DELETE the code in this function while still leaving the dec
+ 172:../os_core/os_dbg_r.c **** *              of the function itself.
+ 173:../os_core/os_dbg_r.c **** *
+ 174:../os_core/os_dbg_r.c **** * Arguments  : none
+ 175:../os_core/os_dbg_r.c **** *
+ 176:../os_core/os_dbg_r.c **** * Returns    : none
+ 177:../os_core/os_dbg_r.c **** *
+ 178:../os_core/os_dbg_r.c **** * Note(s)    : (1) This code doesn't do anything, it simply prevents the compiler from optimizing o
+ 179:../os_core/os_dbg_r.c **** *                  the 'const' variables which are declared in this file.
+ 180:../os_core/os_dbg_r.c **** *              (2) You may decide to 'compile out' the code (by using #ff 0/#endif) INSIDE the func
+ 181:../os_core/os_dbg_r.c **** *                  if your compiler DOES NOT optimize out the 'const' variables above.
+ 182:../os_core/os_dbg_r.c **** ***************************************************************************************************
+ 183:../os_core/os_dbg_r.c **** */
+ 184:../os_core/os_dbg_r.c **** 
+ 185:../os_core/os_dbg_r.c **** #if OS_VERSION >= 270 && OS_DEBUG_EN > 0
+ 186:../os_core/os_dbg_r.c **** void  OSDebugInit (void)
+ 187:../os_core/os_dbg_r.c **** {
+ 1938              		.loc 1 187 0
+ 1939              		.cfi_startproc
+ 1940              		@ Function supports interworking.
+ 1941              		@ args = 0, pretend = 0, frame = 8
+ 1942              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1943 0000 0DC0A0E1 		mov	ip, sp
+ 1944              	.LCFI0:
+ 1945              		.cfi_def_cfa_register 12
+ 1946 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1947 0008 04B04CE2 		sub	fp, ip, #4
+ 1948              		.cfi_offset 14, -8
+ 1949              		.cfi_offset 13, -12
+ 1950              		.cfi_offset 11, -16
+ 1951              	.LCFI1:
+ 1952              		.cfi_def_cfa 11, 4
+ 1953 000c 08D04DE2 		sub	sp, sp, #8
+ 188:../os_core/os_dbg_r.c ****     void  *ptemp;
+ 189:../os_core/os_dbg_r.c **** 
+ 190:../os_core/os_dbg_r.c ****     
+ 191:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSDebugEn;
+ 1954              		.loc 1 191 0
+ 1955 0010 6C319FE5 		ldr	r3, .L2
+ 1956 0014 10300BE5 		str	r3, [fp, #-16]
+ 192:../os_core/os_dbg_r.c **** 
+ 193:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSEndiannessTest;
+ 1957              		.loc 1 193 0
+ 1958 0018 68319FE5 		ldr	r3, .L2+4
+ 1959 001c 10300BE5 		str	r3, [fp, #-16]
+ 194:../os_core/os_dbg_r.c **** 
+ 195:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSEventMax;
+ 1960              		.loc 1 195 0
+ 1961 0020 64319FE5 		ldr	r3, .L2+8
+ 1962 0024 10300BE5 		str	r3, [fp, #-16]
+ 196:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSEventNameSize;
+ 1963              		.loc 1 196 0
+ 1964 0028 60319FE5 		ldr	r3, .L2+12
+ 1965 002c 10300BE5 		str	r3, [fp, #-16]
+ 197:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSEventEn;
+ 1966              		.loc 1 197 0
+ 1967 0030 5C319FE5 		ldr	r3, .L2+16
+ 1968 0034 10300BE5 		str	r3, [fp, #-16]
+ 198:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSEventSize;
+ 1969              		.loc 1 198 0
+ 1970 0038 58319FE5 		ldr	r3, .L2+20
+ 1971 003c 10300BE5 		str	r3, [fp, #-16]
+ 199:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSEventTblSize;
+ 1972              		.loc 1 199 0
+ 1973 0040 54319FE5 		ldr	r3, .L2+24
+ 1974 0044 10300BE5 		str	r3, [fp, #-16]
+ 200:../os_core/os_dbg_r.c **** 
+ 201:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSFlagEn;
+ 1975              		.loc 1 201 0
+ 1976 0048 50319FE5 		ldr	r3, .L2+28
+ 1977 004c 10300BE5 		str	r3, [fp, #-16]
+ 202:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSFlagGrpSize;
+ 1978              		.loc 1 202 0
+ 1979 0050 4C319FE5 		ldr	r3, .L2+32
+ 1980 0054 10300BE5 		str	r3, [fp, #-16]
+ 203:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSFlagNodeSize;
+ 1981              		.loc 1 203 0
+ 1982 0058 48319FE5 		ldr	r3, .L2+36
+ 1983 005c 10300BE5 		str	r3, [fp, #-16]
+ 204:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSFlagWidth;
+ 1984              		.loc 1 204 0
+ 1985 0060 44319FE5 		ldr	r3, .L2+40
+ 1986 0064 10300BE5 		str	r3, [fp, #-16]
+ 205:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSFlagMax;
+ 1987              		.loc 1 205 0
+ 1988 0068 40319FE5 		ldr	r3, .L2+44
+ 1989 006c 10300BE5 		str	r3, [fp, #-16]
+ 206:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSFlagNameSize;
+ 1990              		.loc 1 206 0
+ 1991 0070 3C319FE5 		ldr	r3, .L2+48
+ 1992 0074 10300BE5 		str	r3, [fp, #-16]
+ 207:../os_core/os_dbg_r.c **** 
+ 208:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSLowestPrio;
+ 1993              		.loc 1 208 0
+ 1994 0078 38319FE5 		ldr	r3, .L2+52
+ 1995 007c 10300BE5 		str	r3, [fp, #-16]
+ 209:../os_core/os_dbg_r.c **** 
+ 210:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSMboxEn;
+ 1996              		.loc 1 210 0
+ 1997 0080 34319FE5 		ldr	r3, .L2+56
+ 1998 0084 10300BE5 		str	r3, [fp, #-16]
+ 211:../os_core/os_dbg_r.c **** 
+ 212:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSMemEn;
+ 1999              		.loc 1 212 0
+ 2000 0088 30319FE5 		ldr	r3, .L2+60
+ 2001 008c 10300BE5 		str	r3, [fp, #-16]
+ 213:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSMemMax;
+ 2002              		.loc 1 213 0
+ 2003 0090 2C319FE5 		ldr	r3, .L2+64
+ 2004 0094 10300BE5 		str	r3, [fp, #-16]
+ 214:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSMemNameSize;
+ 2005              		.loc 1 214 0
+ 2006 0098 28319FE5 		ldr	r3, .L2+68
+ 2007 009c 10300BE5 		str	r3, [fp, #-16]
+ 215:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSMemSize;
+ 2008              		.loc 1 215 0
+ 2009 00a0 24319FE5 		ldr	r3, .L2+72
+ 2010 00a4 10300BE5 		str	r3, [fp, #-16]
+ 216:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSMemTblSize;
+ 2011              		.loc 1 216 0
+ 2012 00a8 20319FE5 		ldr	r3, .L2+76
+ 2013 00ac 10300BE5 		str	r3, [fp, #-16]
+ 217:../os_core/os_dbg_r.c **** 
+ 218:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSMutexEn;
+ 2014              		.loc 1 218 0
+ 2015 00b0 1C319FE5 		ldr	r3, .L2+80
+ 2016 00b4 10300BE5 		str	r3, [fp, #-16]
+ 219:../os_core/os_dbg_r.c **** 
+ 220:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSPtrSize;
+ 2017              		.loc 1 220 0
+ 2018 00b8 18319FE5 		ldr	r3, .L2+84
+ 2019 00bc 10300BE5 		str	r3, [fp, #-16]
+ 221:../os_core/os_dbg_r.c **** 
+ 222:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSQEn;
+ 2020              		.loc 1 222 0
+ 2021 00c0 14319FE5 		ldr	r3, .L2+88
+ 2022 00c4 10300BE5 		str	r3, [fp, #-16]
+ 223:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSQMax;
+ 2023              		.loc 1 223 0
+ 2024 00c8 10319FE5 		ldr	r3, .L2+92
+ 2025 00cc 10300BE5 		str	r3, [fp, #-16]
+ 224:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSQSize;
+ 2026              		.loc 1 224 0
+ 2027 00d0 0C319FE5 		ldr	r3, .L2+96
+ 2028 00d4 10300BE5 		str	r3, [fp, #-16]
+ 225:../os_core/os_dbg_r.c **** 
+ 226:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSRdyTblSize;
+ 2029              		.loc 1 226 0
+ 2030 00d8 08319FE5 		ldr	r3, .L2+100
+ 2031 00dc 10300BE5 		str	r3, [fp, #-16]
+ 227:../os_core/os_dbg_r.c **** 
+ 228:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSSemEn;
+ 2032              		.loc 1 228 0
+ 2033 00e0 04319FE5 		ldr	r3, .L2+104
+ 2034 00e4 10300BE5 		str	r3, [fp, #-16]
+ 229:../os_core/os_dbg_r.c **** 
+ 230:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSStkWidth;
+ 2035              		.loc 1 230 0
+ 2036 00e8 00319FE5 		ldr	r3, .L2+108
+ 2037 00ec 10300BE5 		str	r3, [fp, #-16]
+ 231:../os_core/os_dbg_r.c **** 
+ 232:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSTaskCreateEn;
+ 2038              		.loc 1 232 0
+ 2039 00f0 FC309FE5 		ldr	r3, .L2+112
+ 2040 00f4 10300BE5 		str	r3, [fp, #-16]
+ 233:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSTaskCreateExtEn;
+ 2041              		.loc 1 233 0
+ 2042 00f8 F8309FE5 		ldr	r3, .L2+116
+ 2043 00fc 10300BE5 		str	r3, [fp, #-16]
+ 234:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSTaskDelEn;
+ 2044              		.loc 1 234 0
+ 2045 0100 F4309FE5 		ldr	r3, .L2+120
+ 2046 0104 10300BE5 		str	r3, [fp, #-16]
+ 235:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSTaskIdleStkSize;
+ 2047              		.loc 1 235 0
+ 2048 0108 F0309FE5 		ldr	r3, .L2+124
+ 2049 010c 10300BE5 		str	r3, [fp, #-16]
+ 236:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSTaskProfileEn;
+ 2050              		.loc 1 236 0
+ 2051 0110 EC309FE5 		ldr	r3, .L2+128
+ 2052 0114 10300BE5 		str	r3, [fp, #-16]
+ 237:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSTaskMax;
+ 2053              		.loc 1 237 0
+ 2054 0118 E8309FE5 		ldr	r3, .L2+132
+ 2055 011c 10300BE5 		str	r3, [fp, #-16]
+ 238:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSTaskNameSize;
+ 2056              		.loc 1 238 0
+ 2057 0120 E4309FE5 		ldr	r3, .L2+136
+ 2058 0124 10300BE5 		str	r3, [fp, #-16]
+ 239:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSTaskStatEn;
+ 2059              		.loc 1 239 0
+ 2060 0128 E0309FE5 		ldr	r3, .L2+140
+ 2061 012c 10300BE5 		str	r3, [fp, #-16]
+ 240:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSTaskStatStkSize;
+ 2062              		.loc 1 240 0
+ 2063 0130 DC309FE5 		ldr	r3, .L2+144
+ 2064 0134 10300BE5 		str	r3, [fp, #-16]
+ 241:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSTaskStatStkChkEn;
+ 2065              		.loc 1 241 0
+ 2066 0138 D8309FE5 		ldr	r3, .L2+148
+ 2067 013c 10300BE5 		str	r3, [fp, #-16]
+ 242:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSTaskSwHookEn;
+ 2068              		.loc 1 242 0
+ 2069 0140 D4309FE5 		ldr	r3, .L2+152
+ 2070 0144 10300BE5 		str	r3, [fp, #-16]
+ 243:../os_core/os_dbg_r.c **** 
+ 244:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSTCBPrioTblMax;
+ 2071              		.loc 1 244 0
+ 2072 0148 D0309FE5 		ldr	r3, .L2+156
+ 2073 014c 10300BE5 		str	r3, [fp, #-16]
+ 245:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSTCBSize;
+ 2074              		.loc 1 245 0
+ 2075 0150 CC309FE5 		ldr	r3, .L2+160
+ 2076 0154 10300BE5 		str	r3, [fp, #-16]
+ 246:../os_core/os_dbg_r.c **** 
+ 247:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSTicksPerSec;
+ 2077              		.loc 1 247 0
+ 2078 0158 C8309FE5 		ldr	r3, .L2+164
+ 2079 015c 10300BE5 		str	r3, [fp, #-16]
+ 248:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSTimeTickHookEn;
+ 2080              		.loc 1 248 0
+ 2081 0160 C4309FE5 		ldr	r3, .L2+168
+ 2082 0164 10300BE5 		str	r3, [fp, #-16]
+ 249:../os_core/os_dbg_r.c **** 
+ 250:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSVersionNbr;
+ 2083              		.loc 1 250 0
+ 2084 0168 C0309FE5 		ldr	r3, .L2+172
+ 2085 016c 10300BE5 		str	r3, [fp, #-16]
+ 251:../os_core/os_dbg_r.c **** 
+ 252:../os_core/os_dbg_r.c ****     ptemp = (void *)&OSDataSize;
+ 2086              		.loc 1 252 0
+ 2087 0170 BC309FE5 		ldr	r3, .L2+176
+ 2088 0174 10300BE5 		str	r3, [fp, #-16]
+ 253:../os_core/os_dbg_r.c **** 
+ 254:../os_core/os_dbg_r.c ****     ptemp = ptemp;                             /* Prevent compiler warning for 'ptemp' not being us
+ 255:../os_core/os_dbg_r.c **** }
+ 2089              		.loc 1 255 0
+ 2090 0178 0CD04BE2 		sub	sp, fp, #12
+ 2091 017c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2092 0180 1EFF2FE1 		bx	lr
+ 2093              	.L3:
+ 2094              		.align	2
+ 2095              	.L2:
+ 2096 0184 00000000 		.word	OSDebugEn
+ 2097 0188 00000000 		.word	OSEndiannessTest
+ 2098 018c 00000000 		.word	OSEventMax
+ 2099 0190 00000000 		.word	OSEventNameSize
+ 2100 0194 00000000 		.word	OSEventEn
+ 2101 0198 00000000 		.word	OSEventSize
+ 2102 019c 00000000 		.word	OSEventTblSize
+ 2103 01a0 00000000 		.word	OSFlagEn
+ 2104 01a4 00000000 		.word	OSFlagGrpSize
+ 2105 01a8 00000000 		.word	OSFlagNodeSize
+ 2106 01ac 00000000 		.word	OSFlagWidth
+ 2107 01b0 00000000 		.word	OSFlagMax
+ 2108 01b4 00000000 		.word	OSFlagNameSize
+ 2109 01b8 00000000 		.word	OSLowestPrio
+ 2110 01bc 00000000 		.word	OSMboxEn
+ 2111 01c0 00000000 		.word	OSMemEn
+ 2112 01c4 00000000 		.word	OSMemMax
+ 2113 01c8 00000000 		.word	OSMemNameSize
+ 2114 01cc 00000000 		.word	OSMemSize
+ 2115 01d0 00000000 		.word	OSMemTblSize
+ 2116 01d4 00000000 		.word	OSMutexEn
+ 2117 01d8 00000000 		.word	OSPtrSize
+ 2118 01dc 00000000 		.word	OSQEn
+ 2119 01e0 00000000 		.word	OSQMax
+ 2120 01e4 00000000 		.word	OSQSize
+ 2121 01e8 00000000 		.word	OSRdyTblSize
+ 2122 01ec 00000000 		.word	OSSemEn
+ 2123 01f0 00000000 		.word	OSStkWidth
+ 2124 01f4 00000000 		.word	OSTaskCreateEn
+ 2125 01f8 00000000 		.word	OSTaskCreateExtEn
+ 2126 01fc 00000000 		.word	OSTaskDelEn
+ 2127 0200 00000000 		.word	OSTaskIdleStkSize
+ 2128 0204 00000000 		.word	OSTaskProfileEn
+ 2129 0208 00000000 		.word	OSTaskMax
+ 2130 020c 00000000 		.word	OSTaskNameSize
+ 2131 0210 00000000 		.word	OSTaskStatEn
+ 2132 0214 00000000 		.word	OSTaskStatStkSize
+ 2133 0218 00000000 		.word	OSTaskStatStkChkEn
+ 2134 021c 00000000 		.word	OSTaskSwHookEn
+ 2135 0220 00000000 		.word	OSTCBPrioTblMax
+ 2136 0224 00000000 		.word	OSTCBSize
+ 2137 0228 00000000 		.word	OSTicksPerSec
+ 2138 022c 00000000 		.word	OSTimeTickHookEn
+ 2139 0230 00000000 		.word	OSVersionNbr
+ 2140 0234 00000000 		.word	OSDataSize
+ 2141              		.cfi_endproc
+ 2142              	.LFE0:
+ 2144              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 os_dbg_r.c
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1666   .rodata:00000000 OSDebugEn
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1663   .rodata:00000000 $d
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1672   .rodata:00000004 OSEndiannessTest
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1678   .rodata:00000008 OSEventEn
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1684   .rodata:0000000a OSEventMax
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1690   .rodata:0000000c OSEventNameSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1696   .rodata:0000000e OSEventSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1702   .rodata:00000010 OSEventTblSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1708   .rodata:00000012 OSFlagEn
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1714   .rodata:00000014 OSFlagGrpSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1720   .rodata:00000016 OSFlagNodeSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1726   .rodata:00000018 OSFlagWidth
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1732   .rodata:0000001a OSFlagMax
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1738   .rodata:0000001c OSFlagNameSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1744   .rodata:0000001e OSLowestPrio
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1750   .rodata:00000020 OSMboxEn
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1756   .rodata:00000022 OSMemEn
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1762   .rodata:00000024 OSMemMax
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1768   .rodata:00000026 OSMemNameSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1774   .rodata:00000028 OSMemSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1780   .rodata:0000002a OSMemTblSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1786   .rodata:0000002c OSMutexEn
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1792   .rodata:0000002e OSPtrSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1798   .rodata:00000030 OSQEn
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1804   .rodata:00000032 OSQMax
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1810   .rodata:00000034 OSQSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1816   .rodata:00000036 OSRdyTblSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1822   .rodata:00000038 OSSemEn
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1828   .rodata:0000003a OSStkWidth
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1834   .rodata:0000003c OSTaskCreateEn
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1840   .rodata:0000003e OSTaskCreateExtEn
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1846   .rodata:00000040 OSTaskDelEn
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1852   .rodata:00000042 OSTaskIdleStkSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1858   .rodata:00000044 OSTaskProfileEn
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1864   .rodata:00000046 OSTaskMax
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1870   .rodata:00000048 OSTaskNameSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1876   .rodata:0000004a OSTaskStatEn
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1882   .rodata:0000004c OSTaskStatStkSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1888   .rodata:0000004e OSTaskStatStkChkEn
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1894   .rodata:00000050 OSTaskSwHookEn
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1900   .rodata:00000052 OSTCBPrioTblMax
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1906   .rodata:00000054 OSTCBSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1912   .rodata:00000056 OSTicksPerSec
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1918   .rodata:00000058 OSTimeTickHookEn
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1924   .rodata:0000005a OSVersionNbr
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1930   .rodata:0000005c OSDataSize
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1933   .text:00000000 $a
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:1936   .text:00000000 OSDebugInit
+C:\Users\Muadi\AppData\Local\Temp\ccUmbkQb.s:2096   .text:00000184 $d
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

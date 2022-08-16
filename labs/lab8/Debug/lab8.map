@@ -1,0 +1,292 @@
+Archive member included because of file (symbol)
+
+../../BSP/Debug\libBSP.a(system.o)
+                              ./lab8.o (sys_init)
+../../BSP/Debug\libBSP.a(timers.o)
+                              ./lab8.o (timers_init)
+../../BSP/Debug\libBSP.a(uart.o)
+                              ./lab8.o (uart0_init)
+c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_udivsi3.o)
+                              ../../BSP/Debug\libBSP.a(timers.o) (__aeabi_uidiv)
+c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_dvmd_tls.o)
+                              c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_udivsi3.o) (__aeabi_idiv0)
+c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_aeabi_uldivmod.o)
+                              ../../BSP/Debug\libBSP.a(timers.o) (__aeabi_uldivmod)
+c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(bpabi.o)
+                              c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_aeabi_uldivmod.o) (__gnu_uldivmod_helper)
+c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_divdi3.o)
+                              c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(bpabi.o) (__divdi3)
+c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_udivdi3.o)
+                              c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(bpabi.o) (__udivdi3)
+c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_clzsi2.o)
+                              c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_divdi3.o) (__clzsi2)
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+LOAD ./lab8.o
+LOAD ../../BSP/Debug\libBSP.a
+START GROUP
+LOAD c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a
+LOAD c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2/../../../../arm-none-eabi/lib\libc.a
+END GROUP
+                0x0c100000                . = 0xc100000
+
+.text           0x0c100000     0x2bc8
+ *(.text)
+ .text          0x0c100000      0x60c ./lab8.o
+                0x0c100000                main
+ .text          0x0c10060c      0xb34 ../../BSP/Debug\libBSP.a(system.o)
+                0x0c10060c                sys_init
+                0x0c100b6c                isr_SWI_dummy
+                0x0c100b98                isr_UNDEF_dummy
+                0x0c100bc4                isr_IRQ_dummy
+                0x0c100bf0                isr_FIQ_dummy
+                0x0c100c1c                isr_PABORT_dummy
+                0x0c100c48                isr_DABORT_dummy
+                0x0c100c74                isr_ADC_dummy
+                0x0c100ca0                isr_RTC_dummy
+                0x0c100ccc                isr_UTXD1_dummy
+                0x0c100cf8                isr_UTXD0_dummy
+                0x0c100d24                isr_SIO_dummy
+                0x0c100d50                isr_IIC_dummy
+                0x0c100d7c                isr_URXD1_dummy
+                0x0c100da8                isr_URXD0_dummy
+                0x0c100dd4                isr_TIMER5_dummy
+                0x0c100e00                isr_TIMER4_dummy
+                0x0c100e2c                isr_TIMER3_dummy
+                0x0c100e58                isr_TIMER2_dummy
+                0x0c100e84                isr_TIMER1_dummy
+                0x0c100eb0                isr_TIMER0_dummy
+                0x0c100edc                isr_UERR01_dummy
+                0x0c100f08                isr_WDT_dummy
+                0x0c100f34                isr_BDMA1_dummy
+                0x0c100f60                isr_BDMA0_dummy
+                0x0c100f8c                isr_ZDMA1_dummy
+                0x0c100fb8                isr_ZDMA0_dummy
+                0x0c100fe4                isr_TICK_dummy
+                0x0c101010                isr_PB_dummy
+                0x0c10103c                isr_ETHERNET_dummy
+                0x0c101068                isr_TS_dummy
+                0x0c101094                isr_KEYPAD_dummy
+                0x0c1010c0                isr_USB_dummy
+                0x0c101110                sleep
+ .text          0x0c101140      0x9f0 ../../BSP/Debug\libBSP.a(timers.o)
+                0x0c101140                timers_init
+                0x0c1012f8                timer3_delay_ms
+                0x0c1013d8                sw_delay_ms
+                0x0c101430                timer3_delay_s
+                0x0c101500                sw_delay_s
+                0x0c101558                timer3_start
+                0x0c101608                timer3_stop
+                0x0c10165c                timer3_start_timeout
+                0x0c101714                timer3_timeout
+                0x0c101750                timer0_open_tick
+                0x0c101990                timer0_open_ms
+                0x0c101a9c                timer0_close
+ .text          0x0c101b30      0x5a0 ../../BSP/Debug\libBSP.a(uart.o)
+                0x0c101b30                uart0_init
+                0x0c101b94                uart0_putchar
+                0x0c101be4                uart0_getchar
+                0x0c101c2c                uart0_puts
+                0x0c101c7c                uart0_putint
+                0x0c101d90                uart0_puthex
+                0x0c101e48                uart0_gets
+                0x0c101eb4                uart0_getint
+                0x0c101fa4                uart0_gethex
+ .text          0x0c1020d0      0x114 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_udivsi3.o)
+                0x0c1020d0                __aeabi_uidiv
+                0x0c1020d0                __udivsi3
+                0x0c1021c4                __aeabi_uidivmod
+ .text          0x0c1021e4        0x4 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_dvmd_tls.o)
+                0x0c1021e4                __aeabi_idiv0
+                0x0c1021e4                __aeabi_ldiv0
+ .text          0x0c1021e8       0x3c c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_aeabi_uldivmod.o)
+                0x0c1021e8                __aeabi_uldivmod
+ .text          0x0c102224       0x80 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(bpabi.o)
+                0x0c102224                __gnu_ldivmod_helper
+                0x0c102264                __gnu_uldivmod_helper
+ .text          0x0c1022a4      0x4a8 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_divdi3.o)
+                0x0c1022a4                __divdi3
+ .text          0x0c10274c      0x434 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_udivdi3.o)
+                0x0c10274c                __udivdi3
+ .text          0x0c102b80       0x48 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_clzsi2.o)
+                0x0c102b80                __clzsi2
+
+.glue_7         0x0c102bc8        0x0
+ .glue_7        0x00000000        0x0 linker stubs
+
+.glue_7t        0x0c102bc8        0x0
+ .glue_7t       0x00000000        0x0 linker stubs
+
+.vfp11_veneer   0x0c102bc8        0x0
+ .vfp11_veneer  0x00000000        0x0 linker stubs
+
+.v4_bx          0x0c102bc8        0x0
+ .v4_bx         0x00000000        0x0 linker stubs
+
+.rodata         0x0c102bc8      0x890
+ *(.rodata)
+ .rodata        0x0c102bc8      0x29c ./lab8.o
+ .rodata        0x0c102e64      0x5f4 ../../BSP/Debug\libBSP.a(system.o)
+
+.ARM.extab      0x0c103458        0x0
+ .ARM.extab     0x0c103458        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_divdi3.o)
+ .ARM.extab     0x0c103458        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_udivdi3.o)
+
+.ARM.exidx      0x0c103458        0x8
+ .ARM.exidx     0x0c103458        0x8 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_divdi3.o)
+ .ARM.exidx     0x0c103460        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_udivdi3.o)
+                                  0x8 (size before relaxing)
+
+.data           0x0c103460        0x0
+ *(.data)
+ .data          0x0c103460        0x0 ./lab8.o
+ .data          0x0c103460        0x0 ../../BSP/Debug\libBSP.a(system.o)
+ .data          0x0c103460        0x0 ../../BSP/Debug\libBSP.a(timers.o)
+ .data          0x0c103460        0x0 ../../BSP/Debug\libBSP.a(uart.o)
+ .data          0x0c103460        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_udivsi3.o)
+ .data          0x0c103460        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_dvmd_tls.o)
+ .data          0x0c103460        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_aeabi_uldivmod.o)
+ .data          0x0c103460        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(bpabi.o)
+ .data          0x0c103460        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_divdi3.o)
+ .data          0x0c103460        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_udivdi3.o)
+ .data          0x0c103460        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_clzsi2.o)
+
+.bss            0x0c103460        0x8
+ *(.bss)
+ .bss           0x0c103460        0x0 ./lab8.o
+ .bss           0x0c103460        0x0 ../../BSP/Debug\libBSP.a(system.o)
+ .bss           0x0c103460        0x8 ../../BSP/Debug\libBSP.a(timers.o)
+ .bss           0x0c103468        0x0 ../../BSP/Debug\libBSP.a(uart.o)
+ .bss           0x0c103468        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_udivsi3.o)
+ .bss           0x0c103468        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_dvmd_tls.o)
+ .bss           0x0c103468        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_aeabi_uldivmod.o)
+ .bss           0x0c103468        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(bpabi.o)
+ .bss           0x0c103468        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_divdi3.o)
+ .bss           0x0c103468        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_udivdi3.o)
+ .bss           0x0c103468        0x0 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_clzsi2.o)
+                0x0c103468                end = .
+OUTPUT(lab8.elf elf32-littlearm)
+
+.debug_abbrev   0x00000000      0x2d8
+ .debug_abbrev  0x00000000       0x7e ./lab8.o
+ .debug_abbrev  0x0000007e       0x89 ../../BSP/Debug\libBSP.a(system.o)
+ .debug_abbrev  0x00000107       0xdd ../../BSP/Debug\libBSP.a(timers.o)
+ .debug_abbrev  0x000001e4       0xf4 ../../BSP/Debug\libBSP.a(uart.o)
+
+.debug_info     0x00000000      0x9e9
+ .debug_info    0x00000000      0x10a ./lab8.o
+ .debug_info    0x0000010a      0x390 ../../BSP/Debug\libBSP.a(system.o)
+ .debug_info    0x0000049a      0x29d ../../BSP/Debug\libBSP.a(timers.o)
+ .debug_info    0x00000737      0x2b2 ../../BSP/Debug\libBSP.a(uart.o)
+
+.debug_line     0x00000000      0x602
+ .debug_line    0x00000000      0x196 ./lab8.o
+ .debug_line    0x00000196      0x1f0 ../../BSP/Debug\libBSP.a(system.o)
+ .debug_line    0x00000386      0x173 ../../BSP/Debug\libBSP.a(timers.o)
+ .debug_line    0x000004f9      0x109 ../../BSP/Debug\libBSP.a(uart.o)
+
+.debug_macinfo  0x00000000    0x13675
+ .debug_macinfo
+                0x00000000     0x53cd ./lab8.o
+ .debug_macinfo
+                0x000053cd     0x530a ../../BSP/Debug\libBSP.a(system.o)
+ .debug_macinfo
+                0x0000a6d7     0x4c91 ../../BSP/Debug\libBSP.a(timers.o)
+ .debug_macinfo
+                0x0000f368     0x430d ../../BSP/Debug\libBSP.a(uart.o)
+
+.debug_loc      0x00000000      0xa50
+ .debug_loc     0x00000000       0x2c ./lab8.o
+ .debug_loc     0x0000002c      0x65c ../../BSP/Debug\libBSP.a(system.o)
+ .debug_loc     0x00000688      0x23c ../../BSP/Debug\libBSP.a(timers.o)
+ .debug_loc     0x000008c4      0x18c ../../BSP/Debug\libBSP.a(uart.o)
+
+.debug_pubnames
+                0x00000000      0x44d
+ .debug_pubnames
+                0x00000000       0x1b ./lab8.o
+ .debug_pubnames
+                0x0000001b      0x29d ../../BSP/Debug\libBSP.a(system.o)
+ .debug_pubnames
+                0x000002b8       0xee ../../BSP/Debug\libBSP.a(timers.o)
+ .debug_pubnames
+                0x000003a6       0xa7 ../../BSP/Debug\libBSP.a(uart.o)
+
+.debug_pubtypes
+                0x00000000       0xd0
+ .debug_pubtypes
+                0x00000000       0x32 ./lab8.o
+ .debug_pubtypes
+                0x00000032       0x27 ../../BSP/Debug\libBSP.a(system.o)
+ .debug_pubtypes
+                0x00000059       0x3d ../../BSP/Debug\libBSP.a(timers.o)
+ .debug_pubtypes
+                0x00000096       0x3a ../../BSP/Debug\libBSP.a(uart.o)
+
+.debug_aranges  0x00000000       0x80
+ .debug_aranges
+                0x00000000       0x20 ./lab8.o
+ .debug_aranges
+                0x00000020       0x20 ../../BSP/Debug\libBSP.a(system.o)
+ .debug_aranges
+                0x00000040       0x20 ../../BSP/Debug\libBSP.a(timers.o)
+ .debug_aranges
+                0x00000060       0x20 ../../BSP/Debug\libBSP.a(uart.o)
+
+.debug_str      0x00000000      0x4d5
+ .debug_str     0x00000000       0xe2 ./lab8.o
+                                 0xfb (size before relaxing)
+ .debug_str     0x000000e2      0x27d ../../BSP/Debug\libBSP.a(system.o)
+                                0x2ff (size before relaxing)
+ .debug_str     0x0000035f       0xe5 ../../BSP/Debug\libBSP.a(timers.o)
+                                0x1ae (size before relaxing)
+ .debug_str     0x00000444       0x91 ../../BSP/Debug\libBSP.a(uart.o)
+                                0x163 (size before relaxing)
+
+.comment        0x00000000       0x2a
+ .comment       0x00000000       0x2a ./lab8.o
+                                 0x2b (size before relaxing)
+ .comment       0x00000000       0x2b ../../BSP/Debug\libBSP.a(system.o)
+ .comment       0x00000000       0x2b ../../BSP/Debug\libBSP.a(timers.o)
+ .comment       0x00000000       0x2b ../../BSP/Debug\libBSP.a(uart.o)
+
+.ARM.attributes
+                0x00000000       0x32
+ .ARM.attributes
+                0x00000000       0x32 ./lab8.o
+ .ARM.attributes
+                0x00000032       0x32 ../../BSP/Debug\libBSP.a(system.o)
+ .ARM.attributes
+                0x00000064       0x32 ../../BSP/Debug\libBSP.a(timers.o)
+ .ARM.attributes
+                0x00000096       0x32 ../../BSP/Debug\libBSP.a(uart.o)
+ .ARM.attributes
+                0x000000c8       0x1a c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_udivsi3.o)
+ .ARM.attributes
+                0x000000e2       0x18 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_dvmd_tls.o)
+ .ARM.attributes
+                0x000000fa       0x1a c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_aeabi_uldivmod.o)
+ .ARM.attributes
+                0x00000114       0x34 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(bpabi.o)
+ .ARM.attributes
+                0x00000148       0x34 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_divdi3.o)
+ .ARM.attributes
+                0x0000017c       0x34 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_udivdi3.o)
+ .ARM.attributes
+                0x000001b0       0x1a c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_clzsi2.o)
+
+.debug_frame    0x00000000      0xa30
+ .debug_frame   0x00000000       0x30 ./lab8.o
+ .debug_frame   0x00000030      0x630 ../../BSP/Debug\libBSP.a(system.o)
+ .debug_frame   0x00000660      0x1b8 ../../BSP/Debug\libBSP.a(timers.o)
+ .debug_frame   0x00000818      0x130 ../../BSP/Debug\libBSP.a(uart.o)
+ .debug_frame   0x00000948       0x20 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_udivsi3.o)
+ .debug_frame   0x00000968       0x50 c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(bpabi.o)
+ .debug_frame   0x000009b8       0x3c c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_divdi3.o)
+ .debug_frame   0x000009f4       0x3c c:/eclipsearm/sourcery-g++-lite-arm-2011.03/bin/../lib/gcc/arm-none-eabi/4.5.2\libgcc.a(_udivdi3.o)

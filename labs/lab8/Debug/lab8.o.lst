@@ -1,0 +1,879 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"lab8.c"
+  21              	.Ltext0:
+  22              		.file 1 "../lab8.c"
+ 2019              		.align	2
+ 2020              	.LC0:
+ 2021 0000 0A0A4361 		.ascii	"\012\012Cargando en RAM el contenido de IIC-EEPROM "
+ 2021      7267616E 
+ 2021      646F2065 
+ 2021      6E205241 
+ 2021      4D20656C 
+ 2022 002d 41543234 		.ascii	"AT24C04:\012\000"
+ 2022      4330343A 
+ 2022      0A00
+ 2023 0037 00       		.align	2
+ 2024              	.LC1:
+ 2025 0038 202D204C 		.ascii	" - Lectura aleatoria (\000"
+ 2025      65637475 
+ 2025      72612061 
+ 2025      6C656174 
+ 2025      6F726961 
+ 2026 004f 00       		.align	2
+ 2027              	.LC2:
+ 2028 0050 20627974 		.ascii	" bytes): \000"
+ 2028      6573293A 
+ 2028      2000
+ 2029 005a 0000     		.align	2
+ 2030              	.LC3:
+ 2031 005c 206D730A 		.ascii	" ms\012\000"
+ 2031      00
+ 2032 0061 000000   		.align	2
+ 2033              	.LC4:
+ 2034 0064 202D204C 		.ascii	" - Lectura secuencial (\000"
+ 2034      65637475 
+ 2034      72612073 
+ 2034      65637565 
+ 2034      6E636961 
+ 2035              		.align	2
+ 2036              	.LC5:
+ 2037 007c 4552524F 		.ascii	"ERROR: lectura aleatoria y secuencial no son coinci"
+ 2037      523A206C 
+ 2037      65637475 
+ 2037      72612061 
+ 2037      6C656174 
+ 2038 00af 64656E74 		.ascii	"dentes\012\000"
+ 2038      65730A00 
+ 2039 00b7 00       		.align	2
+ 2040              	.LC6:
+ 2041 00b8 0A566F6C 		.ascii	"\012Volcado del contenido inicial de la memoria IIC"
+ 2041      6361646F 
+ 2041      2064656C 
+ 2041      20636F6E 
+ 2041      74656E69 
+ 2042 00e8 2D454550 		.ascii	"-EEPROM AT24C04:\012\000"
+ 2042      524F4D20 
+ 2042      41543234 
+ 2042      4330343A 
+ 2042      0A00
+ 2043 00fa 0000     		.align	2
+ 2044              	.LC7:
+ 2045 00fc 0A00     		.ascii	"\012\000"
+ 2046 00fe 0000     		.align	2
+ 2047              	.LC8:
+ 2048 0100 303000   		.ascii	"00\000"
+ 2049 0103 00       		.align	2
+ 2050              	.LC9:
+ 2051 0104 683A00   		.ascii	"h:\000"
+ 2052 0107 00       		.align	2
+ 2053              	.LC10:
+ 2054 0108 203B2000 		.ascii	" ; \000"
+ 2055              		.align	2
+ 2056              	.LC11:
+ 2057 010c 0A0A4D6F 		.ascii	"\012\012Modificacion del contenido de la memoria II"
+ 2057      64696669 
+ 2057      63616369 
+ 2057      6F6E2064 
+ 2057      656C2063 
+ 2058 0139 432D4545 		.ascii	"C-EEPROM AT24C04:\012\000"
+ 2058      50524F4D 
+ 2058      20415432 
+ 2058      34433034 
+ 2058      3A0A00
+ 2059              		.align	2
+ 2060              	.LC12:
+ 2061 014c 20202D20 		.ascii	"  - Introduzca una direccion (0h-1ffh): \000"
+ 2061      496E7472 
+ 2061      6F64757A 
+ 2061      63612075 
+ 2061      6E612064 
+ 2062 0175 000000   		.align	2
+ 2063              	.LC13:
+ 2064 0178 20202D20 		.ascii	"  - Introduzca el dato (0h-ffh): \000"
+ 2064      496E7472 
+ 2064      6F64757A 
+ 2064      63612065 
+ 2064      6C206461 
+ 2065 019a 0000     		.align	2
+ 2066              	.LC14:
+ 2067 019c 0A566F6C 		.ascii	"\012Volcando en la IIC-EEPROM AT24C04 el contenido "
+ 2067      63616E64 
+ 2067      6F20656E 
+ 2067      206C6120 
+ 2067      4949432D 
+ 2068 01cc 6465206C 		.ascii	"de la RAM:\012\000"
+ 2068      61205241 
+ 2068      4D3A0A00 
+ 2069              		.align	2
+ 2070              	.LC15:
+ 2071 01d8 202D2045 		.ascii	" - Escritura aleatoria (\000"
+ 2071      73637269 
+ 2071      74757261 
+ 2071      20616C65 
+ 2071      61746F72 
+ 2072 01f1 000000   		.align	2
+ 2073              	.LC16:
+ 2074 01f4 4552524F 		.ascii	"ERROR: La escritura aleatoria falla.\012\000"
+ 2074      523A204C 
+ 2074      61206573 
+ 2074      63726974 
+ 2074      75726120 
+ 2075 021a 0000     		.align	2
+ 2076              	.LC17:
+ 2077 021c 202D2045 		.ascii	" - Escritura secuencial (\000"
+ 2077      73637269 
+ 2077      74757261 
+ 2077      20736563 
+ 2077      75656E63 
+ 2078 0236 0000     		.align	2
+ 2079              	.LC18:
+ 2080 0238 4552524F 		.ascii	"ERROR: La escritura secuencial falla.\012\000"
+ 2080      523A204C 
+ 2080      61206573 
+ 2080      63726974 
+ 2080      75726120 
+ 2081 025f 00       		.align	2
+ 2082              	.LC19:
+ 2083 0260 0A417061 		.ascii	"\012Apague la placa y vuelva a cargar y ejecutar el"
+ 2083      67756520 
+ 2083      6C612070 
+ 2083      6C616361 
+ 2083      20792076 
+ 2084 0290 2070726F 		.ascii	" programa.\012\000"
+ 2084      6772616D 
+ 2084      612E0A00 
+ 2085              		.text
+ 2086              		.align	2
+ 2087              		.global	main
+ 2089              	main:
+ 2090              	.LFB0:
+   1:../lab8.c     **** /*-------------------------------------------------------------------
+   2:../lab8.c     **** **
+   3:../lab8.c     **** **  Fichero:
+   4:../lab8.c     **** **    lab8.c  17/5/2013
+   5:../lab8.c     **** **
+   6:../lab8.c     **** **    (c) J.M. Mendias
+   7:../lab8.c     **** **    Programación de Sistemas y Dispositivos
+   8:../lab8.c     **** **    Facultad de Informática. Universidad Complutense de Madrid
+   9:../lab8.c     **** **
+  10:../lab8.c     **** **  Propósito:
+  11:../lab8.c     **** **    Test del laboratorio 8
+  12:../lab8.c     **** **
+  13:../lab8.c     **** **  Notas de diseño:
+  14:../lab8.c     **** **
+  15:../lab8.c     **** **-----------------------------------------------------------------*/
+  16:../lab8.c     **** 
+  17:../lab8.c     **** #include <s3c44b0x.h>
+  18:../lab8.c     **** #include <s3cev40.h>
+  19:../lab8.c     **** #include <common_types.h>
+  20:../lab8.c     **** #include <system.h>
+  21:../lab8.c     **** #include <timers.h>
+  22:../lab8.c     **** #include <uart.h>
+  23:../lab8.c     **** #include <iic.h>
+  24:../lab8.c     **** #include <at24c04.h>
+  25:../lab8.c     **** 
+  26:../lab8.c     **** void main( void )
+  27:../lab8.c     **** {
+ 2091              		.loc 1 27 0
+ 2092              		.cfi_startproc
+ 2093              		@ Function supports interworking.
+ 2094              		@ args = 0, pretend = 0, frame = 1040
+ 2095              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2096 0000 0DC0A0E1 		mov	ip, sp
+ 2097              	.LCFI0:
+ 2098              		.cfi_def_cfa_register 12
+ 2099 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2100 0008 04B04CE2 		sub	fp, ip, #4
+ 2101              		.cfi_offset 14, -8
+ 2102              		.cfi_offset 13, -12
+ 2103              		.cfi_offset 11, -16
+ 2104              	.LCFI1:
+ 2105              		.cfi_def_cfa 11, 4
+ 2106 000c 41DE4DE2 		sub	sp, sp, #1040
+  28:../lab8.c     ****     uint8 buffer[AT24C04_DEPTH], buffer_aux[AT24C04_DEPTH];
+  29:../lab8.c     ****     uint16 i, j, delay;
+  30:../lab8.c     **** 
+  31:../lab8.c     ****     uint32 addr, data;
+  32:../lab8.c     ****     
+  33:../lab8.c     ****     sys_init();
+ 2107              		.loc 1 33 0
+ 2108 0010 FEFFFFEB 		bl	sys_init
+  34:../lab8.c     ****     uart0_init();
+ 2109              		.loc 1 34 0
+ 2110 0014 FEFFFFEB 		bl	uart0_init
+  35:../lab8.c     ****     timers_init();
+ 2111              		.loc 1 35 0
+ 2112 0018 FEFFFFEB 		bl	timers_init
+  36:../lab8.c     ****     iic_init();
+ 2113              		.loc 1 36 0
+ 2114 001c FEFFFFEB 		bl	iic_init
+  37:../lab8.c     **** 
+  38:../lab8.c     ****     /************************************/
+  39:../lab8.c     **** 
+  40:../lab8.c     ****     uart0_puts( "\n\nCargando en RAM el contenido de IIC-EEPROM AT24C04:\n" );
+ 2115              		.loc 1 40 0
+ 2116 0020 84059FE5 		ldr	r0, .L29
+ 2117 0024 FEFFFFEB 		bl	uart0_puts
+  41:../lab8.c     **** 
+  42:../lab8.c     ****     /************************************/
+  43:../lab8.c     **** 
+  44:../lab8.c     ****     timer3_start(); 
+ 2118              		.loc 1 44 0
+ 2119 0028 FEFFFFEB 		bl	timer3_start
+  45:../lab8.c     ****     for( i=0; i<AT24C04_DEPTH; i++ )
+ 2120              		.loc 1 45 0
+ 2121 002c 0030A0E3 		mov	r3, #0
+ 2122 0030 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 2123 0034 090000EA 		b	.L2
+ 2124              	.L3:
+  46:../lab8.c     ****         at24c04_byteread( i, &buffer[i] ); 
+ 2125              		.loc 1 46 0 discriminator 2
+ 2126 0038 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2127 003c 872F4BE2 		sub	r2, fp, #540
+ 2128 0040 033082E0 		add	r3, r2, r3
+ 2129 0044 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2130 0048 0200A0E1 		mov	r0, r2
+ 2131 004c 0310A0E1 		mov	r1, r3
+ 2132 0050 FEFFFFEB 		bl	at24c04_byteread
+  45:../lab8.c     ****     for( i=0; i<AT24C04_DEPTH; i++ )
+ 2133              		.loc 1 45 0 discriminator 2
+ 2134 0054 BE305BE1 		ldrh	r3, [fp, #-14]	@ movhi
+ 2135 0058 013083E2 		add	r3, r3, #1
+ 2136 005c BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 2137              	.L2:
+  45:../lab8.c     ****     for( i=0; i<AT24C04_DEPTH; i++ )
+ 2138              		.loc 1 45 0 is_stmt 0 discriminator 1
+ 2139 0060 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2140 0064 44359FE5 		ldr	r3, .L29+4
+ 2141 0068 030052E1 		cmp	r2, r3
+ 2142 006c F1FFFF9A 		bls	.L3
+  47:../lab8.c     ****     delay = timer3_stop( );
+ 2143              		.loc 1 47 0 is_stmt 1
+ 2144 0070 FEFFFFEB 		bl	timer3_stop
+ 2145 0074 0030A0E1 		mov	r3, r0
+ 2146 0078 B2314BE1 		strh	r3, [fp, #-18]	@ movhi
+  48:../lab8.c     ****     uart0_puts( " - Lectura aleatoria (" );
+ 2147              		.loc 1 48 0
+ 2148 007c 30059FE5 		ldr	r0, .L29+8
+ 2149 0080 FEFFFFEB 		bl	uart0_puts
+  49:../lab8.c     ****     uart0_putint( AT24C04_DEPTH );
+ 2150              		.loc 1 49 0
+ 2151 0084 020CA0E3 		mov	r0, #512
+ 2152 0088 FEFFFFEB 		bl	uart0_putint
+  50:../lab8.c     ****     uart0_puts( " bytes): " );
+ 2153              		.loc 1 50 0
+ 2154 008c 24059FE5 		ldr	r0, .L29+12
+ 2155 0090 FEFFFFEB 		bl	uart0_puts
+  51:../lab8.c     ****     uart0_putint( delay/10 );
+ 2156              		.loc 1 51 0
+ 2157 0094 B2215BE1 		ldrh	r2, [fp, #-18]
+ 2158 0098 1C359FE5 		ldr	r3, .L29+16
+ 2159 009c 920383E0 		umull	r0, r3, r2, r3
+ 2160 00a0 A331A0E1 		mov	r3, r3, lsr #3
+ 2161 00a4 0338A0E1 		mov	r3, r3, asl #16
+ 2162 00a8 2338A0E1 		mov	r3, r3, lsr #16
+ 2163 00ac 0300A0E1 		mov	r0, r3
+ 2164 00b0 FEFFFFEB 		bl	uart0_putint
+  52:../lab8.c     ****     uart0_puts( " ms\n" );
+ 2165              		.loc 1 52 0
+ 2166 00b4 04059FE5 		ldr	r0, .L29+20
+ 2167 00b8 FEFFFFEB 		bl	uart0_puts
+  53:../lab8.c     **** 
+  54:../lab8.c     ****     /************************************/
+  55:../lab8.c     **** 
+  56:../lab8.c     ****     timer3_start(); 
+ 2168              		.loc 1 56 0
+ 2169 00bc FEFFFFEB 		bl	timer3_start
+  57:../lab8.c     ****     at24c04_load( buffer_aux );
+ 2170              		.loc 1 57 0
+ 2171 00c0 413E4BE2 		sub	r3, fp, #1040
+ 2172 00c4 0C3043E2 		sub	r3, r3, #12
+ 2173 00c8 0300A0E1 		mov	r0, r3
+ 2174 00cc FEFFFFEB 		bl	at24c04_load
+  58:../lab8.c     ****     delay = timer3_stop( );
+ 2175              		.loc 1 58 0
+ 2176 00d0 FEFFFFEB 		bl	timer3_stop
+ 2177 00d4 0030A0E1 		mov	r3, r0
+ 2178 00d8 B2314BE1 		strh	r3, [fp, #-18]	@ movhi
+  59:../lab8.c     ****     uart0_puts( " - Lectura secuencial (" );
+ 2179              		.loc 1 59 0
+ 2180 00dc E0049FE5 		ldr	r0, .L29+24
+ 2181 00e0 FEFFFFEB 		bl	uart0_puts
+  60:../lab8.c     ****     uart0_putint( AT24C04_DEPTH );
+ 2182              		.loc 1 60 0
+ 2183 00e4 020CA0E3 		mov	r0, #512
+ 2184 00e8 FEFFFFEB 		bl	uart0_putint
+  61:../lab8.c     ****     uart0_puts( " bytes): " );
+ 2185              		.loc 1 61 0
+ 2186 00ec C4049FE5 		ldr	r0, .L29+12
+ 2187 00f0 FEFFFFEB 		bl	uart0_puts
+  62:../lab8.c     ****     uart0_putint( delay/10 );
+ 2188              		.loc 1 62 0
+ 2189 00f4 B2215BE1 		ldrh	r2, [fp, #-18]
+ 2190 00f8 BC349FE5 		ldr	r3, .L29+16
+ 2191 00fc 921383E0 		umull	r1, r3, r2, r3
+ 2192 0100 A331A0E1 		mov	r3, r3, lsr #3
+ 2193 0104 0338A0E1 		mov	r3, r3, asl #16
+ 2194 0108 2338A0E1 		mov	r3, r3, lsr #16
+ 2195 010c 0300A0E1 		mov	r0, r3
+ 2196 0110 FEFFFFEB 		bl	uart0_putint
+  63:../lab8.c     ****     uart0_puts( " ms\n" );
+ 2197              		.loc 1 63 0
+ 2198 0114 A4049FE5 		ldr	r0, .L29+20
+ 2199 0118 FEFFFFEB 		bl	uart0_puts
+  64:../lab8.c     **** 
+  65:../lab8.c     ****     /************************************/
+  66:../lab8.c     **** 
+  67:../lab8.c     ****     for( i=0; i<AT24C04_DEPTH; i++ )
+ 2200              		.loc 1 67 0
+ 2201 011c 0030A0E3 		mov	r3, #0
+ 2202 0120 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 2203 0124 120000EA 		b	.L4
+ 2204              	.L6:
+  68:../lab8.c     ****         if( buffer[i] != buffer_aux[i] )
+ 2205              		.loc 1 68 0
+ 2206 0128 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2207 012c 94349FE5 		ldr	r3, .L29+28
+ 2208 0130 0C004BE2 		sub	r0, fp, #12
+ 2209 0134 022080E0 		add	r2, r0, r2
+ 2210 0138 033082E0 		add	r3, r2, r3
+ 2211 013c 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2212 0140 BE105BE1 		ldrh	r1, [fp, #-14]
+ 2213 0144 80349FE5 		ldr	r3, .L29+32
+ 2214 0148 0C004BE2 		sub	r0, fp, #12
+ 2215 014c 011080E0 		add	r1, r0, r1
+ 2216 0150 033081E0 		add	r3, r1, r3
+ 2217 0154 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2218 0158 030052E1 		cmp	r2, r3
+ 2219 015c 0100000A 		beq	.L5
+  69:../lab8.c     ****             uart0_puts( "ERROR: lectura aleatoria y secuencial no son coincidentes\n" ); 
+ 2220              		.loc 1 69 0
+ 2221 0160 68049FE5 		ldr	r0, .L29+36
+ 2222 0164 FEFFFFEB 		bl	uart0_puts
+ 2223              	.L5:
+  67:../lab8.c     ****     for( i=0; i<AT24C04_DEPTH; i++ )
+ 2224              		.loc 1 67 0
+ 2225 0168 BE305BE1 		ldrh	r3, [fp, #-14]	@ movhi
+ 2226 016c 013083E2 		add	r3, r3, #1
+ 2227 0170 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 2228              	.L4:
+  67:../lab8.c     ****     for( i=0; i<AT24C04_DEPTH; i++ )
+ 2229              		.loc 1 67 0 is_stmt 0 discriminator 1
+ 2230 0174 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2231 0178 30349FE5 		ldr	r3, .L29+4
+ 2232 017c 030052E1 		cmp	r2, r3
+ 2233 0180 E8FFFF9A 		bls	.L6
+  70:../lab8.c     **** 
+  71:../lab8.c     ****     /************************************/
+  72:../lab8.c     **** 
+  73:../lab8.c     ****     uart0_puts( "\nVolcado del contenido inicial de la memoria IIC-EEPROM AT24C04:\n" );
+ 2234              		.loc 1 73 0 is_stmt 1
+ 2235 0184 48049FE5 		ldr	r0, .L29+40
+ 2236 0188 FEFFFFEB 		bl	uart0_puts
+  74:../lab8.c     ****         
+  75:../lab8.c     ****     for( i=0; i < (AT24C04_DEPTH>>4); i++ ){
+ 2237              		.loc 1 75 0
+ 2238 018c 0030A0E3 		mov	r3, #0
+ 2239 0190 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 2240 0194 660000EA 		b	.L7
+ 2241              	.L17:
+  76:../lab8.c     ****         uart0_puts( "\n" );
+ 2242              		.loc 1 76 0
+ 2243 0198 38049FE5 		ldr	r0, .L29+44
+ 2244 019c FEFFFFEB 		bl	uart0_puts
+  77:../lab8.c     ****         if( i<<4 <= 0xf )
+ 2245              		.loc 1 77 0
+ 2246 01a0 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2247 01a4 0332A0E1 		mov	r3, r3, asl #4
+ 2248 01a8 0F0053E3 		cmp	r3, #15
+ 2249 01ac 020000CA 		bgt	.L8
+  78:../lab8.c     ****             uart0_puts( "00" );
+ 2250              		.loc 1 78 0
+ 2251 01b0 24049FE5 		ldr	r0, .L29+48
+ 2252 01b4 FEFFFFEB 		bl	uart0_puts
+ 2253 01b8 050000EA 		b	.L9
+ 2254              	.L8:
+  79:../lab8.c     ****         else if( i<<4 <= 0xff )
+ 2255              		.loc 1 79 0
+ 2256 01bc BE305BE1 		ldrh	r3, [fp, #-14]
+ 2257 01c0 0332A0E1 		mov	r3, r3, asl #4
+ 2258 01c4 FF0053E3 		cmp	r3, #255
+ 2259 01c8 010000CA 		bgt	.L9
+  80:../lab8.c     ****             uart0_putchar( '0' );
+ 2260              		.loc 1 80 0
+ 2261 01cc 3000A0E3 		mov	r0, #48
+ 2262 01d0 FEFFFFEB 		bl	uart0_putchar
+ 2263              	.L9:
+  81:../lab8.c     ****         uart0_puthex( i<<4 );
+ 2264              		.loc 1 81 0
+ 2265 01d4 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2266 01d8 0332A0E1 		mov	r3, r3, asl #4
+ 2267 01dc 0300A0E1 		mov	r0, r3
+ 2268 01e0 FEFFFFEB 		bl	uart0_puthex
+  82:../lab8.c     ****         uart0_puts( "h:"  );
+ 2269              		.loc 1 82 0
+ 2270 01e4 F4039FE5 		ldr	r0, .L29+52
+ 2271 01e8 FEFFFFEB 		bl	uart0_puts
+  83:../lab8.c     ****         for( j=0; j<16; j++ )
+ 2272              		.loc 1 83 0
+ 2273 01ec 0030A0E3 		mov	r3, #0
+ 2274 01f0 B0314BE1 		strh	r3, [fp, #-16]	@ movhi
+ 2275 01f4 1A0000EA 		b	.L10
+ 2276              	.L12:
+  84:../lab8.c     ****         {
+  85:../lab8.c     ****             if( buffer[(i<<4)+j] <= 0xf )
+ 2277              		.loc 1 85 0
+ 2278 01f8 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2279 01fc 0322A0E1 		mov	r2, r3, asl #4
+ 2280 0200 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2281 0204 032082E0 		add	r2, r2, r3
+ 2282 0208 B8339FE5 		ldr	r3, .L29+28
+ 2283 020c 0C104BE2 		sub	r1, fp, #12
+ 2284 0210 022081E0 		add	r2, r1, r2
+ 2285 0214 033082E0 		add	r3, r2, r3
+ 2286 0218 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2287 021c 0F0053E3 		cmp	r3, #15
+ 2288 0220 0100008A 		bhi	.L11
+  86:../lab8.c     ****                 uart0_putchar( '0' );
+ 2289              		.loc 1 86 0
+ 2290 0224 3000A0E3 		mov	r0, #48
+ 2291 0228 FEFFFFEB 		bl	uart0_putchar
+ 2292              	.L11:
+  87:../lab8.c     ****             uart0_puthex( buffer[(i<<4)+j] );
+ 2293              		.loc 1 87 0
+ 2294 022c BE305BE1 		ldrh	r3, [fp, #-14]
+ 2295 0230 0322A0E1 		mov	r2, r3, asl #4
+ 2296 0234 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2297 0238 032082E0 		add	r2, r2, r3
+ 2298 023c 84339FE5 		ldr	r3, .L29+28
+ 2299 0240 0C004BE2 		sub	r0, fp, #12
+ 2300 0244 022080E0 		add	r2, r0, r2
+ 2301 0248 033082E0 		add	r3, r2, r3
+ 2302 024c 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2303 0250 0300A0E1 		mov	r0, r3
+ 2304 0254 FEFFFFEB 		bl	uart0_puthex
+  83:../lab8.c     ****         for( j=0; j<16; j++ )
+ 2305              		.loc 1 83 0
+ 2306 0258 B0315BE1 		ldrh	r3, [fp, #-16]	@ movhi
+ 2307 025c 013083E2 		add	r3, r3, #1
+ 2308 0260 B0314BE1 		strh	r3, [fp, #-16]	@ movhi
+ 2309              	.L10:
+  83:../lab8.c     ****         for( j=0; j<16; j++ )
+ 2310              		.loc 1 83 0 is_stmt 0 discriminator 1
+ 2311 0264 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2312 0268 0F0053E3 		cmp	r3, #15
+ 2313 026c E1FFFF9A 		bls	.L12
+  88:../lab8.c     ****         }
+  89:../lab8.c     ****         uart0_puts( " ; " );
+ 2314              		.loc 1 89 0 is_stmt 1
+ 2315 0270 6C039FE5 		ldr	r0, .L29+56
+ 2316 0274 FEFFFFEB 		bl	uart0_puts
+  90:../lab8.c     ****         for( j=0; j<16; j++ )
+ 2317              		.loc 1 90 0
+ 2318 0278 0030A0E3 		mov	r3, #0
+ 2319 027c B0314BE1 		strh	r3, [fp, #-16]	@ movhi
+ 2320 0280 250000EA 		b	.L13
+ 2321              	.L16:
+  91:../lab8.c     ****               uart0_putchar( ( (31<buffer[(i<<4)+j]) && (buffer[(i<<4)+j]<127) ? buffer[(i<<4)+j] :
+ 2322              		.loc 1 91 0
+ 2323 0284 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2324 0288 0322A0E1 		mov	r2, r3, asl #4
+ 2325 028c B0315BE1 		ldrh	r3, [fp, #-16]
+ 2326 0290 032082E0 		add	r2, r2, r3
+ 2327 0294 2C339FE5 		ldr	r3, .L29+28
+ 2328 0298 0C104BE2 		sub	r1, fp, #12
+ 2329 029c 022081E0 		add	r2, r1, r2
+ 2330 02a0 033082E0 		add	r3, r2, r3
+ 2331 02a4 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2332 02a8 1F0053E3 		cmp	r3, #31
+ 2333 02ac 1400009A 		bls	.L14
+ 2334              		.loc 1 91 0 is_stmt 0 discriminator 1
+ 2335 02b0 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2336 02b4 0322A0E1 		mov	r2, r3, asl #4
+ 2337 02b8 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2338 02bc 032082E0 		add	r2, r2, r3
+ 2339 02c0 00339FE5 		ldr	r3, .L29+28
+ 2340 02c4 0C004BE2 		sub	r0, fp, #12
+ 2341 02c8 022080E0 		add	r2, r0, r2
+ 2342 02cc 033082E0 		add	r3, r2, r3
+ 2343 02d0 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2344 02d4 7E0053E3 		cmp	r3, #126
+ 2345 02d8 0900008A 		bhi	.L14
+ 2346 02dc BE305BE1 		ldrh	r3, [fp, #-14]
+ 2347 02e0 0322A0E1 		mov	r2, r3, asl #4
+ 2348 02e4 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2349 02e8 032082E0 		add	r2, r2, r3
+ 2350 02ec D4329FE5 		ldr	r3, .L29+28
+ 2351 02f0 0C104BE2 		sub	r1, fp, #12
+ 2352 02f4 022081E0 		add	r2, r1, r2
+ 2353 02f8 033082E0 		add	r3, r2, r3
+ 2354 02fc 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2355 0300 000000EA 		b	.L15
+ 2356              	.L14:
+ 2357              		.loc 1 91 0 discriminator 2
+ 2358 0304 2E30A0E3 		mov	r3, #46
+ 2359              	.L15:
+ 2360              		.loc 1 91 0 discriminator 3
+ 2361 0308 0300A0E1 		mov	r0, r3
+ 2362 030c FEFFFFEB 		bl	uart0_putchar
+  90:../lab8.c     ****         for( j=0; j<16; j++ )
+ 2363              		.loc 1 90 0 is_stmt 1 discriminator 3
+ 2364 0310 B0315BE1 		ldrh	r3, [fp, #-16]	@ movhi
+ 2365 0314 013083E2 		add	r3, r3, #1
+ 2366 0318 B0314BE1 		strh	r3, [fp, #-16]	@ movhi
+ 2367              	.L13:
+  90:../lab8.c     ****         for( j=0; j<16; j++ )
+ 2368              		.loc 1 90 0 is_stmt 0 discriminator 1
+ 2369 031c B0315BE1 		ldrh	r3, [fp, #-16]
+ 2370 0320 0F0053E3 		cmp	r3, #15
+ 2371 0324 D6FFFF9A 		bls	.L16
+  75:../lab8.c     ****     for( i=0; i < (AT24C04_DEPTH>>4); i++ ){
+ 2372              		.loc 1 75 0 is_stmt 1
+ 2373 0328 BE305BE1 		ldrh	r3, [fp, #-14]	@ movhi
+ 2374 032c 013083E2 		add	r3, r3, #1
+ 2375 0330 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 2376              	.L7:
+  75:../lab8.c     ****     for( i=0; i < (AT24C04_DEPTH>>4); i++ ){
+ 2377              		.loc 1 75 0 is_stmt 0 discriminator 1
+ 2378 0334 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2379 0338 1F0053E3 		cmp	r3, #31
+ 2380 033c 95FFFF9A 		bls	.L17
+  92:../lab8.c     ****     };
+  93:../lab8.c     **** 
+  94:../lab8.c     ****     /************************************/
+  95:../lab8.c     **** 
+  96:../lab8.c     ****     uart0_puts( "\n\nModificacion del contenido de la memoria IIC-EEPROM AT24C04:\n" );    
+ 2381              		.loc 1 96 0 is_stmt 1
+ 2382 0340 A0029FE5 		ldr	r0, .L29+60
+ 2383 0344 FEFFFFEB 		bl	uart0_puts
+  97:../lab8.c     **** 
+  98:../lab8.c     ****     for( i=0; i<5; i++ )
+ 2384              		.loc 1 98 0
+ 2385 0348 0030A0E3 		mov	r3, #0
+ 2386 034c BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 2387 0350 120000EA 		b	.L18
+ 2388              	.L19:
+  99:../lab8.c     ****     {
+ 100:../lab8.c     ****         uart0_puts( "  - Introduzca una direccion (0h-1ffh): " );
+ 2389              		.loc 1 100 0 discriminator 2
+ 2390 0354 90029FE5 		ldr	r0, .L29+64
+ 2391 0358 FEFFFFEB 		bl	uart0_puts
+ 101:../lab8.c     ****         addr = uart0_gethex( );
+ 2392              		.loc 1 101 0 discriminator 2
+ 2393 035c FEFFFFEB 		bl	uart0_gethex
+ 2394 0360 18000BE5 		str	r0, [fp, #-24]
+ 102:../lab8.c     ****         uart0_puts( "  - Introduzca el dato (0h-ffh): " );
+ 2395              		.loc 1 102 0 discriminator 2
+ 2396 0364 84029FE5 		ldr	r0, .L29+68
+ 2397 0368 FEFFFFEB 		bl	uart0_puts
+ 103:../lab8.c     ****         data = uart0_gethex( );
+ 2398              		.loc 1 103 0 discriminator 2
+ 2399 036c FEFFFFEB 		bl	uart0_gethex
+ 2400 0370 1C000BE5 		str	r0, [fp, #-28]
+ 104:../lab8.c     ****         buffer[addr] = data;
+ 2401              		.loc 1 104 0 discriminator 2
+ 2402 0374 1C301BE5 		ldr	r3, [fp, #-28]
+ 2403 0378 FF2003E2 		and	r2, r3, #255
+ 2404 037c 44329FE5 		ldr	r3, .L29+28
+ 2405 0380 18101BE5 		ldr	r1, [fp, #-24]
+ 2406 0384 0C004BE2 		sub	r0, fp, #12
+ 2407 0388 011080E0 		add	r1, r0, r1
+ 2408 038c 033081E0 		add	r3, r1, r3
+ 2409 0390 0020C3E5 		strb	r2, [r3, #0]
+  98:../lab8.c     ****     for( i=0; i<5; i++ )
+ 2410              		.loc 1 98 0 discriminator 2
+ 2411 0394 BE305BE1 		ldrh	r3, [fp, #-14]	@ movhi
+ 2412 0398 013083E2 		add	r3, r3, #1
+ 2413 039c BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 2414              	.L18:
+  98:../lab8.c     ****     for( i=0; i<5; i++ )
+ 2415              		.loc 1 98 0 is_stmt 0 discriminator 1
+ 2416 03a0 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2417 03a4 040053E3 		cmp	r3, #4
+ 2418 03a8 E9FFFF9A 		bls	.L19
+ 105:../lab8.c     ****     }
+ 106:../lab8.c     **** 
+ 107:../lab8.c     ****     /************************************/
+ 108:../lab8.c     **** 
+ 109:../lab8.c     ****     uart0_puts( "\nVolcando en la IIC-EEPROM AT24C04 el contenido de la RAM:\n" );
+ 2419              		.loc 1 109 0 is_stmt 1
+ 2420 03ac 40029FE5 		ldr	r0, .L29+72
+ 2421 03b0 FEFFFFEB 		bl	uart0_puts
+ 110:../lab8.c     **** 
+ 111:../lab8.c     ****     /************************************/
+ 112:../lab8.c     **** 
+ 113:../lab8.c     ****     timer3_start(); 
+ 2422              		.loc 1 113 0
+ 2423 03b4 FEFFFFEB 		bl	timer3_start
+ 114:../lab8.c     ****     for( i=0; i<AT24C04_DEPTH; i++ )
+ 2424              		.loc 1 114 0
+ 2425 03b8 0030A0E3 		mov	r3, #0
+ 2426 03bc BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 2427 03c0 0C0000EA 		b	.L20
+ 2428              	.L21:
+ 115:../lab8.c     ****         at24c04_bytewrite( i, buffer[i] ); 
+ 2429              		.loc 1 115 0 discriminator 2
+ 2430 03c4 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2431 03c8 F8319FE5 		ldr	r3, .L29+28
+ 2432 03cc 0C104BE2 		sub	r1, fp, #12
+ 2433 03d0 022081E0 		add	r2, r1, r2
+ 2434 03d4 033082E0 		add	r3, r2, r3
+ 2435 03d8 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2436 03dc BE205BE1 		ldrh	r2, [fp, #-14]
+ 2437 03e0 0200A0E1 		mov	r0, r2
+ 2438 03e4 0310A0E1 		mov	r1, r3
+ 2439 03e8 FEFFFFEB 		bl	at24c04_bytewrite
+ 114:../lab8.c     ****     for( i=0; i<AT24C04_DEPTH; i++ )
+ 2440              		.loc 1 114 0 discriminator 2
+ 2441 03ec BE305BE1 		ldrh	r3, [fp, #-14]	@ movhi
+ 2442 03f0 013083E2 		add	r3, r3, #1
+ 2443 03f4 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 2444              	.L20:
+ 114:../lab8.c     ****     for( i=0; i<AT24C04_DEPTH; i++ )
+ 2445              		.loc 1 114 0 is_stmt 0 discriminator 1
+ 2446 03f8 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2447 03fc AC319FE5 		ldr	r3, .L29+4
+ 2448 0400 030052E1 		cmp	r2, r3
+ 2449 0404 EEFFFF9A 		bls	.L21
+ 116:../lab8.c     ****     delay = timer3_stop( );
+ 2450              		.loc 1 116 0 is_stmt 1
+ 2451 0408 FEFFFFEB 		bl	timer3_stop
+ 2452 040c 0030A0E1 		mov	r3, r0
+ 2453 0410 B2314BE1 		strh	r3, [fp, #-18]	@ movhi
+ 117:../lab8.c     ****     uart0_puts( " - Escritura aleatoria (" );
+ 2454              		.loc 1 117 0
+ 2455 0414 DC019FE5 		ldr	r0, .L29+76
+ 2456 0418 FEFFFFEB 		bl	uart0_puts
+ 118:../lab8.c     ****     uart0_putint( AT24C04_DEPTH );
+ 2457              		.loc 1 118 0
+ 2458 041c 020CA0E3 		mov	r0, #512
+ 2459 0420 FEFFFFEB 		bl	uart0_putint
+ 119:../lab8.c     ****     uart0_puts( " bytes): " );
+ 2460              		.loc 1 119 0
+ 2461 0424 8C019FE5 		ldr	r0, .L29+12
+ 2462 0428 FEFFFFEB 		bl	uart0_puts
+ 120:../lab8.c     ****     uart0_putint( delay/10 );
+ 2463              		.loc 1 120 0
+ 2464 042c B2215BE1 		ldrh	r2, [fp, #-18]
+ 2465 0430 84319FE5 		ldr	r3, .L29+16
+ 2466 0434 920383E0 		umull	r0, r3, r2, r3
+ 2467 0438 A331A0E1 		mov	r3, r3, lsr #3
+ 2468 043c 0338A0E1 		mov	r3, r3, asl #16
+ 2469 0440 2338A0E1 		mov	r3, r3, lsr #16
+ 2470 0444 0300A0E1 		mov	r0, r3
+ 2471 0448 FEFFFFEB 		bl	uart0_putint
+ 121:../lab8.c     ****     uart0_puts( " ms\n" );
+ 2472              		.loc 1 121 0
+ 2473 044c 6C019FE5 		ldr	r0, .L29+20
+ 2474 0450 FEFFFFEB 		bl	uart0_puts
+ 122:../lab8.c     **** 
+ 123:../lab8.c     ****     at24c04_load( buffer_aux );
+ 2475              		.loc 1 123 0
+ 2476 0454 413E4BE2 		sub	r3, fp, #1040
+ 2477 0458 0C3043E2 		sub	r3, r3, #12
+ 2478 045c 0300A0E1 		mov	r0, r3
+ 2479 0460 FEFFFFEB 		bl	at24c04_load
+ 124:../lab8.c     ****     for( i=0; i<AT24C04_DEPTH; i++ )
+ 2480              		.loc 1 124 0
+ 2481 0464 0030A0E3 		mov	r3, #0
+ 2482 0468 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 2483 046c 120000EA 		b	.L22
+ 2484              	.L24:
+ 125:../lab8.c     ****         if( buffer[i] != buffer_aux[i] )
+ 2485              		.loc 1 125 0
+ 2486 0470 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2487 0474 4C319FE5 		ldr	r3, .L29+28
+ 2488 0478 0C104BE2 		sub	r1, fp, #12
+ 2489 047c 022081E0 		add	r2, r1, r2
+ 2490 0480 033082E0 		add	r3, r2, r3
+ 2491 0484 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2492 0488 BE105BE1 		ldrh	r1, [fp, #-14]
+ 2493 048c 38319FE5 		ldr	r3, .L29+32
+ 2494 0490 0C004BE2 		sub	r0, fp, #12
+ 2495 0494 011080E0 		add	r1, r0, r1
+ 2496 0498 033081E0 		add	r3, r1, r3
+ 2497 049c 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2498 04a0 030052E1 		cmp	r2, r3
+ 2499 04a4 0100000A 		beq	.L23
+ 126:../lab8.c     ****             uart0_puts( "ERROR: La escritura aleatoria falla.\n" );     
+ 2500              		.loc 1 126 0
+ 2501 04a8 4C019FE5 		ldr	r0, .L29+80
+ 2502 04ac FEFFFFEB 		bl	uart0_puts
+ 2503              	.L23:
+ 124:../lab8.c     ****     for( i=0; i<AT24C04_DEPTH; i++ )
+ 2504              		.loc 1 124 0
+ 2505 04b0 BE305BE1 		ldrh	r3, [fp, #-14]	@ movhi
+ 2506 04b4 013083E2 		add	r3, r3, #1
+ 2507 04b8 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 2508              	.L22:
+ 124:../lab8.c     ****     for( i=0; i<AT24C04_DEPTH; i++ )
+ 2509              		.loc 1 124 0 is_stmt 0 discriminator 1
+ 2510 04bc BE205BE1 		ldrh	r2, [fp, #-14]
+ 2511 04c0 E8309FE5 		ldr	r3, .L29+4
+ 2512 04c4 030052E1 		cmp	r2, r3
+ 2513 04c8 E8FFFF9A 		bls	.L24
+ 127:../lab8.c     **** 
+ 128:../lab8.c     ****     /************************************/
+ 129:../lab8.c     **** 
+ 130:../lab8.c     ****     timer3_start(); 
+ 2514              		.loc 1 130 0 is_stmt 1
+ 2515 04cc FEFFFFEB 		bl	timer3_start
+ 131:../lab8.c     ****     at24c04_store( buffer );
+ 2516              		.loc 1 131 0
+ 2517 04d0 873F4BE2 		sub	r3, fp, #540
+ 2518 04d4 0300A0E1 		mov	r0, r3
+ 2519 04d8 FEFFFFEB 		bl	at24c04_store
+ 132:../lab8.c     ****     delay = timer3_stop( );
+ 2520              		.loc 1 132 0
+ 2521 04dc FEFFFFEB 		bl	timer3_stop
+ 2522 04e0 0030A0E1 		mov	r3, r0
+ 2523 04e4 B2314BE1 		strh	r3, [fp, #-18]	@ movhi
+ 133:../lab8.c     ****     uart0_puts( " - Escritura secuencial (" );
+ 2524              		.loc 1 133 0
+ 2525 04e8 10019FE5 		ldr	r0, .L29+84
+ 2526 04ec FEFFFFEB 		bl	uart0_puts
+ 134:../lab8.c     ****     uart0_putint( AT24C04_DEPTH );
+ 2527              		.loc 1 134 0
+ 2528 04f0 020CA0E3 		mov	r0, #512
+ 2529 04f4 FEFFFFEB 		bl	uart0_putint
+ 135:../lab8.c     ****     uart0_puts( " bytes): " );
+ 2530              		.loc 1 135 0
+ 2531 04f8 B8009FE5 		ldr	r0, .L29+12
+ 2532 04fc FEFFFFEB 		bl	uart0_puts
+ 136:../lab8.c     ****     uart0_putint( delay/10 );
+ 2533              		.loc 1 136 0
+ 2534 0500 B2215BE1 		ldrh	r2, [fp, #-18]
+ 2535 0504 B0309FE5 		ldr	r3, .L29+16
+ 2536 0508 921383E0 		umull	r1, r3, r2, r3
+ 2537 050c A331A0E1 		mov	r3, r3, lsr #3
+ 2538 0510 0338A0E1 		mov	r3, r3, asl #16
+ 2539 0514 2338A0E1 		mov	r3, r3, lsr #16
+ 2540 0518 0300A0E1 		mov	r0, r3
+ 2541 051c FEFFFFEB 		bl	uart0_putint
+ 137:../lab8.c     ****     uart0_puts( " ms\n" );
+ 2542              		.loc 1 137 0
+ 2543 0520 98009FE5 		ldr	r0, .L29+20
+ 2544 0524 FEFFFFEB 		bl	uart0_puts
+ 138:../lab8.c     **** 
+ 139:../lab8.c     ****     at24c04_load( buffer_aux );
+ 2545              		.loc 1 139 0
+ 2546 0528 413E4BE2 		sub	r3, fp, #1040
+ 2547 052c 0C3043E2 		sub	r3, r3, #12
+ 2548 0530 0300A0E1 		mov	r0, r3
+ 2549 0534 FEFFFFEB 		bl	at24c04_load
+ 140:../lab8.c     ****     for( i=0; i<AT24C04_DEPTH; i++ )
+ 2550              		.loc 1 140 0
+ 2551 0538 0030A0E3 		mov	r3, #0
+ 2552 053c BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 2553 0540 120000EA 		b	.L25
+ 2554              	.L27:
+ 141:../lab8.c     ****         if( buffer[i] != buffer_aux[i] )
+ 2555              		.loc 1 141 0
+ 2556 0544 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2557 0548 78309FE5 		ldr	r3, .L29+28
+ 2558 054c 0C004BE2 		sub	r0, fp, #12
+ 2559 0550 022080E0 		add	r2, r0, r2
+ 2560 0554 033082E0 		add	r3, r2, r3
+ 2561 0558 0020D3E5 		ldrb	r2, [r3, #0]	@ zero_extendqisi2
+ 2562 055c BE105BE1 		ldrh	r1, [fp, #-14]
+ 2563 0560 64309FE5 		ldr	r3, .L29+32
+ 2564 0564 0C004BE2 		sub	r0, fp, #12
+ 2565 0568 011080E0 		add	r1, r0, r1
+ 2566 056c 033081E0 		add	r3, r1, r3
+ 2567 0570 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 2568 0574 030052E1 		cmp	r2, r3
+ 2569 0578 0100000A 		beq	.L26
+ 142:../lab8.c     ****             uart0_puts( "ERROR: La escritura secuencial falla.\n" );     
+ 2570              		.loc 1 142 0
+ 2571 057c 80009FE5 		ldr	r0, .L29+88
+ 2572 0580 FEFFFFEB 		bl	uart0_puts
+ 2573              	.L26:
+ 140:../lab8.c     ****     for( i=0; i<AT24C04_DEPTH; i++ )
+ 2574              		.loc 1 140 0
+ 2575 0584 BE305BE1 		ldrh	r3, [fp, #-14]	@ movhi
+ 2576 0588 013083E2 		add	r3, r3, #1
+ 2577 058c BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 2578              	.L25:
+ 140:../lab8.c     ****     for( i=0; i<AT24C04_DEPTH; i++ )
+ 2579              		.loc 1 140 0 is_stmt 0 discriminator 1
+ 2580 0590 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2581 0594 14309FE5 		ldr	r3, .L29+4
+ 2582 0598 030052E1 		cmp	r2, r3
+ 2583 059c E8FFFF9A 		bls	.L27
+ 143:../lab8.c     **** 
+ 144:../lab8.c     ****     /************************************/
+ 145:../lab8.c     **** 
+ 146:../lab8.c     ****     uart0_puts( "\nApague la placa y vuelva a cargar y ejecutar el programa.\n" );    
+ 2584              		.loc 1 146 0 is_stmt 1
+ 2585 05a0 60009FE5 		ldr	r0, .L29+92
+ 2586 05a4 FEFFFFEB 		bl	uart0_puts
+ 2587              	.L28:
+ 147:../lab8.c     **** 
+ 148:../lab8.c     ****     /************************************/
+ 149:../lab8.c     **** 
+ 150:../lab8.c     ****     while( 1 );
+ 2588              		.loc 1 150 0 discriminator 1
+ 2589 05a8 FEFFFFEA 		b	.L28
+ 2590              	.L30:
+ 2591              		.align	2
+ 2592              	.L29:
+ 2593 05ac 00000000 		.word	.LC0
+ 2594 05b0 FF010000 		.word	511
+ 2595 05b4 38000000 		.word	.LC1
+ 2596 05b8 50000000 		.word	.LC2
+ 2597 05bc CDCCCCCC 		.word	-858993459
+ 2598 05c0 5C000000 		.word	.LC3
+ 2599 05c4 64000000 		.word	.LC4
+ 2600 05c8 F0FDFFFF 		.word	-528
+ 2601 05cc F0FBFFFF 		.word	-1040
+ 2602 05d0 7C000000 		.word	.LC5
+ 2603 05d4 B8000000 		.word	.LC6
+ 2604 05d8 FC000000 		.word	.LC7
+ 2605 05dc 00010000 		.word	.LC8
+ 2606 05e0 04010000 		.word	.LC9
+ 2607 05e4 08010000 		.word	.LC10
+ 2608 05e8 0C010000 		.word	.LC11
+ 2609 05ec 4C010000 		.word	.LC12
+ 2610 05f0 78010000 		.word	.LC13
+ 2611 05f4 9C010000 		.word	.LC14
+ 2612 05f8 D8010000 		.word	.LC15
+ 2613 05fc F4010000 		.word	.LC16
+ 2614 0600 1C020000 		.word	.LC17
+ 2615 0604 38020000 		.word	.LC18
+ 2616 0608 60020000 		.word	.LC19
+ 2617              		.cfi_endproc
+ 2618              	.LFE0:
+ 2620              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 lab8.c
+C:\Users\Muadi\AppData\Local\Temp\ccCgpchV.s:2019   .rodata:00000000 $d
+C:\Users\Muadi\AppData\Local\Temp\ccCgpchV.s:2086   .text:00000000 $a
+C:\Users\Muadi\AppData\Local\Temp\ccCgpchV.s:2089   .text:00000000 main
+C:\Users\Muadi\AppData\Local\Temp\ccCgpchV.s:2593   .text:000005ac $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+sys_init
+uart0_init
+timers_init
+iic_init
+uart0_puts
+timer3_start
+at24c04_byteread
+timer3_stop
+uart0_putint
+at24c04_load
+uart0_putchar
+uart0_puthex
+uart0_gethex
+at24c04_bytewrite
+at24c04_store

@@ -1,0 +1,381 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"lab7.c"
+  21              	.Ltext0:
+  22              		.file 1 "../lab7.c"
+ 1810              		.align	2
+ 1811              	.LC0:
+ 1812 0000 41424344 		.ascii	"ABCDEFGHIJKLMN\321OPQRSTUVWXYZ\000"
+ 1812      45464748 
+ 1812      494A4B4C 
+ 1812      4D4ED14F 
+ 1812      50515253 
+ 1813              		.align	2
+ 1814              	.LC1:
+ 1815 001c 61626364 		.ascii	"abcdefghijklmn\361opqrstuvwxyz\000"
+ 1815      65666768 
+ 1815      696A6B6C 
+ 1815      6D6EF16F 
+ 1815      70717273 
+ 1816              		.align	2
+ 1817              	.LC2:
+ 1818 0038 30313233 		.ascii	"0123456789!$%&/()=^*+{}-.,;: \000"
+ 1818      34353637 
+ 1818      38392124 
+ 1818      25262F28 
+ 1818      293D5E2A 
+ 1819 0056 0000     		.align	2
+ 1820              	.LC3:
+ 1821 0058 41424344 		.ascii	"ABCDEFGHIJKLMN\321OP\000"
+ 1821      45464748 
+ 1821      494A4B4C 
+ 1821      4D4ED14F 
+ 1821      5000
+ 1822 006a 0000     		.align	2
+ 1823              	.LC4:
+ 1824 006c 61626364 		.ascii	"abcdefghijklmn\361op\000"
+ 1824      65666768 
+ 1824      696A6B6C 
+ 1824      6D6EF16F 
+ 1824      7000
+ 1825 007e 0000     		.align	2
+ 1826              	.LC5:
+ 1827 0080 30313233 		.ascii	"0123456789!$%&/()\000"
+ 1827      34353637 
+ 1827      38392124 
+ 1827      25262F28 
+ 1827      2900
+ 1828 0092 0000     		.text
+ 1829              		.align	2
+ 1830              		.global	main
+ 1832              	main:
+ 1833              	.LFB0:
+   1:../lab7.c     **** /*-------------------------------------------------------------------
+   2:../lab7.c     **** **
+   3:../lab7.c     **** **  Fichero:
+   4:../lab7.c     **** **    lab7.c  5/3/2015
+   5:../lab7.c     **** **
+   6:../lab7.c     **** **    (c) J.M. Mendias
+   7:../lab7.c     **** **    Programación de Sistemas y Dispositivos
+   8:../lab7.c     **** **    Facultad de Informática. Universidad Complutense de Madrid
+   9:../lab7.c     **** **
+  10:../lab7.c     **** **  Propósito:
+  11:../lab7.c     **** **    Test del laboratorio 7
+  12:../lab7.c     **** **
+  13:../lab7.c     **** **  Notas de diseño:
+  14:../lab7.c     **** **
+  15:../lab7.c     **** **-----------------------------------------------------------------*/
+  16:../lab7.c     **** 
+  17:../lab7.c     **** #include <s3c44b0x.h>
+  18:../lab7.c     **** #include <common_types.h>
+  19:../lab7.c     **** #include <system.h>
+  20:../lab7.c     **** #include <lcd.h>
+  21:../lab7.c     **** 
+  22:../lab7.c     **** /*
+  23:../lab7.c     **** ** Direcciones en donde se encuentran cargados los BMP tras la ejecucion en
+  24:../lab7.c     **** ** la consola del depurador los comandos:
+  25:../lab7.c     **** **   cd <ruta>
+  26:../lab7.c     **** **   source load_bmp.txt
+  27:../lab7.c     **** */
+  28:../lab7.c     **** 
+  29:../lab7.c     **** #define ARBOL      ((uint8 *)0x0c210000)
+  30:../lab7.c     **** #define PADRINO    ((uint8 *)0x0c220000)
+  31:../lab7.c     **** #define PICACHU    ((uint8 *)0x0c230000)
+  32:../lab7.c     **** #define HARRY      ((uint8 *)0x0c240000)
+  33:../lab7.c     **** #define CHAPLIN    ((uint8 *)0x0c250000)
+  34:../lab7.c     **** #define PULP       ((uint8 *)0x0c260000)
+  35:../lab7.c     **** #define MAPA       ((uint8 *)0x0c270000)
+  36:../lab7.c     **** 
+  37:../lab7.c     **** void delay( void );
+  38:../lab7.c     **** 
+  39:../lab7.c     **** void main( void )
+  40:../lab7.c     **** {
+ 1834              		.loc 1 40 0
+ 1835              		.cfi_startproc
+ 1836              		@ Function supports interworking.
+ 1837              		@ args = 0, pretend = 0, frame = 0
+ 1838              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1839 0000 0DC0A0E1 		mov	ip, sp
+ 1840              	.LCFI0:
+ 1841              		.cfi_def_cfa_register 12
+ 1842 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1843 0008 04B04CE2 		sub	fp, ip, #4
+ 1844              		.cfi_offset 14, -8
+ 1845              		.cfi_offset 13, -12
+ 1846              		.cfi_offset 11, -16
+ 1847              	.LCFI1:
+ 1848              		.cfi_def_cfa 11, 4
+ 1849 000c 08D04DE2 		sub	sp, sp, #8
+  41:../lab7.c     ****     sys_init();
+ 1850              		.loc 1 41 0
+ 1851 0010 FEFFFFEB 		bl	sys_init
+  42:../lab7.c     ****     lcd_init();
+ 1852              		.loc 1 42 0
+ 1853 0014 FEFFFFEB 		bl	lcd_init
+  43:../lab7.c     ****     
+  44:../lab7.c     ****     lcd_clear();
+ 1854              		.loc 1 44 0
+ 1855 0018 FEFFFFEB 		bl	lcd_clear
+  45:../lab7.c     ****     lcd_on();
+ 1856              		.loc 1 45 0
+ 1857 001c FEFFFFEB 		bl	lcd_on
+ 1858              	.L2:
+  46:../lab7.c     ****     
+  47:../lab7.c     ****     while( 1 )
+  48:../lab7.c     ****     {
+  49:../lab7.c     ****         /************************************/
+  50:../lab7.c     **** 
+  51:../lab7.c     ****         lcd_draw_box( 10, 10, 310, 230, BLACK, 5 );
+ 1859              		.loc 1 51 0 discriminator 1
+ 1860 0020 0F30A0E3 		mov	r3, #15
+ 1861 0024 00308DE5 		str	r3, [sp, #0]
+ 1862 0028 0530A0E3 		mov	r3, #5
+ 1863 002c 04308DE5 		str	r3, [sp, #4]
+ 1864 0030 0A00A0E3 		mov	r0, #10
+ 1865 0034 0A10A0E3 		mov	r1, #10
+ 1866 0038 2C219FE5 		ldr	r2, .L3
+ 1867 003c E630A0E3 		mov	r3, #230
+ 1868 0040 FEFFFFEB 		bl	lcd_draw_box
+  52:../lab7.c     **** 
+  53:../lab7.c     ****         /************************************/
+  54:../lab7.c     **** 
+  55:../lab7.c     ****         lcd_puts( 20, 16, BLACK, "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ" );
+ 1869              		.loc 1 55 0 discriminator 1
+ 1870 0044 1400A0E3 		mov	r0, #20
+ 1871 0048 1010A0E3 		mov	r1, #16
+ 1872 004c 0F20A0E3 		mov	r2, #15
+ 1873 0050 18319FE5 		ldr	r3, .L3+4
+ 1874 0054 FEFFFFEB 		bl	lcd_puts
+  56:../lab7.c     ****         lcd_puts( 20, 32, BLACK, "abcdefghijklmnñopqrstuvwxyz" );
+ 1875              		.loc 1 56 0 discriminator 1
+ 1876 0058 1400A0E3 		mov	r0, #20
+ 1877 005c 2010A0E3 		mov	r1, #32
+ 1878 0060 0F20A0E3 		mov	r2, #15
+ 1879 0064 08319FE5 		ldr	r3, .L3+8
+ 1880 0068 FEFFFFEB 		bl	lcd_puts
+  57:../lab7.c     ****         lcd_puts( 20, 48, BLACK, "0123456789!$%&/()=^*+{}-.,;: " );
+ 1881              		.loc 1 57 0 discriminator 1
+ 1882 006c 1400A0E3 		mov	r0, #20
+ 1883 0070 3010A0E3 		mov	r1, #48
+ 1884 0074 0F20A0E3 		mov	r2, #15
+ 1885 0078 F8309FE5 		ldr	r3, .L3+12
+ 1886 007c FEFFFFEB 		bl	lcd_puts
+  58:../lab7.c     ****         lcd_putint( 20, 64, BLACK, 1234567890 );
+ 1887              		.loc 1 58 0 discriminator 1
+ 1888 0080 1400A0E3 		mov	r0, #20
+ 1889 0084 4010A0E3 		mov	r1, #64
+ 1890 0088 0F20A0E3 		mov	r2, #15
+ 1891 008c E8309FE5 		ldr	r3, .L3+16
+ 1892 0090 FEFFFFEB 		bl	lcd_putint
+  59:../lab7.c     ****         lcd_puthex( 108, 64, BLACK, 0xabcdef );
+ 1893              		.loc 1 59 0 discriminator 1
+ 1894 0094 6C00A0E3 		mov	r0, #108
+ 1895 0098 4010A0E3 		mov	r1, #64
+ 1896 009c 0F20A0E3 		mov	r2, #15
+ 1897 00a0 D8309FE5 		ldr	r3, .L3+20
+ 1898 00a4 FEFFFFEB 		bl	lcd_puthex
+  60:../lab7.c     **** 
+  61:../lab7.c     ****         /************************************/
+  62:../lab7.c     **** 
+  63:../lab7.c     ****         lcd_puts_x2( 20, 80, BLACK, "ABCDEFGHIJKLMNÑOP" );
+ 1899              		.loc 1 63 0 discriminator 1
+ 1900 00a8 1400A0E3 		mov	r0, #20
+ 1901 00ac 5010A0E3 		mov	r1, #80
+ 1902 00b0 0F20A0E3 		mov	r2, #15
+ 1903 00b4 C8309FE5 		ldr	r3, .L3+24
+ 1904 00b8 FEFFFFEB 		bl	lcd_puts_x2
+  64:../lab7.c     ****         lcd_puts_x2( 20, 112, BLACK, "abcdefghijklmnñop" );
+ 1905              		.loc 1 64 0 discriminator 1
+ 1906 00bc 1400A0E3 		mov	r0, #20
+ 1907 00c0 7010A0E3 		mov	r1, #112
+ 1908 00c4 0F20A0E3 		mov	r2, #15
+ 1909 00c8 B8309FE5 		ldr	r3, .L3+28
+ 1910 00cc FEFFFFEB 		bl	lcd_puts_x2
+  65:../lab7.c     ****         lcd_puts_x2( 20, 144, BLACK, "0123456789!$%&/()" );
+ 1911              		.loc 1 65 0 discriminator 1
+ 1912 00d0 1400A0E3 		mov	r0, #20
+ 1913 00d4 9010A0E3 		mov	r1, #144
+ 1914 00d8 0F20A0E3 		mov	r2, #15
+ 1915 00dc A8309FE5 		ldr	r3, .L3+32
+ 1916 00e0 FEFFFFEB 		bl	lcd_puts_x2
+  66:../lab7.c     ****         lcd_putint_x2( 20, 176, BLACK, 1234567890 );
+ 1917              		.loc 1 66 0 discriminator 1
+ 1918 00e4 1400A0E3 		mov	r0, #20
+ 1919 00e8 B010A0E3 		mov	r1, #176
+ 1920 00ec 0F20A0E3 		mov	r2, #15
+ 1921 00f0 84309FE5 		ldr	r3, .L3+16
+ 1922 00f4 FEFFFFEB 		bl	lcd_putint_x2
+  67:../lab7.c     ****         lcd_puthex_x2( 196, 176, BLACK, 0xabcdef );
+ 1923              		.loc 1 67 0 discriminator 1
+ 1924 00f8 C400A0E3 		mov	r0, #196
+ 1925 00fc B010A0E3 		mov	r1, #176
+ 1926 0100 0F20A0E3 		mov	r2, #15
+ 1927 0104 74309FE5 		ldr	r3, .L3+20
+ 1928 0108 FEFFFFEB 		bl	lcd_puthex_x2
+  68:../lab7.c     **** 
+  69:../lab7.c     ****         /************************************/
+  70:../lab7.c     **** 
+  71:../lab7.c     ****         delay();
+ 1929              		.loc 1 71 0 discriminator 1
+ 1930 010c FEFFFFEB 		bl	delay
+  72:../lab7.c     ****         lcd_putWallpaper( ARBOL );
+ 1931              		.loc 1 72 0 discriminator 1
+ 1932 0110 78009FE5 		ldr	r0, .L3+36
+ 1933 0114 FEFFFFEB 		bl	lcd_putWallpaper
+  73:../lab7.c     ****         delay();
+ 1934              		.loc 1 73 0 discriminator 1
+ 1935 0118 FEFFFFEB 		bl	delay
+  74:../lab7.c     ****         lcd_putWallpaper( PADRINO );
+ 1936              		.loc 1 74 0 discriminator 1
+ 1937 011c 70009FE5 		ldr	r0, .L3+40
+ 1938 0120 FEFFFFEB 		bl	lcd_putWallpaper
+  75:../lab7.c     ****         delay();
+ 1939              		.loc 1 75 0 discriminator 1
+ 1940 0124 FEFFFFEB 		bl	delay
+  76:../lab7.c     ****         lcd_putWallpaper( PICACHU );
+ 1941              		.loc 1 76 0 discriminator 1
+ 1942 0128 68009FE5 		ldr	r0, .L3+44
+ 1943 012c FEFFFFEB 		bl	lcd_putWallpaper
+  77:../lab7.c     ****         delay();
+ 1944              		.loc 1 77 0 discriminator 1
+ 1945 0130 FEFFFFEB 		bl	delay
+  78:../lab7.c     ****         lcd_putWallpaper( HARRY );
+ 1946              		.loc 1 78 0 discriminator 1
+ 1947 0134 60009FE5 		ldr	r0, .L3+48
+ 1948 0138 FEFFFFEB 		bl	lcd_putWallpaper
+  79:../lab7.c     ****         delay();
+ 1949              		.loc 1 79 0 discriminator 1
+ 1950 013c FEFFFFEB 		bl	delay
+  80:../lab7.c     ****         lcd_putWallpaper( CHAPLIN );
+ 1951              		.loc 1 80 0 discriminator 1
+ 1952 0140 58009FE5 		ldr	r0, .L3+52
+ 1953 0144 FEFFFFEB 		bl	lcd_putWallpaper
+  81:../lab7.c     ****         delay();
+ 1954              		.loc 1 81 0 discriminator 1
+ 1955 0148 FEFFFFEB 		bl	delay
+  82:../lab7.c     ****         lcd_putWallpaper( PULP );
+ 1956              		.loc 1 82 0 discriminator 1
+ 1957 014c 50009FE5 		ldr	r0, .L3+56
+ 1958 0150 FEFFFFEB 		bl	lcd_putWallpaper
+  83:../lab7.c     ****         delay();
+ 1959              		.loc 1 83 0 discriminator 1
+ 1960 0154 FEFFFFEB 		bl	delay
+  84:../lab7.c     ****         lcd_putWallpaper( MAPA );
+ 1961              		.loc 1 84 0 discriminator 1
+ 1962 0158 48009FE5 		ldr	r0, .L3+60
+ 1963 015c FEFFFFEB 		bl	lcd_putWallpaper
+  85:../lab7.c     **** 
+  86:../lab7.c     ****         /************************************/
+  87:../lab7.c     **** 
+  88:../lab7.c     ****         delay();
+ 1964              		.loc 1 88 0 discriminator 1
+ 1965 0160 FEFFFFEB 		bl	delay
+  89:../lab7.c     ****         lcd_clear();
+ 1966              		.loc 1 89 0 discriminator 1
+ 1967 0164 FEFFFFEB 		bl	lcd_clear
+  90:../lab7.c     ****     }
+ 1968              		.loc 1 90 0 discriminator 1
+ 1969 0168 ACFFFFEA 		b	.L2
+ 1970              	.L4:
+ 1971              		.align	2
+ 1972              	.L3:
+ 1973 016c 36010000 		.word	310
+ 1974 0170 00000000 		.word	.LC0
+ 1975 0174 1C000000 		.word	.LC1
+ 1976 0178 38000000 		.word	.LC2
+ 1977 017c D2029649 		.word	1234567890
+ 1978 0180 EFCDAB00 		.word	11259375
+ 1979 0184 58000000 		.word	.LC3
+ 1980 0188 6C000000 		.word	.LC4
+ 1981 018c 80000000 		.word	.LC5
+ 1982 0190 0000210C 		.word	203489280
+ 1983 0194 0000220C 		.word	203554816
+ 1984 0198 0000230C 		.word	203620352
+ 1985 019c 0000240C 		.word	203685888
+ 1986 01a0 0000250C 		.word	203751424
+ 1987 01a4 0000260C 		.word	203816960
+ 1988 01a8 0000270C 		.word	203882496
+ 1989              		.cfi_endproc
+ 1990              	.LFE0:
+ 1992              		.align	2
+ 1993              		.global	delay
+ 1995              	delay:
+ 1996              	.LFB1:
+  91:../lab7.c     **** }
+  92:../lab7.c     **** 
+  93:../lab7.c     **** void delay( void )
+  94:../lab7.c     **** {
+ 1997              		.loc 1 94 0
+ 1998              		.cfi_startproc
+ 1999              		@ Function supports interworking.
+ 2000              		@ args = 0, pretend = 0, frame = 0
+ 2001              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2002 01ac 0DC0A0E1 		mov	ip, sp
+ 2003              	.LCFI2:
+ 2004              		.cfi_def_cfa_register 12
+ 2005 01b0 10D82DE9 		stmfd	sp!, {r4, fp, ip, lr, pc}
+ 2006 01b4 04B04CE2 		sub	fp, ip, #4
+ 2007              		.cfi_offset 14, -8
+ 2008              		.cfi_offset 13, -12
+ 2009              		.cfi_offset 11, -16
+ 2010              		.cfi_offset 4, -20
+ 2011              	.LCFI3:
+ 2012              		.cfi_def_cfa 11, 4
+  95:../lab7.c     ****     register uint32 i;
+  96:../lab7.c     **** 
+  97:../lab7.c     ****     for( i=0; i<2000000; i++ );
+ 2013              		.loc 1 97 0
+ 2014 01b8 0040A0E3 		mov	r4, #0
+ 2015 01bc 000000EA 		b	.L6
+ 2016              	.L7:
+ 2017              		.loc 1 97 0 is_stmt 0 discriminator 2
+ 2018 01c0 014084E2 		add	r4, r4, #1
+ 2019              	.L6:
+ 2020              		.loc 1 97 0 discriminator 1
+ 2021 01c4 10309FE5 		ldr	r3, .L8
+ 2022 01c8 030054E1 		cmp	r4, r3
+ 2023 01cc FBFFFF9A 		bls	.L7
+  98:../lab7.c     **** } ...
+ 2024              		.loc 1 98 0 is_stmt 1
+ 2025 01d0 10D04BE2 		sub	sp, fp, #16
+ 2026 01d4 10689DE8 		ldmfd	sp, {r4, fp, sp, lr}
+ 2027 01d8 1EFF2FE1 		bx	lr
+ 2028              	.L9:
+ 2029              		.align	2
+ 2030              	.L8:
+ 2031 01dc 7F841E00 		.word	1999999
+ 2032              		.cfi_endproc
+ 2033              	.LFE1:
+ 2035              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 lab7.c
+C:\Users\Muadi\AppData\Local\Temp\cclCZq9L.s:1810   .rodata:00000000 $d
+C:\Users\Muadi\AppData\Local\Temp\cclCZq9L.s:1829   .text:00000000 $a
+C:\Users\Muadi\AppData\Local\Temp\cclCZq9L.s:1832   .text:00000000 main
+C:\Users\Muadi\AppData\Local\Temp\cclCZq9L.s:1995   .text:000001ac delay
+C:\Users\Muadi\AppData\Local\Temp\cclCZq9L.s:1973   .text:0000016c $d
+C:\Users\Muadi\AppData\Local\Temp\cclCZq9L.s:1992   .text:000001ac $a
+C:\Users\Muadi\AppData\Local\Temp\cclCZq9L.s:2031   .text:000001dc $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+sys_init
+lcd_init
+lcd_clear
+lcd_on
+lcd_draw_box
+lcd_puts
+lcd_putint
+lcd_puthex
+lcd_puts_x2
+lcd_putint_x2
+lcd_puthex_x2
+lcd_putWallpaper

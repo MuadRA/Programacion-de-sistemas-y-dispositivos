@@ -1,0 +1,1231 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"lab10.c"
+  21              	.Ltext0:
+  22              		.file 1 "../lab10.c"
+ 1834              		.align	2
+ 1835              	.LC0:
+ 1836 0000 0A0A5075 		.ascii	"\012\012Pulse la pantalla LCD:\012\000"
+ 1836      6C736520 
+ 1836      6C612070 
+ 1836      616E7461 
+ 1836      6C6C6120 
+ 1837 001a 0000     		.align	2
+ 1838              	.LC1:
+ 1839 001c 20202D20 		.ascii	"  - Ha pulsado en la posicion (\000"
+ 1839      48612070 
+ 1839      756C7361 
+ 1839      646F2065 
+ 1839      6E206C61 
+ 1840              		.align	2
+ 1841              	.LC2:
+ 1842 003c 2C2000   		.ascii	", \000"
+ 1843 003f 00       		.align	2
+ 1844              	.LC3:
+ 1845 0040 29206475 		.ascii	") durante \000"
+ 1845      72616E74 
+ 1845      652000
+ 1846 004b 00       		.align	2
+ 1847              	.LC4:
+ 1848 004c 206D730A 		.ascii	" ms\012\000"
+ 1848      00
+ 1849 0051 000000   		.text
+ 1850              		.align	2
+ 1851              		.global	main
+ 1853              	main:
+ 1854              	.LFB0:
+   1:../lab10.c    **** /*-------------------------------------------------------------------
+   2:../lab10.c    **** **
+   3:../lab10.c    **** **  Fichero:
+   4:../lab10.c    **** **    lab10.c  11/3/2015
+   5:../lab10.c    **** **
+   6:../lab10.c    **** **    (c) J.M. Mendias
+   7:../lab10.c    **** **    Programación de Sistemas y Dispositivos
+   8:../lab10.c    **** **    Facultad de Informática. Universidad Complutense de Madrid
+   9:../lab10.c    **** **
+  10:../lab10.c    **** **  Propósito:
+  11:../lab10.c    **** **    Test del laboratorio 10
+  12:../lab10.c    **** **
+  13:../lab10.c    **** **  Notas de diseño:
+  14:../lab10.c    **** **
+  15:../lab10.c    **** **-----------------------------------------------------------------*/
+  16:../lab10.c    **** 
+  17:../lab10.c    **** #include <s3c44b0x.h>
+  18:../lab10.c    **** #include <common_types.h>
+  19:../lab10.c    **** #include <system.h>
+  20:../lab10.c    **** #include <uart.h>
+  21:../lab10.c    **** #include <timers.h>
+  22:../lab10.c    **** #include <lcd.h>
+  23:../lab10.c    **** #include <ts.h>
+  24:../lab10.c    **** 
+  25:../lab10.c    **** void lcd_draw_grid( void );
+  26:../lab10.c    **** 
+  27:../lab10.c    **** void main( void )
+  28:../lab10.c    **** {
+ 1855              		.loc 1 28 0
+ 1856              		.cfi_startproc
+ 1857              		@ Function supports interworking.
+ 1858              		@ args = 0, pretend = 0, frame = 8
+ 1859              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1860 0000 0DC0A0E1 		mov	ip, sp
+ 1861              	.LCFI0:
+ 1862              		.cfi_def_cfa_register 12
+ 1863 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1864 0008 04B04CE2 		sub	fp, ip, #4
+ 1865              		.cfi_offset 14, -8
+ 1866              		.cfi_offset 13, -12
+ 1867              		.cfi_offset 11, -16
+ 1868              	.LCFI1:
+ 1869              		.cfi_def_cfa 11, 4
+ 1870 000c 08D04DE2 		sub	sp, sp, #8
+  29:../lab10.c    ****     uint16 x, y, ms;
+  30:../lab10.c    **** 
+  31:../lab10.c    ****     sys_init();
+ 1871              		.loc 1 31 0
+ 1872 0010 FEFFFFEB 		bl	sys_init
+  32:../lab10.c    ****     uart0_init();
+ 1873              		.loc 1 32 0
+ 1874 0014 FEFFFFEB 		bl	uart0_init
+  33:../lab10.c    ****     timers_init();
+ 1875              		.loc 1 33 0
+ 1876 0018 FEFFFFEB 		bl	timers_init
+  34:../lab10.c    ****     lcd_init();
+ 1877              		.loc 1 34 0
+ 1878 001c FEFFFFEB 		bl	lcd_init
+  35:../lab10.c    ****     ts_init();
+ 1879              		.loc 1 35 0
+ 1880 0020 FEFFFFEB 		bl	ts_init
+  36:../lab10.c    ****     
+  37:../lab10.c    ****     lcd_clear();
+ 1881              		.loc 1 37 0
+ 1882 0024 FEFFFFEB 		bl	lcd_clear
+  38:../lab10.c    ****     lcd_on();
+ 1883              		.loc 1 38 0
+ 1884 0028 FEFFFFEB 		bl	lcd_on
+  39:../lab10.c    ****     ts_on();
+ 1885              		.loc 1 39 0
+ 1886 002c FEFFFFEB 		bl	ts_on
+  40:../lab10.c    ****     lcd_draw_grid();
+ 1887              		.loc 1 40 0
+ 1888 0030 FEFFFFEB 		bl	lcd_draw_grid
+  41:../lab10.c    ****     
+  42:../lab10.c    ****     uart0_puts( "\n\nPulse la pantalla LCD:\n" );
+ 1889              		.loc 1 42 0
+ 1890 0034 D4069FE5 		ldr	r0, .L23
+ 1891 0038 FEFFFFEB 		bl	uart0_puts
+ 1892 003c 060000EA 		b	.L18
+ 1893              	.L19:
+  43:../lab10.c    **** 
+  44:../lab10.c    ****     while( 1 )
+  45:../lab10.c    ****     {
+  46:../lab10.c    ****         ts_getpostime( &x, &y, &ms );
+  47:../lab10.c    ****         uart0_puts( "  - Ha pulsado en la posicion (" );
+  48:../lab10.c    ****         uart0_putint( x );
+  49:../lab10.c    ****         uart0_puts( ", " );
+  50:../lab10.c    ****         uart0_putint( y );
+  51:../lab10.c    ****         uart0_puts( ") durante " );
+  52:../lab10.c    ****         uart0_putint( ms );
+  53:../lab10.c    ****         uart0_puts( " ms\n" );
+  54:../lab10.c    ****         if( x>0 && y>0 && x<79 && y<59 )
+  55:../lab10.c    ****         {
+  56:../lab10.c    ****             lcd_putchar_x2(  32,  16, WHITE, '0' );    
+  57:../lab10.c    ****             sw_delay_ms( 200 );
+  58:../lab10.c    ****             lcd_putchar_x2(  32,  16, BLACK, '0' );    
+  59:../lab10.c    ****         } 
+  60:../lab10.c    ****         else if( x>79 && y>0 && x<159 && y<59 )
+  61:../lab10.c    ****         {
+  62:../lab10.c    ****             lcd_putchar_x2( 112,  16, WHITE, '1' );
+  63:../lab10.c    ****             sw_delay_ms( 200 );
+  64:../lab10.c    ****             lcd_putchar_x2( 112,  16, BLACK, '1' );
+  65:../lab10.c    ****         } 
+  66:../lab10.c    ****         else if( x>159 && y>0 && x<239 && y<59 )
+  67:../lab10.c    ****         {
+  68:../lab10.c    ****             lcd_putchar_x2( 192,  16, WHITE, '2' );        
+  69:../lab10.c    ****             sw_delay_ms( 200 );
+  70:../lab10.c    ****             lcd_putchar_x2( 192,  16, BLACK, '2' );
+  71:../lab10.c    ****         }
+  72:../lab10.c    ****         else if( x>239 && y>0 && x<319 && y<59 )
+  73:../lab10.c    ****         {        
+  74:../lab10.c    ****             lcd_putchar_x2( 272,  16, WHITE, '3' );        
+  75:../lab10.c    ****             sw_delay_ms( 200 );
+  76:../lab10.c    ****             lcd_putchar_x2( 272,  16, BLACK, '3' );
+  77:../lab10.c    ****         }
+  78:../lab10.c    ****         else if( x>0 && y>59 && x<79 && y<119 )
+  79:../lab10.c    ****         {                    
+  80:../lab10.c    ****             lcd_putchar_x2(  32,  76, WHITE, '4' );
+  81:../lab10.c    ****             sw_delay_ms( 200 );
+  82:../lab10.c    ****             lcd_putchar_x2(  32,  76, BLACK, '4' );                            
+  83:../lab10.c    ****         }
+  84:../lab10.c    ****         else if( x>79 && y>59 && x<159 && y<119 )
+  85:../lab10.c    ****         {    
+  86:../lab10.c    ****             lcd_putchar_x2( 112,  76, WHITE, '5' );
+  87:../lab10.c    ****             sw_delay_ms( 200 );
+  88:../lab10.c    ****             lcd_putchar_x2( 112,  76, BLACK, '5' );
+  89:../lab10.c    ****         }
+  90:../lab10.c    ****         else if( x>159 && y>59 && x<239 && y<119 )
+  91:../lab10.c    ****         {
+  92:../lab10.c    ****             lcd_putchar_x2( 192,  76, WHITE, '6' );
+  93:../lab10.c    ****             sw_delay_ms( 200 );
+  94:../lab10.c    ****             lcd_putchar_x2( 192,  76, BLACK, '6' );
+  95:../lab10.c    ****         }
+  96:../lab10.c    ****         else if( x>239 && y>59 && x<319 && y<119 )
+  97:../lab10.c    ****         {        
+  98:../lab10.c    ****             lcd_putchar_x2( 272,  76, WHITE, '7' );
+  99:../lab10.c    ****             sw_delay_ms( 200 );
+ 100:../lab10.c    ****             lcd_putchar_x2( 272,  76, BLACK, '7' );
+ 101:../lab10.c    ****         }
+ 102:../lab10.c    ****         else if( x>0 && y>119 && x<79 && y<179 )
+ 103:../lab10.c    ****         {        
+ 104:../lab10.c    ****             lcd_putchar_x2(  32, 136, WHITE, '8' );
+ 105:../lab10.c    ****             sw_delay_ms( 200 );
+ 106:../lab10.c    ****             lcd_putchar_x2(  32, 136, BLACK, '8' );
+ 107:../lab10.c    ****         }
+ 108:../lab10.c    ****         else if( x>79 && y>119 && x<159 && y<179 )
+ 109:../lab10.c    ****         {
+ 110:../lab10.c    ****             lcd_putchar_x2( 112, 136, WHITE, '9' );        
+ 111:../lab10.c    ****             sw_delay_ms( 200 );
+ 112:../lab10.c    ****             lcd_putchar_x2( 112, 136, BLACK, '9' );        
+ 113:../lab10.c    ****         }
+ 114:../lab10.c    ****         else if( x>159 && y>119 && x<239 && y<179 )
+ 115:../lab10.c    ****         {
+ 116:../lab10.c    ****             lcd_putchar_x2( 192, 136, WHITE, 'A' );        
+ 117:../lab10.c    ****             sw_delay_ms( 200 );
+ 118:../lab10.c    ****             lcd_putchar_x2( 192, 136, BLACK, 'A' );        
+ 119:../lab10.c    ****         }
+ 120:../lab10.c    ****         else if( x>239 && y>119 && x<319 && y<179 )
+ 121:../lab10.c    ****         {
+ 122:../lab10.c    ****             lcd_putchar_x2( 272, 136, WHITE, 'B' );
+ 123:../lab10.c    ****             sw_delay_ms( 200 );
+ 124:../lab10.c    ****             lcd_putchar_x2( 272, 136, BLACK, 'B' );
+ 125:../lab10.c    ****         }
+ 126:../lab10.c    ****         else if( x>0 && y>179 && x<79 && y<239 )
+ 127:../lab10.c    ****         {
+ 128:../lab10.c    ****             lcd_putchar_x2(  32, 196, WHITE, 'C' );
+ 129:../lab10.c    ****             sw_delay_ms( 200 );
+ 130:../lab10.c    ****             lcd_putchar_x2(  32, 196, BLACK, 'C' );
+ 131:../lab10.c    ****         }
+ 132:../lab10.c    ****         else if( x>79 && y>179 && x<159 && y<239 )
+ 133:../lab10.c    ****         {
+ 134:../lab10.c    ****             lcd_putchar_x2( 112, 196, WHITE, 'D' );
+ 135:../lab10.c    ****             sw_delay_ms( 200 );
+ 136:../lab10.c    ****             lcd_putchar_x2( 112, 196, BLACK, 'D' );
+ 137:../lab10.c    ****         }
+ 138:../lab10.c    ****         else if( x>159 && y>179 && x<239 && y<239 )
+ 139:../lab10.c    ****         {
+ 140:../lab10.c    ****             lcd_putchar_x2( 192, 196, WHITE, 'E' );
+ 141:../lab10.c    ****             sw_delay_ms( 200 );
+ 142:../lab10.c    ****             lcd_putchar_x2( 192, 196, BLACK, 'E' );
+ 143:../lab10.c    ****         }
+ 144:../lab10.c    ****         else if( x>239 && y>179 && x<319 && y<239 )
+ 145:../lab10.c    ****         {
+ 146:../lab10.c    ****             lcd_putchar_x2( 272, 196, WHITE, 'F' );
+ 147:../lab10.c    ****             sw_delay_ms( 200 );
+ 148:../lab10.c    ****             lcd_putchar_x2( 272, 196, BLACK, 'F' );
+ 149:../lab10.c    ****         }
+ 150:../lab10.c    ****     }
+ 1894              		.loc 1 150 0
+ 1895 0040 0000A0E1 		mov	r0, r0	@ nop
+ 1896 0044 040000EA 		b	.L18
+ 1897              	.L20:
+ 1898 0048 0000A0E1 		mov	r0, r0	@ nop
+ 1899 004c 020000EA 		b	.L18
+ 1900              	.L21:
+ 1901 0050 0000A0E1 		mov	r0, r0	@ nop
+ 1902 0054 000000EA 		b	.L18
+ 1903              	.L22:
+ 1904 0058 0000A0E1 		mov	r0, r0	@ nop
+ 1905              	.L18:
+  46:../lab10.c    ****         ts_getpostime( &x, &y, &ms );
+ 1906              		.loc 1 46 0
+ 1907 005c 0E104BE2 		sub	r1, fp, #14
+ 1908 0060 10204BE2 		sub	r2, fp, #16
+ 1909 0064 12304BE2 		sub	r3, fp, #18
+ 1910 0068 0100A0E1 		mov	r0, r1
+ 1911 006c 0210A0E1 		mov	r1, r2
+ 1912 0070 0320A0E1 		mov	r2, r3
+ 1913 0074 FEFFFFEB 		bl	ts_getpostime
+  47:../lab10.c    ****         uart0_puts( "  - Ha pulsado en la posicion (" );
+ 1914              		.loc 1 47 0
+ 1915 0078 94069FE5 		ldr	r0, .L23+4
+ 1916 007c FEFFFFEB 		bl	uart0_puts
+  48:../lab10.c    ****         uart0_putint( x );
+ 1917              		.loc 1 48 0
+ 1918 0080 BE305BE1 		ldrh	r3, [fp, #-14]
+ 1919 0084 0300A0E1 		mov	r0, r3
+ 1920 0088 FEFFFFEB 		bl	uart0_putint
+  49:../lab10.c    ****         uart0_puts( ", " );
+ 1921              		.loc 1 49 0
+ 1922 008c 84069FE5 		ldr	r0, .L23+8
+ 1923 0090 FEFFFFEB 		bl	uart0_puts
+  50:../lab10.c    ****         uart0_putint( y );
+ 1924              		.loc 1 50 0
+ 1925 0094 B0315BE1 		ldrh	r3, [fp, #-16]
+ 1926 0098 0300A0E1 		mov	r0, r3
+ 1927 009c FEFFFFEB 		bl	uart0_putint
+  51:../lab10.c    ****         uart0_puts( ") durante " );
+ 1928              		.loc 1 51 0
+ 1929 00a0 74069FE5 		ldr	r0, .L23+12
+ 1930 00a4 FEFFFFEB 		bl	uart0_puts
+  52:../lab10.c    ****         uart0_putint( ms );
+ 1931              		.loc 1 52 0
+ 1932 00a8 B2315BE1 		ldrh	r3, [fp, #-18]
+ 1933 00ac 0300A0E1 		mov	r0, r3
+ 1934 00b0 FEFFFFEB 		bl	uart0_putint
+  53:../lab10.c    ****         uart0_puts( " ms\n" );
+ 1935              		.loc 1 53 0
+ 1936 00b4 64069FE5 		ldr	r0, .L23+16
+ 1937 00b8 FEFFFFEB 		bl	uart0_puts
+  54:../lab10.c    ****         if( x>0 && y>0 && x<79 && y<59 )
+ 1938              		.loc 1 54 0
+ 1939 00bc BE305BE1 		ldrh	r3, [fp, #-14]
+ 1940 00c0 000053E3 		cmp	r3, #0
+ 1941 00c4 1500000A 		beq	.L2
+  54:../lab10.c    ****         if( x>0 && y>0 && x<79 && y<59 )
+ 1942              		.loc 1 54 0 is_stmt 0 discriminator 1
+ 1943 00c8 B0315BE1 		ldrh	r3, [fp, #-16]
+ 1944 00cc 000053E3 		cmp	r3, #0
+ 1945 00d0 1200000A 		beq	.L2
+ 1946 00d4 BE305BE1 		ldrh	r3, [fp, #-14]
+ 1947 00d8 4E0053E3 		cmp	r3, #78
+ 1948 00dc 0F00008A 		bhi	.L2
+ 1949 00e0 B0315BE1 		ldrh	r3, [fp, #-16]
+ 1950 00e4 3A0053E3 		cmp	r3, #58
+ 1951 00e8 0C00008A 		bhi	.L2
+  56:../lab10.c    ****             lcd_putchar_x2(  32,  16, WHITE, '0' );    
+ 1952              		.loc 1 56 0 is_stmt 1
+ 1953 00ec 2000A0E3 		mov	r0, #32
+ 1954 00f0 1010A0E3 		mov	r1, #16
+ 1955 00f4 0020A0E3 		mov	r2, #0
+ 1956 00f8 3030A0E3 		mov	r3, #48
+ 1957 00fc FEFFFFEB 		bl	lcd_putchar_x2
+  57:../lab10.c    ****             sw_delay_ms( 200 );
+ 1958              		.loc 1 57 0
+ 1959 0100 C800A0E3 		mov	r0, #200
+ 1960 0104 FEFFFFEB 		bl	sw_delay_ms
+  58:../lab10.c    ****             lcd_putchar_x2(  32,  16, BLACK, '0' );    
+ 1961              		.loc 1 58 0
+ 1962 0108 2000A0E3 		mov	r0, #32
+ 1963 010c 1010A0E3 		mov	r1, #16
+ 1964 0110 0F20A0E3 		mov	r2, #15
+ 1965 0114 3030A0E3 		mov	r3, #48
+ 1966 0118 FEFFFFEB 		bl	lcd_putchar_x2
+ 1967 011c 7A0100EA 		b	.L3
+ 1968              	.L2:
+  60:../lab10.c    ****         else if( x>79 && y>0 && x<159 && y<59 )
+ 1969              		.loc 1 60 0
+ 1970 0120 BE305BE1 		ldrh	r3, [fp, #-14]
+ 1971 0124 4F0053E3 		cmp	r3, #79
+ 1972 0128 1500009A 		bls	.L4
+  60:../lab10.c    ****         else if( x>79 && y>0 && x<159 && y<59 )
+ 1973              		.loc 1 60 0 is_stmt 0 discriminator 1
+ 1974 012c B0315BE1 		ldrh	r3, [fp, #-16]
+ 1975 0130 000053E3 		cmp	r3, #0
+ 1976 0134 1200000A 		beq	.L4
+ 1977 0138 BE305BE1 		ldrh	r3, [fp, #-14]
+ 1978 013c 9E0053E3 		cmp	r3, #158
+ 1979 0140 0F00008A 		bhi	.L4
+ 1980 0144 B0315BE1 		ldrh	r3, [fp, #-16]
+ 1981 0148 3A0053E3 		cmp	r3, #58
+ 1982 014c 0C00008A 		bhi	.L4
+  62:../lab10.c    ****             lcd_putchar_x2( 112,  16, WHITE, '1' );
+ 1983              		.loc 1 62 0 is_stmt 1
+ 1984 0150 7000A0E3 		mov	r0, #112
+ 1985 0154 1010A0E3 		mov	r1, #16
+ 1986 0158 0020A0E3 		mov	r2, #0
+ 1987 015c 3130A0E3 		mov	r3, #49
+ 1988 0160 FEFFFFEB 		bl	lcd_putchar_x2
+  63:../lab10.c    ****             sw_delay_ms( 200 );
+ 1989              		.loc 1 63 0
+ 1990 0164 C800A0E3 		mov	r0, #200
+ 1991 0168 FEFFFFEB 		bl	sw_delay_ms
+  64:../lab10.c    ****             lcd_putchar_x2( 112,  16, BLACK, '1' );
+ 1992              		.loc 1 64 0
+ 1993 016c 7000A0E3 		mov	r0, #112
+ 1994 0170 1010A0E3 		mov	r1, #16
+ 1995 0174 0F20A0E3 		mov	r2, #15
+ 1996 0178 3130A0E3 		mov	r3, #49
+ 1997 017c FEFFFFEB 		bl	lcd_putchar_x2
+ 1998 0180 610100EA 		b	.L3
+ 1999              	.L4:
+  66:../lab10.c    ****         else if( x>159 && y>0 && x<239 && y<59 )
+ 2000              		.loc 1 66 0
+ 2001 0184 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2002 0188 9F0053E3 		cmp	r3, #159
+ 2003 018c 1500009A 		bls	.L5
+  66:../lab10.c    ****         else if( x>159 && y>0 && x<239 && y<59 )
+ 2004              		.loc 1 66 0 is_stmt 0 discriminator 1
+ 2005 0190 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2006 0194 000053E3 		cmp	r3, #0
+ 2007 0198 1200000A 		beq	.L5
+ 2008 019c BE305BE1 		ldrh	r3, [fp, #-14]
+ 2009 01a0 EE0053E3 		cmp	r3, #238
+ 2010 01a4 0F00008A 		bhi	.L5
+ 2011 01a8 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2012 01ac 3A0053E3 		cmp	r3, #58
+ 2013 01b0 0C00008A 		bhi	.L5
+  68:../lab10.c    ****             lcd_putchar_x2( 192,  16, WHITE, '2' );        
+ 2014              		.loc 1 68 0 is_stmt 1
+ 2015 01b4 C000A0E3 		mov	r0, #192
+ 2016 01b8 1010A0E3 		mov	r1, #16
+ 2017 01bc 0020A0E3 		mov	r2, #0
+ 2018 01c0 3230A0E3 		mov	r3, #50
+ 2019 01c4 FEFFFFEB 		bl	lcd_putchar_x2
+  69:../lab10.c    ****             sw_delay_ms( 200 );
+ 2020              		.loc 1 69 0
+ 2021 01c8 C800A0E3 		mov	r0, #200
+ 2022 01cc FEFFFFEB 		bl	sw_delay_ms
+  70:../lab10.c    ****             lcd_putchar_x2( 192,  16, BLACK, '2' );
+ 2023              		.loc 1 70 0
+ 2024 01d0 C000A0E3 		mov	r0, #192
+ 2025 01d4 1010A0E3 		mov	r1, #16
+ 2026 01d8 0F20A0E3 		mov	r2, #15
+ 2027 01dc 3230A0E3 		mov	r3, #50
+ 2028 01e0 FEFFFFEB 		bl	lcd_putchar_x2
+ 2029 01e4 480100EA 		b	.L3
+ 2030              	.L5:
+  72:../lab10.c    ****         else if( x>239 && y>0 && x<319 && y<59 )
+ 2031              		.loc 1 72 0
+ 2032 01e8 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2033 01ec EF0053E3 		cmp	r3, #239
+ 2034 01f0 1600009A 		bls	.L6
+  72:../lab10.c    ****         else if( x>239 && y>0 && x<319 && y<59 )
+ 2035              		.loc 1 72 0 is_stmt 0 discriminator 1
+ 2036 01f4 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2037 01f8 000053E3 		cmp	r3, #0
+ 2038 01fc 1300000A 		beq	.L6
+ 2039 0200 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2040 0204 18359FE5 		ldr	r3, .L23+20
+ 2041 0208 030052E1 		cmp	r2, r3
+ 2042 020c 0F00008A 		bhi	.L6
+ 2043 0210 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2044 0214 3A0053E3 		cmp	r3, #58
+ 2045 0218 0C00008A 		bhi	.L6
+  74:../lab10.c    ****             lcd_putchar_x2( 272,  16, WHITE, '3' );        
+ 2046              		.loc 1 74 0 is_stmt 1
+ 2047 021c 110EA0E3 		mov	r0, #272
+ 2048 0220 1010A0E3 		mov	r1, #16
+ 2049 0224 0020A0E3 		mov	r2, #0
+ 2050 0228 3330A0E3 		mov	r3, #51
+ 2051 022c FEFFFFEB 		bl	lcd_putchar_x2
+  75:../lab10.c    ****             sw_delay_ms( 200 );
+ 2052              		.loc 1 75 0
+ 2053 0230 C800A0E3 		mov	r0, #200
+ 2054 0234 FEFFFFEB 		bl	sw_delay_ms
+  76:../lab10.c    ****             lcd_putchar_x2( 272,  16, BLACK, '3' );
+ 2055              		.loc 1 76 0
+ 2056 0238 110EA0E3 		mov	r0, #272
+ 2057 023c 1010A0E3 		mov	r1, #16
+ 2058 0240 0F20A0E3 		mov	r2, #15
+ 2059 0244 3330A0E3 		mov	r3, #51
+ 2060 0248 FEFFFFEB 		bl	lcd_putchar_x2
+ 2061 024c 2E0100EA 		b	.L3
+ 2062              	.L6:
+  78:../lab10.c    ****         else if( x>0 && y>59 && x<79 && y<119 )
+ 2063              		.loc 1 78 0
+ 2064 0250 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2065 0254 000053E3 		cmp	r3, #0
+ 2066 0258 1500000A 		beq	.L7
+  78:../lab10.c    ****         else if( x>0 && y>59 && x<79 && y<119 )
+ 2067              		.loc 1 78 0 is_stmt 0 discriminator 1
+ 2068 025c B0315BE1 		ldrh	r3, [fp, #-16]
+ 2069 0260 3B0053E3 		cmp	r3, #59
+ 2070 0264 1200009A 		bls	.L7
+ 2071 0268 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2072 026c 4E0053E3 		cmp	r3, #78
+ 2073 0270 0F00008A 		bhi	.L7
+ 2074 0274 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2075 0278 760053E3 		cmp	r3, #118
+ 2076 027c 0C00008A 		bhi	.L7
+  80:../lab10.c    ****             lcd_putchar_x2(  32,  76, WHITE, '4' );
+ 2077              		.loc 1 80 0 is_stmt 1
+ 2078 0280 2000A0E3 		mov	r0, #32
+ 2079 0284 4C10A0E3 		mov	r1, #76
+ 2080 0288 0020A0E3 		mov	r2, #0
+ 2081 028c 3430A0E3 		mov	r3, #52
+ 2082 0290 FEFFFFEB 		bl	lcd_putchar_x2
+  81:../lab10.c    ****             sw_delay_ms( 200 );
+ 2083              		.loc 1 81 0
+ 2084 0294 C800A0E3 		mov	r0, #200
+ 2085 0298 FEFFFFEB 		bl	sw_delay_ms
+  82:../lab10.c    ****             lcd_putchar_x2(  32,  76, BLACK, '4' );                            
+ 2086              		.loc 1 82 0
+ 2087 029c 2000A0E3 		mov	r0, #32
+ 2088 02a0 4C10A0E3 		mov	r1, #76
+ 2089 02a4 0F20A0E3 		mov	r2, #15
+ 2090 02a8 3430A0E3 		mov	r3, #52
+ 2091 02ac FEFFFFEB 		bl	lcd_putchar_x2
+ 2092 02b0 150100EA 		b	.L3
+ 2093              	.L7:
+  84:../lab10.c    ****         else if( x>79 && y>59 && x<159 && y<119 )
+ 2094              		.loc 1 84 0
+ 2095 02b4 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2096 02b8 4F0053E3 		cmp	r3, #79
+ 2097 02bc 1500009A 		bls	.L8
+  84:../lab10.c    ****         else if( x>79 && y>59 && x<159 && y<119 )
+ 2098              		.loc 1 84 0 is_stmt 0 discriminator 1
+ 2099 02c0 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2100 02c4 3B0053E3 		cmp	r3, #59
+ 2101 02c8 1200009A 		bls	.L8
+ 2102 02cc BE305BE1 		ldrh	r3, [fp, #-14]
+ 2103 02d0 9E0053E3 		cmp	r3, #158
+ 2104 02d4 0F00008A 		bhi	.L8
+ 2105 02d8 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2106 02dc 760053E3 		cmp	r3, #118
+ 2107 02e0 0C00008A 		bhi	.L8
+  86:../lab10.c    ****             lcd_putchar_x2( 112,  76, WHITE, '5' );
+ 2108              		.loc 1 86 0 is_stmt 1
+ 2109 02e4 7000A0E3 		mov	r0, #112
+ 2110 02e8 4C10A0E3 		mov	r1, #76
+ 2111 02ec 0020A0E3 		mov	r2, #0
+ 2112 02f0 3530A0E3 		mov	r3, #53
+ 2113 02f4 FEFFFFEB 		bl	lcd_putchar_x2
+  87:../lab10.c    ****             sw_delay_ms( 200 );
+ 2114              		.loc 1 87 0
+ 2115 02f8 C800A0E3 		mov	r0, #200
+ 2116 02fc FEFFFFEB 		bl	sw_delay_ms
+  88:../lab10.c    ****             lcd_putchar_x2( 112,  76, BLACK, '5' );
+ 2117              		.loc 1 88 0
+ 2118 0300 7000A0E3 		mov	r0, #112
+ 2119 0304 4C10A0E3 		mov	r1, #76
+ 2120 0308 0F20A0E3 		mov	r2, #15
+ 2121 030c 3530A0E3 		mov	r3, #53
+ 2122 0310 FEFFFFEB 		bl	lcd_putchar_x2
+ 2123 0314 FC0000EA 		b	.L3
+ 2124              	.L8:
+  90:../lab10.c    ****         else if( x>159 && y>59 && x<239 && y<119 )
+ 2125              		.loc 1 90 0
+ 2126 0318 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2127 031c 9F0053E3 		cmp	r3, #159
+ 2128 0320 1500009A 		bls	.L9
+  90:../lab10.c    ****         else if( x>159 && y>59 && x<239 && y<119 )
+ 2129              		.loc 1 90 0 is_stmt 0 discriminator 1
+ 2130 0324 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2131 0328 3B0053E3 		cmp	r3, #59
+ 2132 032c 1200009A 		bls	.L9
+ 2133 0330 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2134 0334 EE0053E3 		cmp	r3, #238
+ 2135 0338 0F00008A 		bhi	.L9
+ 2136 033c B0315BE1 		ldrh	r3, [fp, #-16]
+ 2137 0340 760053E3 		cmp	r3, #118
+ 2138 0344 0C00008A 		bhi	.L9
+  92:../lab10.c    ****             lcd_putchar_x2( 192,  76, WHITE, '6' );
+ 2139              		.loc 1 92 0 is_stmt 1
+ 2140 0348 C000A0E3 		mov	r0, #192
+ 2141 034c 4C10A0E3 		mov	r1, #76
+ 2142 0350 0020A0E3 		mov	r2, #0
+ 2143 0354 3630A0E3 		mov	r3, #54
+ 2144 0358 FEFFFFEB 		bl	lcd_putchar_x2
+  93:../lab10.c    ****             sw_delay_ms( 200 );
+ 2145              		.loc 1 93 0
+ 2146 035c C800A0E3 		mov	r0, #200
+ 2147 0360 FEFFFFEB 		bl	sw_delay_ms
+  94:../lab10.c    ****             lcd_putchar_x2( 192,  76, BLACK, '6' );
+ 2148              		.loc 1 94 0
+ 2149 0364 C000A0E3 		mov	r0, #192
+ 2150 0368 4C10A0E3 		mov	r1, #76
+ 2151 036c 0F20A0E3 		mov	r2, #15
+ 2152 0370 3630A0E3 		mov	r3, #54
+ 2153 0374 FEFFFFEB 		bl	lcd_putchar_x2
+ 2154 0378 E30000EA 		b	.L3
+ 2155              	.L9:
+  96:../lab10.c    ****         else if( x>239 && y>59 && x<319 && y<119 )
+ 2156              		.loc 1 96 0
+ 2157 037c BE305BE1 		ldrh	r3, [fp, #-14]
+ 2158 0380 EF0053E3 		cmp	r3, #239
+ 2159 0384 1600009A 		bls	.L10
+  96:../lab10.c    ****         else if( x>239 && y>59 && x<319 && y<119 )
+ 2160              		.loc 1 96 0 is_stmt 0 discriminator 1
+ 2161 0388 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2162 038c 3B0053E3 		cmp	r3, #59
+ 2163 0390 1300009A 		bls	.L10
+ 2164 0394 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2165 0398 84339FE5 		ldr	r3, .L23+20
+ 2166 039c 030052E1 		cmp	r2, r3
+ 2167 03a0 0F00008A 		bhi	.L10
+ 2168 03a4 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2169 03a8 760053E3 		cmp	r3, #118
+ 2170 03ac 0C00008A 		bhi	.L10
+  98:../lab10.c    ****             lcd_putchar_x2( 272,  76, WHITE, '7' );
+ 2171              		.loc 1 98 0 is_stmt 1
+ 2172 03b0 110EA0E3 		mov	r0, #272
+ 2173 03b4 4C10A0E3 		mov	r1, #76
+ 2174 03b8 0020A0E3 		mov	r2, #0
+ 2175 03bc 3730A0E3 		mov	r3, #55
+ 2176 03c0 FEFFFFEB 		bl	lcd_putchar_x2
+  99:../lab10.c    ****             sw_delay_ms( 200 );
+ 2177              		.loc 1 99 0
+ 2178 03c4 C800A0E3 		mov	r0, #200
+ 2179 03c8 FEFFFFEB 		bl	sw_delay_ms
+ 100:../lab10.c    ****             lcd_putchar_x2( 272,  76, BLACK, '7' );
+ 2180              		.loc 1 100 0
+ 2181 03cc 110EA0E3 		mov	r0, #272
+ 2182 03d0 4C10A0E3 		mov	r1, #76
+ 2183 03d4 0F20A0E3 		mov	r2, #15
+ 2184 03d8 3730A0E3 		mov	r3, #55
+ 2185 03dc FEFFFFEB 		bl	lcd_putchar_x2
+ 2186 03e0 C90000EA 		b	.L3
+ 2187              	.L10:
+ 102:../lab10.c    ****         else if( x>0 && y>119 && x<79 && y<179 )
+ 2188              		.loc 1 102 0
+ 2189 03e4 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2190 03e8 000053E3 		cmp	r3, #0
+ 2191 03ec 1500000A 		beq	.L11
+ 102:../lab10.c    ****         else if( x>0 && y>119 && x<79 && y<179 )
+ 2192              		.loc 1 102 0 is_stmt 0 discriminator 1
+ 2193 03f0 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2194 03f4 770053E3 		cmp	r3, #119
+ 2195 03f8 1200009A 		bls	.L11
+ 2196 03fc BE305BE1 		ldrh	r3, [fp, #-14]
+ 2197 0400 4E0053E3 		cmp	r3, #78
+ 2198 0404 0F00008A 		bhi	.L11
+ 2199 0408 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2200 040c B20053E3 		cmp	r3, #178
+ 2201 0410 0C00008A 		bhi	.L11
+ 104:../lab10.c    ****             lcd_putchar_x2(  32, 136, WHITE, '8' );
+ 2202              		.loc 1 104 0 is_stmt 1
+ 2203 0414 2000A0E3 		mov	r0, #32
+ 2204 0418 8810A0E3 		mov	r1, #136
+ 2205 041c 0020A0E3 		mov	r2, #0
+ 2206 0420 3830A0E3 		mov	r3, #56
+ 2207 0424 FEFFFFEB 		bl	lcd_putchar_x2
+ 105:../lab10.c    ****             sw_delay_ms( 200 );
+ 2208              		.loc 1 105 0
+ 2209 0428 C800A0E3 		mov	r0, #200
+ 2210 042c FEFFFFEB 		bl	sw_delay_ms
+ 106:../lab10.c    ****             lcd_putchar_x2(  32, 136, BLACK, '8' );
+ 2211              		.loc 1 106 0
+ 2212 0430 2000A0E3 		mov	r0, #32
+ 2213 0434 8810A0E3 		mov	r1, #136
+ 2214 0438 0F20A0E3 		mov	r2, #15
+ 2215 043c 3830A0E3 		mov	r3, #56
+ 2216 0440 FEFFFFEB 		bl	lcd_putchar_x2
+ 2217 0444 B00000EA 		b	.L3
+ 2218              	.L11:
+ 108:../lab10.c    ****         else if( x>79 && y>119 && x<159 && y<179 )
+ 2219              		.loc 1 108 0
+ 2220 0448 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2221 044c 4F0053E3 		cmp	r3, #79
+ 2222 0450 1500009A 		bls	.L12
+ 108:../lab10.c    ****         else if( x>79 && y>119 && x<159 && y<179 )
+ 2223              		.loc 1 108 0 is_stmt 0 discriminator 1
+ 2224 0454 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2225 0458 770053E3 		cmp	r3, #119
+ 2226 045c 1200009A 		bls	.L12
+ 2227 0460 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2228 0464 9E0053E3 		cmp	r3, #158
+ 2229 0468 0F00008A 		bhi	.L12
+ 2230 046c B0315BE1 		ldrh	r3, [fp, #-16]
+ 2231 0470 B20053E3 		cmp	r3, #178
+ 2232 0474 0C00008A 		bhi	.L12
+ 110:../lab10.c    ****             lcd_putchar_x2( 112, 136, WHITE, '9' );        
+ 2233              		.loc 1 110 0 is_stmt 1
+ 2234 0478 7000A0E3 		mov	r0, #112
+ 2235 047c 8810A0E3 		mov	r1, #136
+ 2236 0480 0020A0E3 		mov	r2, #0
+ 2237 0484 3930A0E3 		mov	r3, #57
+ 2238 0488 FEFFFFEB 		bl	lcd_putchar_x2
+ 111:../lab10.c    ****             sw_delay_ms( 200 );
+ 2239              		.loc 1 111 0
+ 2240 048c C800A0E3 		mov	r0, #200
+ 2241 0490 FEFFFFEB 		bl	sw_delay_ms
+ 112:../lab10.c    ****             lcd_putchar_x2( 112, 136, BLACK, '9' );        
+ 2242              		.loc 1 112 0
+ 2243 0494 7000A0E3 		mov	r0, #112
+ 2244 0498 8810A0E3 		mov	r1, #136
+ 2245 049c 0F20A0E3 		mov	r2, #15
+ 2246 04a0 3930A0E3 		mov	r3, #57
+ 2247 04a4 FEFFFFEB 		bl	lcd_putchar_x2
+ 2248 04a8 970000EA 		b	.L3
+ 2249              	.L12:
+ 114:../lab10.c    ****         else if( x>159 && y>119 && x<239 && y<179 )
+ 2250              		.loc 1 114 0
+ 2251 04ac BE305BE1 		ldrh	r3, [fp, #-14]
+ 2252 04b0 9F0053E3 		cmp	r3, #159
+ 2253 04b4 1500009A 		bls	.L13
+ 114:../lab10.c    ****         else if( x>159 && y>119 && x<239 && y<179 )
+ 2254              		.loc 1 114 0 is_stmt 0 discriminator 1
+ 2255 04b8 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2256 04bc 770053E3 		cmp	r3, #119
+ 2257 04c0 1200009A 		bls	.L13
+ 2258 04c4 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2259 04c8 EE0053E3 		cmp	r3, #238
+ 2260 04cc 0F00008A 		bhi	.L13
+ 2261 04d0 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2262 04d4 B20053E3 		cmp	r3, #178
+ 2263 04d8 0C00008A 		bhi	.L13
+ 116:../lab10.c    ****             lcd_putchar_x2( 192, 136, WHITE, 'A' );        
+ 2264              		.loc 1 116 0 is_stmt 1
+ 2265 04dc C000A0E3 		mov	r0, #192
+ 2266 04e0 8810A0E3 		mov	r1, #136
+ 2267 04e4 0020A0E3 		mov	r2, #0
+ 2268 04e8 4130A0E3 		mov	r3, #65
+ 2269 04ec FEFFFFEB 		bl	lcd_putchar_x2
+ 117:../lab10.c    ****             sw_delay_ms( 200 );
+ 2270              		.loc 1 117 0
+ 2271 04f0 C800A0E3 		mov	r0, #200
+ 2272 04f4 FEFFFFEB 		bl	sw_delay_ms
+ 118:../lab10.c    ****             lcd_putchar_x2( 192, 136, BLACK, 'A' );        
+ 2273              		.loc 1 118 0
+ 2274 04f8 C000A0E3 		mov	r0, #192
+ 2275 04fc 8810A0E3 		mov	r1, #136
+ 2276 0500 0F20A0E3 		mov	r2, #15
+ 2277 0504 4130A0E3 		mov	r3, #65
+ 2278 0508 FEFFFFEB 		bl	lcd_putchar_x2
+ 2279 050c 7E0000EA 		b	.L3
+ 2280              	.L13:
+ 120:../lab10.c    ****         else if( x>239 && y>119 && x<319 && y<179 )
+ 2281              		.loc 1 120 0
+ 2282 0510 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2283 0514 EF0053E3 		cmp	r3, #239
+ 2284 0518 1600009A 		bls	.L14
+ 120:../lab10.c    ****         else if( x>239 && y>119 && x<319 && y<179 )
+ 2285              		.loc 1 120 0 is_stmt 0 discriminator 1
+ 2286 051c B0315BE1 		ldrh	r3, [fp, #-16]
+ 2287 0520 770053E3 		cmp	r3, #119
+ 2288 0524 1300009A 		bls	.L14
+ 2289 0528 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2290 052c F0319FE5 		ldr	r3, .L23+20
+ 2291 0530 030052E1 		cmp	r2, r3
+ 2292 0534 0F00008A 		bhi	.L14
+ 2293 0538 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2294 053c B20053E3 		cmp	r3, #178
+ 2295 0540 0C00008A 		bhi	.L14
+ 122:../lab10.c    ****             lcd_putchar_x2( 272, 136, WHITE, 'B' );
+ 2296              		.loc 1 122 0 is_stmt 1
+ 2297 0544 110EA0E3 		mov	r0, #272
+ 2298 0548 8810A0E3 		mov	r1, #136
+ 2299 054c 0020A0E3 		mov	r2, #0
+ 2300 0550 4230A0E3 		mov	r3, #66
+ 2301 0554 FEFFFFEB 		bl	lcd_putchar_x2
+ 123:../lab10.c    ****             sw_delay_ms( 200 );
+ 2302              		.loc 1 123 0
+ 2303 0558 C800A0E3 		mov	r0, #200
+ 2304 055c FEFFFFEB 		bl	sw_delay_ms
+ 124:../lab10.c    ****             lcd_putchar_x2( 272, 136, BLACK, 'B' );
+ 2305              		.loc 1 124 0
+ 2306 0560 110EA0E3 		mov	r0, #272
+ 2307 0564 8810A0E3 		mov	r1, #136
+ 2308 0568 0F20A0E3 		mov	r2, #15
+ 2309 056c 4230A0E3 		mov	r3, #66
+ 2310 0570 FEFFFFEB 		bl	lcd_putchar_x2
+ 2311 0574 640000EA 		b	.L3
+ 2312              	.L14:
+ 126:../lab10.c    ****         else if( x>0 && y>179 && x<79 && y<239 )
+ 2313              		.loc 1 126 0
+ 2314 0578 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2315 057c 000053E3 		cmp	r3, #0
+ 2316 0580 1500000A 		beq	.L15
+ 126:../lab10.c    ****         else if( x>0 && y>179 && x<79 && y<239 )
+ 2317              		.loc 1 126 0 is_stmt 0 discriminator 1
+ 2318 0584 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2319 0588 B30053E3 		cmp	r3, #179
+ 2320 058c 1200009A 		bls	.L15
+ 2321 0590 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2322 0594 4E0053E3 		cmp	r3, #78
+ 2323 0598 0F00008A 		bhi	.L15
+ 2324 059c B0315BE1 		ldrh	r3, [fp, #-16]
+ 2325 05a0 EE0053E3 		cmp	r3, #238
+ 2326 05a4 0C00008A 		bhi	.L15
+ 128:../lab10.c    ****             lcd_putchar_x2(  32, 196, WHITE, 'C' );
+ 2327              		.loc 1 128 0 is_stmt 1
+ 2328 05a8 2000A0E3 		mov	r0, #32
+ 2329 05ac C410A0E3 		mov	r1, #196
+ 2330 05b0 0020A0E3 		mov	r2, #0
+ 2331 05b4 4330A0E3 		mov	r3, #67
+ 2332 05b8 FEFFFFEB 		bl	lcd_putchar_x2
+ 129:../lab10.c    ****             sw_delay_ms( 200 );
+ 2333              		.loc 1 129 0
+ 2334 05bc C800A0E3 		mov	r0, #200
+ 2335 05c0 FEFFFFEB 		bl	sw_delay_ms
+ 130:../lab10.c    ****             lcd_putchar_x2(  32, 196, BLACK, 'C' );
+ 2336              		.loc 1 130 0
+ 2337 05c4 2000A0E3 		mov	r0, #32
+ 2338 05c8 C410A0E3 		mov	r1, #196
+ 2339 05cc 0F20A0E3 		mov	r2, #15
+ 2340 05d0 4330A0E3 		mov	r3, #67
+ 2341 05d4 FEFFFFEB 		bl	lcd_putchar_x2
+ 2342 05d8 4B0000EA 		b	.L3
+ 2343              	.L15:
+ 132:../lab10.c    ****         else if( x>79 && y>179 && x<159 && y<239 )
+ 2344              		.loc 1 132 0
+ 2345 05dc BE305BE1 		ldrh	r3, [fp, #-14]
+ 2346 05e0 4F0053E3 		cmp	r3, #79
+ 2347 05e4 1500009A 		bls	.L16
+ 132:../lab10.c    ****         else if( x>79 && y>179 && x<159 && y<239 )
+ 2348              		.loc 1 132 0 is_stmt 0 discriminator 1
+ 2349 05e8 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2350 05ec B30053E3 		cmp	r3, #179
+ 2351 05f0 1200009A 		bls	.L16
+ 2352 05f4 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2353 05f8 9E0053E3 		cmp	r3, #158
+ 2354 05fc 0F00008A 		bhi	.L16
+ 2355 0600 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2356 0604 EE0053E3 		cmp	r3, #238
+ 2357 0608 0C00008A 		bhi	.L16
+ 134:../lab10.c    ****             lcd_putchar_x2( 112, 196, WHITE, 'D' );
+ 2358              		.loc 1 134 0 is_stmt 1
+ 2359 060c 7000A0E3 		mov	r0, #112
+ 2360 0610 C410A0E3 		mov	r1, #196
+ 2361 0614 0020A0E3 		mov	r2, #0
+ 2362 0618 4430A0E3 		mov	r3, #68
+ 2363 061c FEFFFFEB 		bl	lcd_putchar_x2
+ 135:../lab10.c    ****             sw_delay_ms( 200 );
+ 2364              		.loc 1 135 0
+ 2365 0620 C800A0E3 		mov	r0, #200
+ 2366 0624 FEFFFFEB 		bl	sw_delay_ms
+ 136:../lab10.c    ****             lcd_putchar_x2( 112, 196, BLACK, 'D' );
+ 2367              		.loc 1 136 0
+ 2368 0628 7000A0E3 		mov	r0, #112
+ 2369 062c C410A0E3 		mov	r1, #196
+ 2370 0630 0F20A0E3 		mov	r2, #15
+ 2371 0634 4430A0E3 		mov	r3, #68
+ 2372 0638 FEFFFFEB 		bl	lcd_putchar_x2
+ 2373 063c 320000EA 		b	.L3
+ 2374              	.L16:
+ 138:../lab10.c    ****         else if( x>159 && y>179 && x<239 && y<239 )
+ 2375              		.loc 1 138 0
+ 2376 0640 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2377 0644 9F0053E3 		cmp	r3, #159
+ 2378 0648 1500009A 		bls	.L17
+ 138:../lab10.c    ****         else if( x>159 && y>179 && x<239 && y<239 )
+ 2379              		.loc 1 138 0 is_stmt 0 discriminator 1
+ 2380 064c B0315BE1 		ldrh	r3, [fp, #-16]
+ 2381 0650 B30053E3 		cmp	r3, #179
+ 2382 0654 1200009A 		bls	.L17
+ 2383 0658 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2384 065c EE0053E3 		cmp	r3, #238
+ 2385 0660 0F00008A 		bhi	.L17
+ 2386 0664 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2387 0668 EE0053E3 		cmp	r3, #238
+ 2388 066c 0C00008A 		bhi	.L17
+ 140:../lab10.c    ****             lcd_putchar_x2( 192, 196, WHITE, 'E' );
+ 2389              		.loc 1 140 0 is_stmt 1
+ 2390 0670 C000A0E3 		mov	r0, #192
+ 2391 0674 C410A0E3 		mov	r1, #196
+ 2392 0678 0020A0E3 		mov	r2, #0
+ 2393 067c 4530A0E3 		mov	r3, #69
+ 2394 0680 FEFFFFEB 		bl	lcd_putchar_x2
+ 141:../lab10.c    ****             sw_delay_ms( 200 );
+ 2395              		.loc 1 141 0
+ 2396 0684 C800A0E3 		mov	r0, #200
+ 2397 0688 FEFFFFEB 		bl	sw_delay_ms
+ 142:../lab10.c    ****             lcd_putchar_x2( 192, 196, BLACK, 'E' );
+ 2398              		.loc 1 142 0
+ 2399 068c C000A0E3 		mov	r0, #192
+ 2400 0690 C410A0E3 		mov	r1, #196
+ 2401 0694 0F20A0E3 		mov	r2, #15
+ 2402 0698 4530A0E3 		mov	r3, #69
+ 2403 069c FEFFFFEB 		bl	lcd_putchar_x2
+ 2404 06a0 190000EA 		b	.L3
+ 2405              	.L17:
+ 144:../lab10.c    ****         else if( x>239 && y>179 && x<319 && y<239 )
+ 2406              		.loc 1 144 0
+ 2407 06a4 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2408 06a8 EF0053E3 		cmp	r3, #239
+ 2409 06ac 63FEFF9A 		bls	.L19
+ 144:../lab10.c    ****         else if( x>239 && y>179 && x<319 && y<239 )
+ 2410              		.loc 1 144 0 is_stmt 0 discriminator 1
+ 2411 06b0 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2412 06b4 B30053E3 		cmp	r3, #179
+ 2413 06b8 62FEFF9A 		bls	.L20
+ 2414 06bc BE205BE1 		ldrh	r2, [fp, #-14]
+ 2415 06c0 5C309FE5 		ldr	r3, .L23+20
+ 2416 06c4 030052E1 		cmp	r2, r3
+ 2417 06c8 60FEFF8A 		bhi	.L21
+ 2418 06cc B0315BE1 		ldrh	r3, [fp, #-16]
+ 2419 06d0 EE0053E3 		cmp	r3, #238
+ 2420 06d4 5FFEFF8A 		bhi	.L22
+ 146:../lab10.c    ****             lcd_putchar_x2( 272, 196, WHITE, 'F' );
+ 2421              		.loc 1 146 0 is_stmt 1
+ 2422 06d8 110EA0E3 		mov	r0, #272
+ 2423 06dc C410A0E3 		mov	r1, #196
+ 2424 06e0 0020A0E3 		mov	r2, #0
+ 2425 06e4 4630A0E3 		mov	r3, #70
+ 2426 06e8 FEFFFFEB 		bl	lcd_putchar_x2
+ 147:../lab10.c    ****             sw_delay_ms( 200 );
+ 2427              		.loc 1 147 0
+ 2428 06ec C800A0E3 		mov	r0, #200
+ 2429 06f0 FEFFFFEB 		bl	sw_delay_ms
+ 148:../lab10.c    ****             lcd_putchar_x2( 272, 196, BLACK, 'F' );
+ 2430              		.loc 1 148 0
+ 2431 06f4 110EA0E3 		mov	r0, #272
+ 2432 06f8 C410A0E3 		mov	r1, #196
+ 2433 06fc 0F20A0E3 		mov	r2, #15
+ 2434 0700 4630A0E3 		mov	r3, #70
+ 2435 0704 FEFFFFEB 		bl	lcd_putchar_x2
+ 2436              		.loc 1 150 0
+ 2437 0708 53FEFFEA 		b	.L18
+ 2438              	.L3:
+ 2439 070c 52FEFFEA 		b	.L18
+ 2440              	.L24:
+ 2441              		.align	2
+ 2442              	.L23:
+ 2443 0710 00000000 		.word	.LC0
+ 2444 0714 1C000000 		.word	.LC1
+ 2445 0718 3C000000 		.word	.LC2
+ 2446 071c 40000000 		.word	.LC3
+ 2447 0720 4C000000 		.word	.LC4
+ 2448 0724 3E010000 		.word	318
+ 2449              		.cfi_endproc
+ 2450              	.LFE0:
+ 2452              		.align	2
+ 2453              		.global	lcd_draw_grid
+ 2455              	lcd_draw_grid:
+ 2456              	.LFB1:
+ 151:../lab10.c    **** }
+ 152:../lab10.c    **** 
+ 153:../lab10.c    **** void lcd_draw_grid(void)
+ 154:../lab10.c    **** {
+ 2457              		.loc 1 154 0
+ 2458              		.cfi_startproc
+ 2459              		@ Function supports interworking.
+ 2460              		@ args = 0, pretend = 0, frame = 0
+ 2461              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2462 0728 0DC0A0E1 		mov	ip, sp
+ 2463              	.LCFI2:
+ 2464              		.cfi_def_cfa_register 12
+ 2465 072c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2466 0730 04B04CE2 		sub	fp, ip, #4
+ 2467              		.cfi_offset 14, -8
+ 2468              		.cfi_offset 13, -12
+ 2469              		.cfi_offset 11, -16
+ 2470              	.LCFI3:
+ 2471              		.cfi_def_cfa 11, 4
+ 2472 0734 08D04DE2 		sub	sp, sp, #8
+ 155:../lab10.c    **** 
+ 156:../lab10.c    ****     lcd_draw_box(   0,   0,  79,  59, BLACK, 1 ); /* Pinta cuadricula */
+ 2473              		.loc 1 156 0
+ 2474 0738 0F30A0E3 		mov	r3, #15
+ 2475 073c 00308DE5 		str	r3, [sp, #0]
+ 2476 0740 0130A0E3 		mov	r3, #1
+ 2477 0744 04308DE5 		str	r3, [sp, #4]
+ 2478 0748 0000A0E3 		mov	r0, #0
+ 2479 074c 0010A0E3 		mov	r1, #0
+ 2480 0750 4F20A0E3 		mov	r2, #79
+ 2481 0754 3B30A0E3 		mov	r3, #59
+ 2482 0758 FEFFFFEB 		bl	lcd_draw_box
+ 157:../lab10.c    ****     lcd_draw_box(  79,   0, 159,  59, BLACK, 1 );
+ 2483              		.loc 1 157 0
+ 2484 075c 0F30A0E3 		mov	r3, #15
+ 2485 0760 00308DE5 		str	r3, [sp, #0]
+ 2486 0764 0130A0E3 		mov	r3, #1
+ 2487 0768 04308DE5 		str	r3, [sp, #4]
+ 2488 076c 4F00A0E3 		mov	r0, #79
+ 2489 0770 0010A0E3 		mov	r1, #0
+ 2490 0774 9F20A0E3 		mov	r2, #159
+ 2491 0778 3B30A0E3 		mov	r3, #59
+ 2492 077c FEFFFFEB 		bl	lcd_draw_box
+ 158:../lab10.c    ****     lcd_draw_box( 159,   0, 239,  59, BLACK, 1 );
+ 2493              		.loc 1 158 0
+ 2494 0780 0F30A0E3 		mov	r3, #15
+ 2495 0784 00308DE5 		str	r3, [sp, #0]
+ 2496 0788 0130A0E3 		mov	r3, #1
+ 2497 078c 04308DE5 		str	r3, [sp, #4]
+ 2498 0790 9F00A0E3 		mov	r0, #159
+ 2499 0794 0010A0E3 		mov	r1, #0
+ 2500 0798 EF20A0E3 		mov	r2, #239
+ 2501 079c 3B30A0E3 		mov	r3, #59
+ 2502 07a0 FEFFFFEB 		bl	lcd_draw_box
+ 159:../lab10.c    ****     lcd_draw_box( 239,   0, 319,  59, BLACK, 1 );
+ 2503              		.loc 1 159 0
+ 2504 07a4 0F30A0E3 		mov	r3, #15
+ 2505 07a8 00308DE5 		str	r3, [sp, #0]
+ 2506 07ac 0130A0E3 		mov	r3, #1
+ 2507 07b0 04308DE5 		str	r3, [sp, #4]
+ 2508 07b4 EF00A0E3 		mov	r0, #239
+ 2509 07b8 0010A0E3 		mov	r1, #0
+ 2510 07bc 00239FE5 		ldr	r2, .L26
+ 2511 07c0 3B30A0E3 		mov	r3, #59
+ 2512 07c4 FEFFFFEB 		bl	lcd_draw_box
+ 160:../lab10.c    ****     lcd_draw_box(   0,  59,  79, 119, BLACK, 1 );
+ 2513              		.loc 1 160 0
+ 2514 07c8 0F30A0E3 		mov	r3, #15
+ 2515 07cc 00308DE5 		str	r3, [sp, #0]
+ 2516 07d0 0130A0E3 		mov	r3, #1
+ 2517 07d4 04308DE5 		str	r3, [sp, #4]
+ 2518 07d8 0000A0E3 		mov	r0, #0
+ 2519 07dc 3B10A0E3 		mov	r1, #59
+ 2520 07e0 4F20A0E3 		mov	r2, #79
+ 2521 07e4 7730A0E3 		mov	r3, #119
+ 2522 07e8 FEFFFFEB 		bl	lcd_draw_box
+ 161:../lab10.c    ****     lcd_draw_box(  79,  59, 159, 119, BLACK, 1 );
+ 2523              		.loc 1 161 0
+ 2524 07ec 0F30A0E3 		mov	r3, #15
+ 2525 07f0 00308DE5 		str	r3, [sp, #0]
+ 2526 07f4 0130A0E3 		mov	r3, #1
+ 2527 07f8 04308DE5 		str	r3, [sp, #4]
+ 2528 07fc 4F00A0E3 		mov	r0, #79
+ 2529 0800 3B10A0E3 		mov	r1, #59
+ 2530 0804 9F20A0E3 		mov	r2, #159
+ 2531 0808 7730A0E3 		mov	r3, #119
+ 2532 080c FEFFFFEB 		bl	lcd_draw_box
+ 162:../lab10.c    ****     lcd_draw_box( 159,  59, 239, 119, BLACK, 1 );
+ 2533              		.loc 1 162 0
+ 2534 0810 0F30A0E3 		mov	r3, #15
+ 2535 0814 00308DE5 		str	r3, [sp, #0]
+ 2536 0818 0130A0E3 		mov	r3, #1
+ 2537 081c 04308DE5 		str	r3, [sp, #4]
+ 2538 0820 9F00A0E3 		mov	r0, #159
+ 2539 0824 3B10A0E3 		mov	r1, #59
+ 2540 0828 EF20A0E3 		mov	r2, #239
+ 2541 082c 7730A0E3 		mov	r3, #119
+ 2542 0830 FEFFFFEB 		bl	lcd_draw_box
+ 163:../lab10.c    ****     lcd_draw_box( 239,  59, 319, 119, BLACK, 1 );
+ 2543              		.loc 1 163 0
+ 2544 0834 0F30A0E3 		mov	r3, #15
+ 2545 0838 00308DE5 		str	r3, [sp, #0]
+ 2546 083c 0130A0E3 		mov	r3, #1
+ 2547 0840 04308DE5 		str	r3, [sp, #4]
+ 2548 0844 EF00A0E3 		mov	r0, #239
+ 2549 0848 3B10A0E3 		mov	r1, #59
+ 2550 084c 70229FE5 		ldr	r2, .L26
+ 2551 0850 7730A0E3 		mov	r3, #119
+ 2552 0854 FEFFFFEB 		bl	lcd_draw_box
+ 164:../lab10.c    ****     lcd_draw_box(   0, 119,  79, 179, BLACK, 1 );
+ 2553              		.loc 1 164 0
+ 2554 0858 0F30A0E3 		mov	r3, #15
+ 2555 085c 00308DE5 		str	r3, [sp, #0]
+ 2556 0860 0130A0E3 		mov	r3, #1
+ 2557 0864 04308DE5 		str	r3, [sp, #4]
+ 2558 0868 0000A0E3 		mov	r0, #0
+ 2559 086c 7710A0E3 		mov	r1, #119
+ 2560 0870 4F20A0E3 		mov	r2, #79
+ 2561 0874 B330A0E3 		mov	r3, #179
+ 2562 0878 FEFFFFEB 		bl	lcd_draw_box
+ 165:../lab10.c    ****     lcd_draw_box(  79, 119, 159, 179, BLACK, 1 );
+ 2563              		.loc 1 165 0
+ 2564 087c 0F30A0E3 		mov	r3, #15
+ 2565 0880 00308DE5 		str	r3, [sp, #0]
+ 2566 0884 0130A0E3 		mov	r3, #1
+ 2567 0888 04308DE5 		str	r3, [sp, #4]
+ 2568 088c 4F00A0E3 		mov	r0, #79
+ 2569 0890 7710A0E3 		mov	r1, #119
+ 2570 0894 9F20A0E3 		mov	r2, #159
+ 2571 0898 B330A0E3 		mov	r3, #179
+ 2572 089c FEFFFFEB 		bl	lcd_draw_box
+ 166:../lab10.c    ****     lcd_draw_box( 159, 119, 239, 179, BLACK, 1 );
+ 2573              		.loc 1 166 0
+ 2574 08a0 0F30A0E3 		mov	r3, #15
+ 2575 08a4 00308DE5 		str	r3, [sp, #0]
+ 2576 08a8 0130A0E3 		mov	r3, #1
+ 2577 08ac 04308DE5 		str	r3, [sp, #4]
+ 2578 08b0 9F00A0E3 		mov	r0, #159
+ 2579 08b4 7710A0E3 		mov	r1, #119
+ 2580 08b8 EF20A0E3 		mov	r2, #239
+ 2581 08bc B330A0E3 		mov	r3, #179
+ 2582 08c0 FEFFFFEB 		bl	lcd_draw_box
+ 167:../lab10.c    ****     lcd_draw_box( 239, 119, 319, 179, BLACK, 1 );
+ 2583              		.loc 1 167 0
+ 2584 08c4 0F30A0E3 		mov	r3, #15
+ 2585 08c8 00308DE5 		str	r3, [sp, #0]
+ 2586 08cc 0130A0E3 		mov	r3, #1
+ 2587 08d0 04308DE5 		str	r3, [sp, #4]
+ 2588 08d4 EF00A0E3 		mov	r0, #239
+ 2589 08d8 7710A0E3 		mov	r1, #119
+ 2590 08dc E0219FE5 		ldr	r2, .L26
+ 2591 08e0 B330A0E3 		mov	r3, #179
+ 2592 08e4 FEFFFFEB 		bl	lcd_draw_box
+ 168:../lab10.c    ****     lcd_draw_box(   0, 179,  79, 239, BLACK, 1 );
+ 2593              		.loc 1 168 0
+ 2594 08e8 0F30A0E3 		mov	r3, #15
+ 2595 08ec 00308DE5 		str	r3, [sp, #0]
+ 2596 08f0 0130A0E3 		mov	r3, #1
+ 2597 08f4 04308DE5 		str	r3, [sp, #4]
+ 2598 08f8 0000A0E3 		mov	r0, #0
+ 2599 08fc B310A0E3 		mov	r1, #179
+ 2600 0900 4F20A0E3 		mov	r2, #79
+ 2601 0904 EF30A0E3 		mov	r3, #239
+ 2602 0908 FEFFFFEB 		bl	lcd_draw_box
+ 169:../lab10.c    ****     lcd_draw_box(  79, 179, 159, 239, BLACK, 1 );
+ 2603              		.loc 1 169 0
+ 2604 090c 0F30A0E3 		mov	r3, #15
+ 2605 0910 00308DE5 		str	r3, [sp, #0]
+ 2606 0914 0130A0E3 		mov	r3, #1
+ 2607 0918 04308DE5 		str	r3, [sp, #4]
+ 2608 091c 4F00A0E3 		mov	r0, #79
+ 2609 0920 B310A0E3 		mov	r1, #179
+ 2610 0924 9F20A0E3 		mov	r2, #159
+ 2611 0928 EF30A0E3 		mov	r3, #239
+ 2612 092c FEFFFFEB 		bl	lcd_draw_box
+ 170:../lab10.c    ****     lcd_draw_box( 159, 179, 239, 239, BLACK, 1 );
+ 2613              		.loc 1 170 0
+ 2614 0930 0F30A0E3 		mov	r3, #15
+ 2615 0934 00308DE5 		str	r3, [sp, #0]
+ 2616 0938 0130A0E3 		mov	r3, #1
+ 2617 093c 04308DE5 		str	r3, [sp, #4]
+ 2618 0940 9F00A0E3 		mov	r0, #159
+ 2619 0944 B310A0E3 		mov	r1, #179
+ 2620 0948 EF20A0E3 		mov	r2, #239
+ 2621 094c EF30A0E3 		mov	r3, #239
+ 2622 0950 FEFFFFEB 		bl	lcd_draw_box
+ 171:../lab10.c    ****     lcd_draw_box( 239, 179, 319, 239, BLACK, 1 );
+ 2623              		.loc 1 171 0
+ 2624 0954 0F30A0E3 		mov	r3, #15
+ 2625 0958 00308DE5 		str	r3, [sp, #0]
+ 2626 095c 0130A0E3 		mov	r3, #1
+ 2627 0960 04308DE5 		str	r3, [sp, #4]
+ 2628 0964 EF00A0E3 		mov	r0, #239
+ 2629 0968 B310A0E3 		mov	r1, #179
+ 2630 096c 50219FE5 		ldr	r2, .L26
+ 2631 0970 EF30A0E3 		mov	r3, #239
+ 2632 0974 FEFFFFEB 		bl	lcd_draw_box
+ 172:../lab10.c    **** 
+ 173:../lab10.c    ****     lcd_putchar_x2(  32,  16, BLACK, '0' );    /* Rotula cuadricula */
+ 2633              		.loc 1 173 0
+ 2634 0978 2000A0E3 		mov	r0, #32
+ 2635 097c 1010A0E3 		mov	r1, #16
+ 2636 0980 0F20A0E3 		mov	r2, #15
+ 2637 0984 3030A0E3 		mov	r3, #48
+ 2638 0988 FEFFFFEB 		bl	lcd_putchar_x2
+ 174:../lab10.c    ****     lcd_putchar_x2( 112,  16, BLACK, '1' );
+ 2639              		.loc 1 174 0
+ 2640 098c 7000A0E3 		mov	r0, #112
+ 2641 0990 1010A0E3 		mov	r1, #16
+ 2642 0994 0F20A0E3 		mov	r2, #15
+ 2643 0998 3130A0E3 		mov	r3, #49
+ 2644 099c FEFFFFEB 		bl	lcd_putchar_x2
+ 175:../lab10.c    ****     lcd_putchar_x2( 192,  16, BLACK, '2' );
+ 2645              		.loc 1 175 0
+ 2646 09a0 C000A0E3 		mov	r0, #192
+ 2647 09a4 1010A0E3 		mov	r1, #16
+ 2648 09a8 0F20A0E3 		mov	r2, #15
+ 2649 09ac 3230A0E3 		mov	r3, #50
+ 2650 09b0 FEFFFFEB 		bl	lcd_putchar_x2
+ 176:../lab10.c    ****     lcd_putchar_x2( 272,  16, BLACK, '3' );
+ 2651              		.loc 1 176 0
+ 2652 09b4 110EA0E3 		mov	r0, #272
+ 2653 09b8 1010A0E3 		mov	r1, #16
+ 2654 09bc 0F20A0E3 		mov	r2, #15
+ 2655 09c0 3330A0E3 		mov	r3, #51
+ 2656 09c4 FEFFFFEB 		bl	lcd_putchar_x2
+ 177:../lab10.c    ****     lcd_putchar_x2(  32,  76, BLACK, '4' );
+ 2657              		.loc 1 177 0
+ 2658 09c8 2000A0E3 		mov	r0, #32
+ 2659 09cc 4C10A0E3 		mov	r1, #76
+ 2660 09d0 0F20A0E3 		mov	r2, #15
+ 2661 09d4 3430A0E3 		mov	r3, #52
+ 2662 09d8 FEFFFFEB 		bl	lcd_putchar_x2
+ 178:../lab10.c    ****     lcd_putchar_x2( 112,  76, BLACK, '5' );
+ 2663              		.loc 1 178 0
+ 2664 09dc 7000A0E3 		mov	r0, #112
+ 2665 09e0 4C10A0E3 		mov	r1, #76
+ 2666 09e4 0F20A0E3 		mov	r2, #15
+ 2667 09e8 3530A0E3 		mov	r3, #53
+ 2668 09ec FEFFFFEB 		bl	lcd_putchar_x2
+ 179:../lab10.c    ****     lcd_putchar_x2( 192,  76, BLACK, '6' );
+ 2669              		.loc 1 179 0
+ 2670 09f0 C000A0E3 		mov	r0, #192
+ 2671 09f4 4C10A0E3 		mov	r1, #76
+ 2672 09f8 0F20A0E3 		mov	r2, #15
+ 2673 09fc 3630A0E3 		mov	r3, #54
+ 2674 0a00 FEFFFFEB 		bl	lcd_putchar_x2
+ 180:../lab10.c    ****     lcd_putchar_x2( 272,  76, BLACK, '7' );
+ 2675              		.loc 1 180 0
+ 2676 0a04 110EA0E3 		mov	r0, #272
+ 2677 0a08 4C10A0E3 		mov	r1, #76
+ 2678 0a0c 0F20A0E3 		mov	r2, #15
+ 2679 0a10 3730A0E3 		mov	r3, #55
+ 2680 0a14 FEFFFFEB 		bl	lcd_putchar_x2
+ 181:../lab10.c    ****     lcd_putchar_x2(  32, 136, BLACK, '8' );
+ 2681              		.loc 1 181 0
+ 2682 0a18 2000A0E3 		mov	r0, #32
+ 2683 0a1c 8810A0E3 		mov	r1, #136
+ 2684 0a20 0F20A0E3 		mov	r2, #15
+ 2685 0a24 3830A0E3 		mov	r3, #56
+ 2686 0a28 FEFFFFEB 		bl	lcd_putchar_x2
+ 182:../lab10.c    ****     lcd_putchar_x2( 112, 136, BLACK, '9' );
+ 2687              		.loc 1 182 0
+ 2688 0a2c 7000A0E3 		mov	r0, #112
+ 2689 0a30 8810A0E3 		mov	r1, #136
+ 2690 0a34 0F20A0E3 		mov	r2, #15
+ 2691 0a38 3930A0E3 		mov	r3, #57
+ 2692 0a3c FEFFFFEB 		bl	lcd_putchar_x2
+ 183:../lab10.c    ****     lcd_putchar_x2( 192, 136, BLACK, 'A' );
+ 2693              		.loc 1 183 0
+ 2694 0a40 C000A0E3 		mov	r0, #192
+ 2695 0a44 8810A0E3 		mov	r1, #136
+ 2696 0a48 0F20A0E3 		mov	r2, #15
+ 2697 0a4c 4130A0E3 		mov	r3, #65
+ 2698 0a50 FEFFFFEB 		bl	lcd_putchar_x2
+ 184:../lab10.c    ****     lcd_putchar_x2( 272, 136, BLACK, 'B' );
+ 2699              		.loc 1 184 0
+ 2700 0a54 110EA0E3 		mov	r0, #272
+ 2701 0a58 8810A0E3 		mov	r1, #136
+ 2702 0a5c 0F20A0E3 		mov	r2, #15
+ 2703 0a60 4230A0E3 		mov	r3, #66
+ 2704 0a64 FEFFFFEB 		bl	lcd_putchar_x2
+ 185:../lab10.c    ****     lcd_putchar_x2(  32, 196, BLACK, 'C' );
+ 2705              		.loc 1 185 0
+ 2706 0a68 2000A0E3 		mov	r0, #32
+ 2707 0a6c C410A0E3 		mov	r1, #196
+ 2708 0a70 0F20A0E3 		mov	r2, #15
+ 2709 0a74 4330A0E3 		mov	r3, #67
+ 2710 0a78 FEFFFFEB 		bl	lcd_putchar_x2
+ 186:../lab10.c    ****     lcd_putchar_x2( 112, 196, BLACK, 'D' );
+ 2711              		.loc 1 186 0
+ 2712 0a7c 7000A0E3 		mov	r0, #112
+ 2713 0a80 C410A0E3 		mov	r1, #196
+ 2714 0a84 0F20A0E3 		mov	r2, #15
+ 2715 0a88 4430A0E3 		mov	r3, #68
+ 2716 0a8c FEFFFFEB 		bl	lcd_putchar_x2
+ 187:../lab10.c    ****     lcd_putchar_x2( 192, 196, BLACK, 'E' );
+ 2717              		.loc 1 187 0
+ 2718 0a90 C000A0E3 		mov	r0, #192
+ 2719 0a94 C410A0E3 		mov	r1, #196
+ 2720 0a98 0F20A0E3 		mov	r2, #15
+ 2721 0a9c 4530A0E3 		mov	r3, #69
+ 2722 0aa0 FEFFFFEB 		bl	lcd_putchar_x2
+ 188:../lab10.c    ****     lcd_putchar_x2( 272, 196, BLACK, 'F' );
+ 2723              		.loc 1 188 0
+ 2724 0aa4 110EA0E3 		mov	r0, #272
+ 2725 0aa8 C410A0E3 		mov	r1, #196
+ 2726 0aac 0F20A0E3 		mov	r2, #15
+ 2727 0ab0 4630A0E3 		mov	r3, #70
+ 2728 0ab4 FEFFFFEB 		bl	lcd_putchar_x2
+ 189:../lab10.c    **** 
+ 190:../lab10.c    **** }
+ 2729              		.loc 1 190 0
+ 2730 0ab8 0CD04BE2 		sub	sp, fp, #12
+ 2731 0abc 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2732 0ac0 1EFF2FE1 		bx	lr
+ 2733              	.L27:
+ 2734              		.align	2
+ 2735              	.L26:
+ 2736 0ac4 3F010000 		.word	319
+ 2737              		.cfi_endproc
+ 2738              	.LFE1:
+ 2740              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 lab10.c
+C:\Users\Muadi\AppData\Local\Temp\ccqXxkPg.s:1834   .rodata:00000000 $d
+C:\Users\Muadi\AppData\Local\Temp\ccqXxkPg.s:1850   .text:00000000 $a
+C:\Users\Muadi\AppData\Local\Temp\ccqXxkPg.s:1853   .text:00000000 main
+C:\Users\Muadi\AppData\Local\Temp\ccqXxkPg.s:2455   .text:00000728 lcd_draw_grid
+C:\Users\Muadi\AppData\Local\Temp\ccqXxkPg.s:2443   .text:00000710 $d
+C:\Users\Muadi\AppData\Local\Temp\ccqXxkPg.s:2452   .text:00000728 $a
+C:\Users\Muadi\AppData\Local\Temp\ccqXxkPg.s:2736   .text:00000ac4 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+sys_init
+uart0_init
+timers_init
+lcd_init
+ts_init
+lcd_clear
+lcd_on
+ts_on
+uart0_puts
+ts_getpostime
+uart0_putint
+lcd_putchar_x2
+sw_delay_ms
+lcd_draw_box

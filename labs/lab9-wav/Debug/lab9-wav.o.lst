@@ -1,0 +1,1226 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"lab9-wav.c"
+  21              	.Ltext0:
+  22              		.file 1 "../lab9-wav.c"
+ 2008              		.align	2
+ 2009              	.LC0:
+ 2010 0000 0A0A5265 		.ascii	"\012\012Reproducci\363n de audio no comprimido (est"
+ 2010      70726F64 
+ 2010      75636369 
+ 2010      F36E2064 
+ 2010      65206175 
+ 2011 002a E972656F 		.ascii	"\351reo, 16b, 16KHz) por pooling:\012\000"
+ 2011      2C203136 
+ 2011      622C2031 
+ 2011      364B487A 
+ 2011      2920706F 
+ 2012 004a 0000     		.align	2
+ 2013              	.LC1:
+ 2014 004c 20202D20 		.ascii	"  - Reproducci\363n a volumen medio: escuche... \000"
+ 2014      52657072 
+ 2014      6F647563 
+ 2014      6369F36E 
+ 2014      20612076 
+ 2015 007a 0000     		.align	2
+ 2016              	.LC2:
+ 2017 007c 4F4B0A00 		.ascii	"OK\012\000"
+ 2018              		.align	2
+ 2019              	.LC3:
+ 2020 0080 20202D20 		.ascii	"  - Reproducci\363n a volumen variable: escuche... "
+ 2020      52657072 
+ 2020      6F647563 
+ 2020      6369F36E 
+ 2020      20612076 
+ 2021 00b0 00       		.ascii	"\000"
+ 2022 00b1 000000   		.align	2
+ 2023              	.LC4:
+ 2024 00b4 20202D20 		.ascii	"  - Grabacion: hable mientras los 7 segmentos est\351"
+ 2024      47726162 
+ 2024      6163696F 
+ 2024      6E3A2068 
+ 2024      61626C65 
+ 2025 00e6 6E20656E 		.ascii	"n encendidos... \000"
+ 2025      63656E64 
+ 2025      69646F73 
+ 2025      2E2E2E20 
+ 2025      00
+ 2026 00f7 00       		.align	2
+ 2027              	.LC5:
+ 2028 00f8 20202D20 		.ascii	"  - Reproducci\363n de grabaci\363n: escuche... \000"
+ 2028      52657072 
+ 2028      6F647563 
+ 2028      6369F36E 
+ 2028      20646520 
+ 2029 0123 00       		.align	2
+ 2030              	.LC6:
+ 2031 0124 0A526570 		.ascii	"\012Reproducci\363n de audio no comprimido (est\351"
+ 2031      726F6475 
+ 2031      636369F3 
+ 2031      6E206465 
+ 2031      20617564 
+ 2032 014e 72656F2C 		.ascii	"reo, 16b, 16KHz) por DMA:\012\000"
+ 2032      20313662 
+ 2032      2C203136 
+ 2032      4B487A29 
+ 2032      20706F72 
+ 2033 0169 000000   		.align	2
+ 2034              	.LC7:
+ 2035 016c 20202D20 		.ascii	"  - Reproducci\363n a volumen medio: escuche...\012"
+ 2035      52657072 
+ 2035      6F647563 
+ 2035      6369F36E 
+ 2035      20612076 
+ 2036 0199 20202020 		.ascii	"    \000"
+ 2036      00
+ 2037 019e 0000     		.align	2
+ 2038              	.LC8:
+ 2039 01a0 204F4B0A 		.ascii	" OK\012\000"
+ 2039      00
+ 2040 01a5 000000   		.align	2
+ 2041              	.LC9:
+ 2042 01a8 20202D20 		.ascii	"  - Grabacion: hable mientras los 7 segmentos est\351"
+ 2042      47726162 
+ 2042      6163696F 
+ 2042      6E3A2068 
+ 2042      61626C65 
+ 2043 01da 6E20656E 		.ascii	"n encendidos...\012    \000"
+ 2043      63656E64 
+ 2043      69646F73 
+ 2043      2E2E2E0A 
+ 2043      20202020 
+ 2044 01ef 00       		.align	2
+ 2045              	.LC10:
+ 2046 01f0 20202D20 		.ascii	"  - Reproducci\363n de grabaci\363n: escuche...\012"
+ 2046      52657072 
+ 2046      6F647563 
+ 2046      6369F36E 
+ 2046      20646520 
+ 2047 021a 20202020 		.ascii	"    \000"
+ 2047      00
+ 2048 021f 00       		.align	2
+ 2049              	.LC11:
+ 2050 0220 20202D20 		.ascii	"  - Reproducci\363n continua: escuche...\012\000"
+ 2050      52657072 
+ 2050      6F647563 
+ 2050      6369F36E 
+ 2050      20636F6E 
+ 2051 0247 00       		.align	2
+ 2052              	.LC12:
+ 2053 0248 20202020 		.ascii	"    (para finalizar presione el pulsador derecho)\012"
+ 2053      28706172 
+ 2053      61206669 
+ 2053      6E616C69 
+ 2053      7A617220 
+ 2054 027a 20202020 		.ascii	"    \000"
+ 2054      00
+ 2055 027f 00       		.align	2
+ 2056              	.LC13:
+ 2057 0280 20202D20 		.ascii	"  - Reproducci\363n continua con pause: escuche...\012"
+ 2057      52657072 
+ 2057      6F647563 
+ 2057      6369F36E 
+ 2057      20636F6E 
+ 2058 02b0 00       		.ascii	"\000"
+ 2059 02b1 000000   		.align	2
+ 2060              	.LC14:
+ 2061 02b4 20202020 		.ascii	"    (para finalizar presione el pulsador derecho)\012"
+ 2061      28706172 
+ 2061      61206669 
+ 2061      6E616C69 
+ 2061      7A617220 
+ 2062 02e6 00       		.ascii	"\000"
+ 2063 02e7 00       		.align	2
+ 2064              	.LC15:
+ 2065 02e8 20202020 		.ascii	"    (para parar/continuar presione el pulsador izqu"
+ 2065      28706172 
+ 2065      61207061 
+ 2065      7261722F 
+ 2065      636F6E74 
+ 2066 031b 69657264 		.ascii	"ierdo)\012\000"
+ 2066      6F290A00 
+ 2067 0323 00       		.align	2
+ 2068              	.LC16:
+ 2069 0324 20202020 		.ascii	"    PLAY\012\000"
+ 2069      504C4159 
+ 2069      0A00
+ 2070 032e 0000     		.align	2
+ 2071              	.LC17:
+ 2072 0330 20202020 		.ascii	"    PAUSE\012\000"
+ 2072      50415553 
+ 2072      450A00
+ 2073 033b 00       		.align	2
+ 2074              	.LC18:
+ 2075 033c 20202020 		.ascii	"    ...OK\012\000"
+ 2075      2E2E2E4F 
+ 2075      4B0A00
+ 2076 0347 00       		.align	2
+ 2077              	.LC19:
+ 2078 0348 20202D20 		.ascii	"  - Reproducci\363n continua con mute: escuche...\012"
+ 2078      52657072 
+ 2078      6F647563 
+ 2078      6369F36E 
+ 2078      20636F6E 
+ 2079 0377 00       		.ascii	"\000"
+ 2080              		.align	2
+ 2081              	.LC20:
+ 2082 0378 20202020 		.ascii	"    (para activar/desactivar el mute presione el pu"
+ 2082      28706172 
+ 2082      61206163 
+ 2082      74697661 
+ 2082      722F6465 
+ 2083 03ab 6C736164 		.ascii	"lsador izquierdo)\012\000"
+ 2083      6F722069 
+ 2083      7A717569 
+ 2083      6572646F 
+ 2083      290A00
+ 2084 03be 0000     		.align	2
+ 2085              	.LC21:
+ 2086 03c0 20202020 		.ascii	"    MUTE OFF\012\000"
+ 2086      4D555445 
+ 2086      204F4646 
+ 2086      0A00
+ 2087 03ce 0000     		.align	2
+ 2088              	.LC22:
+ 2089 03d0 20202020 		.ascii	"    MUTE ON\012\000"
+ 2089      4D555445 
+ 2089      204F4E0A 
+ 2089      00
+ 2090 03dd 000000   		.align	2
+ 2091              	.LC23:
+ 2092 03e0 20202D20 		.ascii	"  - Reproduccion libre de sonido: pulse el teclado "
+ 2092      52657072 
+ 2092      6F647563 
+ 2092      63696F6E 
+ 2092      206C6962 
+ 2093 0413 79206573 		.ascii	"y escuche...\012\000"
+ 2093      63756368 
+ 2093      652E2E2E 
+ 2093      0A00
+ 2094 0421 000000   		.text
+ 2095              		.align	2
+ 2096              		.global	main
+ 2098              	main:
+ 2099              	.LFB0:
+   1:../lab9-wav.c **** /*-------------------------------------------------------------------
+   2:../lab9-wav.c **** **
+   3:../lab9-wav.c **** **  Fichero:
+   4:../lab9-wav.c **** **    lab9-wav.c  12/5/2015
+   5:../lab9-wav.c **** **
+   6:../lab9-wav.c **** **    (c) J.M. Mendias
+   7:../lab9-wav.c **** **    Programación de Sistemas y Dispositivos
+   8:../lab9-wav.c **** **    Facultad de Informática. Universidad Complutense de Madrid
+   9:../lab9-wav.c **** **
+  10:../lab9-wav.c **** **  Propósito:
+  11:../lab9-wav.c **** **    Test del laboratorio 9 (2a. parte)
+  12:../lab9-wav.c **** **
+  13:../lab9-wav.c **** **  Notas de diseño:
+  14:../lab9-wav.c **** **    - Requiere que los ficheros de sonido (stéreo, 16b, 16KHz)
+  15:../lab9-wav.c **** **      estén cargados en memoria en las posiciones indicadas.
+  16:../lab9-wav.c **** **    - Para ello ejecutar en el depurador el comando: 
+  17:../lab9-wav.c **** **      "script load_wavs.script"  el cual presupone que los 
+  18:../lab9-wav.c **** **      ficheros *.wav están en la carpeta "..\common\wav16b16" 
+  19:../lab9-wav.c **** **
+  20:../lab9-wav.c **** **-----------------------------------------------------------------*/
+  21:../lab9-wav.c **** 
+  22:../lab9-wav.c **** #include <s3c44b0x.h>
+  23:../lab9-wav.c **** #include <common_types.h>
+  24:../lab9-wav.c **** #include <system.h>
+  25:../lab9-wav.c **** #include <uart.h>
+  26:../lab9-wav.c **** #include <uda1341ts.h>
+  27:../lab9-wav.c **** #include <iis.h>
+  28:../lab9-wav.c **** #include <keypad.h>
+  29:../lab9-wav.c **** #include <pbs.h>
+  30:../lab9-wav.c **** #include <segs.h>
+  31:../lab9-wav.c **** #include <timers.h>
+  32:../lab9-wav.c **** 
+  33:../lab9-wav.c **** /* Direcciones en donde se encuentran cargados los sonidos tras la ejecucion del comando "script lo
+  34:../lab9-wav.c **** 
+  35:../lab9-wav.c **** #define DTMF0      ((int16 *)0x0c400000)
+  36:../lab9-wav.c **** #define DTMF1      ((int16 *)0x0c402000)
+  37:../lab9-wav.c **** #define DTMF2      ((int16 *)0x0c404000)
+  38:../lab9-wav.c **** #define DTMF3      ((int16 *)0x0c406000)
+  39:../lab9-wav.c **** #define DTMF4      ((int16 *)0x0c408000)
+  40:../lab9-wav.c **** #define DTMF5      ((int16 *)0x0c40a000)
+  41:../lab9-wav.c **** #define DTMF6      ((int16 *)0x0c40c000)
+  42:../lab9-wav.c **** #define DTMF7      ((int16 *)0x0c40e000)
+  43:../lab9-wav.c **** #define DTMF8      ((int16 *)0x0c410000)
+  44:../lab9-wav.c **** #define DTMF9      ((int16 *)0x0c412000)
+  45:../lab9-wav.c **** #define DTMFSTAR   ((int16 *)0x0c414000)
+  46:../lab9-wav.c **** #define DTMFSHARP  ((int16 *)0x0c418000)
+  47:../lab9-wav.c **** #define NOKIATUNE  ((int16 *)0x0c41a000)
+  48:../lab9-wav.c **** #define INVITACION ((int16 *)0x0c47a000)
+  49:../lab9-wav.c **** #define LLAMADA    ((int16 *)0x0c4fa000)
+  50:../lab9-wav.c **** #define CONGESTION ((int16 *)0x0c54a000)
+  51:../lab9-wav.c **** #define OCUPADO    ((int16 *)0x0c56a000)
+  52:../lab9-wav.c **** 
+  53:../lab9-wav.c **** /* Tamaños en bytes de los sonidos cargados */
+  54:../lab9-wav.c **** 
+  55:../lab9-wav.c **** #define DTMF_SIZE       (6400)    /* (0,1 s) * (2 canales) * (2 B/canal) * (16000 muestras/s) = 640
+  56:../lab9-wav.c **** #define NOKIATUNE_SIZE  (352000)  /* (5,5 s) * (2 canales) * (2 B/canal) * (16000 muestras/s) = 352
+  57:../lab9-wav.c **** #define INVITACION_SIZE (512000)  /* (8,0 s) * (2 canales) * (2 B/canal) * (16000 muestras/s) = 512
+  58:../lab9-wav.c **** #define LLAMADA_SIZE    (288000)  /* (4,5 s) * (2 canales) * (2 B/canal) * (16000 muestras/s) = 288
+  59:../lab9-wav.c **** #define CONGESTION_SIZE (102400)  /* (1,6 s) * (2 canales) * (2 B/canal) * (16000 muestras/s) = 102
+  60:../lab9-wav.c **** #define OCUPADO_SIZE    (25600)   /* (0,4 s) * (2 canales) * (2 B/canal) * (16000 muestras/s) = 256
+  61:../lab9-wav.c **** 
+  62:../lab9-wav.c **** /* Direccion y tamaños del buffer de grabación */
+  63:../lab9-wav.c **** 
+  64:../lab9-wav.c **** #define REC_BUFFER      ((int16 *)0x0c700000)
+  65:../lab9-wav.c **** #define REC_SIZE        (320000)  /* (5,0 s) * (2 canales) * (2 B/canal) * (16000 muestras/s) = 320
+  66:../lab9-wav.c **** 
+  67:../lab9-wav.c **** void main( void )
+  68:../lab9-wav.c **** {
+ 2100              		.loc 1 68 0
+ 2101              		.cfi_startproc
+ 2102              		@ Function supports interworking.
+ 2103              		@ args = 0, pretend = 0, frame = 8
+ 2104              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2105 0000 0DC0A0E1 		mov	ip, sp
+ 2106              	.LCFI0:
+ 2107              		.cfi_def_cfa_register 12
+ 2108 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2109 0008 04B04CE2 		sub	fp, ip, #4
+ 2110              		.cfi_offset 14, -8
+ 2111              		.cfi_offset 13, -12
+ 2112              		.cfi_offset 11, -16
+ 2113              	.LCFI1:
+ 2114              		.cfi_def_cfa 11, 4
+ 2115 000c 08D04DE2 		sub	sp, sp, #8
+  69:../lab9-wav.c ****     uint8 vol;
+  70:../lab9-wav.c ****     uint8 pb;
+  71:../lab9-wav.c ****     boolean flag;
+  72:../lab9-wav.c **** 
+  73:../lab9-wav.c ****     sys_init();
+ 2116              		.loc 1 73 0
+ 2117 0010 FEFFFFEB 		bl	sys_init
+  74:../lab9-wav.c ****     uart0_init();
+ 2118              		.loc 1 74 0
+ 2119 0014 FEFFFFEB 		bl	uart0_init
+  75:../lab9-wav.c ****     segs_init();
+ 2120              		.loc 1 75 0
+ 2121 0018 FEFFFFEB 		bl	segs_init
+  76:../lab9-wav.c ****     keypad_init();
+ 2122              		.loc 1 76 0
+ 2123 001c FEFFFFEB 		bl	keypad_init
+  77:../lab9-wav.c ****     uda1341ts_init();
+ 2124              		.loc 1 77 0
+ 2125 0020 FEFFFFEB 		bl	uda1341ts_init
+  78:../lab9-wav.c **** 
+  79:../lab9-wav.c ****     /************************************/
+  80:../lab9-wav.c **** 
+  81:../lab9-wav.c ****     uart0_puts( "\n\nReproducción de audio no comprimido (estéreo, 16b, 16KHz) por pooling:\n" );
+ 2126              		.loc 1 81 0
+ 2127 0024 44069FE5 		ldr	r0, .L41
+ 2128 0028 FEFFFFEB 		bl	uart0_puts
+  82:../lab9-wav.c **** 
+  83:../lab9-wav.c ****     iis_init( IIS_POLLING );
+ 2129              		.loc 1 83 0
+ 2130 002c 0200A0E3 		mov	r0, #2
+ 2131 0030 FEFFFFEB 		bl	iis_init
+  84:../lab9-wav.c **** 
+  85:../lab9-wav.c ****     /************************************/
+  86:../lab9-wav.c **** 
+  87:../lab9-wav.c ****     uart0_puts( "  - Reproducción a volumen medio: escuche... " );
+ 2132              		.loc 1 87 0
+ 2133 0034 38069FE5 		ldr	r0, .L41+4
+ 2134 0038 FEFFFFEB 		bl	uart0_puts
+  88:../lab9-wav.c ****     uda1341ts_setvol( VOL_MED );
+ 2135              		.loc 1 88 0
+ 2136 003c 2000A0E3 		mov	r0, #32
+ 2137 0040 FEFFFFEB 		bl	uda1341ts_setvol
+  89:../lab9-wav.c ****     iis_play( NOKIATUNE, NOKIATUNE_SIZE, OFF );
+ 2138              		.loc 1 89 0
+ 2139 0044 2C069FE5 		ldr	r0, .L41+8
+ 2140 0048 2C169FE5 		ldr	r1, .L41+12
+ 2141 004c 0020A0E3 		mov	r2, #0
+ 2142 0050 FEFFFFEB 		bl	iis_play
+  90:../lab9-wav.c ****     uart0_puts( "OK\n" );
+ 2143              		.loc 1 90 0
+ 2144 0054 24069FE5 		ldr	r0, .L41+16
+ 2145 0058 FEFFFFEB 		bl	uart0_puts
+  91:../lab9-wav.c **** 
+  92:../lab9-wav.c ****     /************************************/
+  93:../lab9-wav.c **** 
+  94:../lab9-wav.c ****     uart0_puts( "  - Reproducción a volumen variable: escuche... " );
+ 2146              		.loc 1 94 0
+ 2147 005c 20069FE5 		ldr	r0, .L41+20
+ 2148 0060 FEFFFFEB 		bl	uart0_puts
+  95:../lab9-wav.c ****     for( vol=0; vol<63; vol++ )
+ 2149              		.loc 1 95 0
+ 2150 0064 0030A0E3 		mov	r3, #0
+ 2151 0068 0D304BE5 		strb	r3, [fp, #-13]
+ 2152 006c 090000EA 		b	.L2
+ 2153              	.L3:
+  96:../lab9-wav.c ****     {
+  97:../lab9-wav.c ****         uda1341ts_setvol( vol );
+ 2154              		.loc 1 97 0 discriminator 2
+ 2155 0070 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2156 0074 0300A0E1 		mov	r0, r3
+ 2157 0078 FEFFFFEB 		bl	uda1341ts_setvol
+  98:../lab9-wav.c ****         iis_play( DTMF1, DTMF_SIZE, OFF );
+ 2158              		.loc 1 98 0 discriminator 2
+ 2159 007c 04069FE5 		ldr	r0, .L41+24
+ 2160 0080 191CA0E3 		mov	r1, #6400
+ 2161 0084 0020A0E3 		mov	r2, #0
+ 2162 0088 FEFFFFEB 		bl	iis_play
+  95:../lab9-wav.c ****     for( vol=0; vol<63; vol++ )
+ 2163              		.loc 1 95 0 discriminator 2
+ 2164 008c 0D305BE5 		ldrb	r3, [fp, #-13]
+ 2165 0090 013083E2 		add	r3, r3, #1
+ 2166 0094 0D304BE5 		strb	r3, [fp, #-13]
+ 2167              	.L2:
+  95:../lab9-wav.c ****     for( vol=0; vol<63; vol++ )
+ 2168              		.loc 1 95 0 is_stmt 0 discriminator 1
+ 2169 0098 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2170 009c 3E0053E3 		cmp	r3, #62
+ 2171 00a0 F2FFFF9A 		bls	.L3
+  99:../lab9-wav.c ****     }
+ 100:../lab9-wav.c ****     uart0_puts( "OK\n" );
+ 2172              		.loc 1 100 0 is_stmt 1
+ 2173 00a4 D4059FE5 		ldr	r0, .L41+16
+ 2174 00a8 FEFFFFEB 		bl	uart0_puts
+ 101:../lab9-wav.c ****     uda1341ts_setvol( VOL_MAX );
+ 2175              		.loc 1 101 0
+ 2176 00ac 3F00A0E3 		mov	r0, #63
+ 2177 00b0 FEFFFFEB 		bl	uda1341ts_setvol
+ 102:../lab9-wav.c **** 
+ 103:../lab9-wav.c ****     /************************************/
+ 104:../lab9-wav.c **** 
+ 105:../lab9-wav.c ****     uart0_puts( "  - Grabacion: hable mientras los 7 segmentos estén encendidos... " );
+ 2178              		.loc 1 105 0
+ 2179 00b4 D0059FE5 		ldr	r0, .L41+28
+ 2180 00b8 FEFFFFEB 		bl	uart0_puts
+ 106:../lab9-wav.c ****     segs_putchar( 8 );
+ 2181              		.loc 1 106 0
+ 2182 00bc 0800A0E3 		mov	r0, #8
+ 2183 00c0 FEFFFFEB 		bl	segs_putchar
+ 107:../lab9-wav.c ****     iis_rec( REC_BUFFER, REC_SIZE );
+ 2184              		.loc 1 107 0
+ 2185 00c4 C706A0E3 		mov	r0, #208666624
+ 2186 00c8 C0159FE5 		ldr	r1, .L41+32
+ 2187 00cc FEFFFFEB 		bl	iis_rec
+ 108:../lab9-wav.c ****     segs_off();
+ 2188              		.loc 1 108 0
+ 2189 00d0 FEFFFFEB 		bl	segs_off
+ 109:../lab9-wav.c ****     uart0_puts( "OK\n" );
+ 2190              		.loc 1 109 0
+ 2191 00d4 A4059FE5 		ldr	r0, .L41+16
+ 2192 00d8 FEFFFFEB 		bl	uart0_puts
+ 110:../lab9-wav.c ****     uart0_puts( "  - Reproducción de grabación: escuche... " );
+ 2193              		.loc 1 110 0
+ 2194 00dc B0059FE5 		ldr	r0, .L41+36
+ 2195 00e0 FEFFFFEB 		bl	uart0_puts
+ 111:../lab9-wav.c ****     iis_play( REC_BUFFER, REC_SIZE, OFF );
+ 2196              		.loc 1 111 0
+ 2197 00e4 C706A0E3 		mov	r0, #208666624
+ 2198 00e8 A0159FE5 		ldr	r1, .L41+32
+ 2199 00ec 0020A0E3 		mov	r2, #0
+ 2200 00f0 FEFFFFEB 		bl	iis_play
+ 112:../lab9-wav.c ****     uart0_puts( "OK\n" );
+ 2201              		.loc 1 112 0
+ 2202 00f4 84059FE5 		ldr	r0, .L41+16
+ 2203 00f8 FEFFFFEB 		bl	uart0_puts
+ 113:../lab9-wav.c **** 
+ 114:../lab9-wav.c ****     /************************************/
+ 115:../lab9-wav.c **** 
+ 116:../lab9-wav.c ****     uart0_puts( "\nReproducción de audio no comprimido (estéreo, 16b, 16KHz) por DMA:\n" );
+ 2204              		.loc 1 116 0
+ 2205 00fc 94059FE5 		ldr	r0, .L41+40
+ 2206 0100 FEFFFFEB 		bl	uart0_puts
+ 117:../lab9-wav.c **** 
+ 118:../lab9-wav.c ****     iis_init( IIS_DMA );
+ 2207              		.loc 1 118 0
+ 2208 0104 0100A0E3 		mov	r0, #1
+ 2209 0108 FEFFFFEB 		bl	iis_init
+ 119:../lab9-wav.c **** 
+ 120:../lab9-wav.c ****     /************************************/
+ 121:../lab9-wav.c **** 
+ 122:../lab9-wav.c ****     uart0_puts( "  - Reproducción a volumen medio: escuche...\n    " );
+ 2210              		.loc 1 122 0
+ 2211 010c 88059FE5 		ldr	r0, .L41+44
+ 2212 0110 FEFFFFEB 		bl	uart0_puts
+ 123:../lab9-wav.c ****     uda1341ts_setvol( VOL_MED );
+ 2213              		.loc 1 123 0
+ 2214 0114 2000A0E3 		mov	r0, #32
+ 2215 0118 FEFFFFEB 		bl	uda1341ts_setvol
+ 124:../lab9-wav.c ****     iis_play( NOKIATUNE, NOKIATUNE_SIZE, OFF );
+ 2216              		.loc 1 124 0
+ 2217 011c 54059FE5 		ldr	r0, .L41+8
+ 2218 0120 54159FE5 		ldr	r1, .L41+12
+ 2219 0124 0020A0E3 		mov	r2, #0
+ 2220 0128 FEFFFFEB 		bl	iis_play
+ 125:../lab9-wav.c ****     while( iis_status() )
+ 2221              		.loc 1 125 0
+ 2222 012c 0000A0E1 		mov	r0, r0	@ nop
+ 2223              	.L4:
+ 2224              		.loc 1 125 0 is_stmt 0 discriminator 1
+ 2225 0130 FEFFFFEB 		bl	iis_status
+ 2226 0134 0030A0E1 		mov	r3, r0
+ 2227 0138 000053E3 		cmp	r3, #0
+ 2228 013c FBFFFF1A 		bne	.L4
+ 126:../lab9-wav.c ****     {
+ 127:../lab9-wav.c ****         //sw_delay_ms( 500 );
+ 128:../lab9-wav.c ****         //uart0_putchar( '.' );
+ 129:../lab9-wav.c ****     }
+ 130:../lab9-wav.c ****     uart0_puts( " OK\n" );
+ 2229              		.loc 1 130 0 is_stmt 1
+ 2230 0140 58059FE5 		ldr	r0, .L41+48
+ 2231 0144 FEFFFFEB 		bl	uart0_puts
+ 131:../lab9-wav.c **** 
+ 132:../lab9-wav.c ****     /************************************/
+ 133:../lab9-wav.c **** 
+ 134:../lab9-wav.c ****     uart0_puts( "  - Reproducción a volumen variable: escuche... " );
+ 2232              		.loc 1 134 0
+ 2233 0148 34059FE5 		ldr	r0, .L41+20
+ 2234 014c FEFFFFEB 		bl	uart0_puts
+ 135:../lab9-wav.c ****     iis_play( NOKIATUNE, NOKIATUNE_SIZE, OFF );
+ 2235              		.loc 1 135 0
+ 2236 0150 20059FE5 		ldr	r0, .L41+8
+ 2237 0154 20159FE5 		ldr	r1, .L41+12
+ 2238 0158 0020A0E3 		mov	r2, #0
+ 2239 015c FEFFFFEB 		bl	iis_play
+ 136:../lab9-wav.c ****     vol = 0;
+ 2240              		.loc 1 136 0
+ 2241 0160 0030A0E3 		mov	r3, #0
+ 2242 0164 0D304BE5 		strb	r3, [fp, #-13]
+ 137:../lab9-wav.c ****     while( iis_status() )
+ 2243              		.loc 1 137 0
+ 2244 0168 080000EA 		b	.L5
+ 2245              	.L8:
+ 138:../lab9-wav.c ****     {
+ 139:../lab9-wav.c ****     	/*for(vol = 0; vol < 63; vol++){
+ 140:../lab9-wav.c ****     		uda1341ts_setvol( vol );
+ 141:../lab9-wav.c ****     	}*/
+ 142:../lab9-wav.c ****        vol = ( vol != 63 ? vol+1 : 0 );
+ 2246              		.loc 1 142 0
+ 2247 016c 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2248 0170 3F0053E3 		cmp	r3, #63
+ 2249 0174 0300000A 		beq	.L6
+ 2250              		.loc 1 142 0 is_stmt 0 discriminator 1
+ 2251 0178 0D305BE5 		ldrb	r3, [fp, #-13]
+ 2252 017c 013083E2 		add	r3, r3, #1
+ 2253 0180 FF3003E2 		and	r3, r3, #255
+ 2254 0184 000000EA 		b	.L7
+ 2255              	.L6:
+ 2256              		.loc 1 142 0 discriminator 2
+ 2257 0188 0030A0E3 		mov	r3, #0
+ 2258              	.L7:
+ 2259              		.loc 1 142 0 discriminator 3
+ 2260 018c 0D304BE5 		strb	r3, [fp, #-13]
+ 2261              	.L5:
+ 137:../lab9-wav.c ****     while( iis_status() )
+ 2262              		.loc 1 137 0 is_stmt 1 discriminator 1
+ 2263 0190 FEFFFFEB 		bl	iis_status
+ 2264 0194 0030A0E1 		mov	r3, r0
+ 2265 0198 000053E3 		cmp	r3, #0
+ 2266 019c F2FFFF1A 		bne	.L8
+ 143:../lab9-wav.c ****        // sw_delay_ms( 20 );
+ 144:../lab9-wav.c ****     }
+ 145:../lab9-wav.c ****     uart0_puts( "OK\n" );
+ 2267              		.loc 1 145 0
+ 2268 01a0 D8049FE5 		ldr	r0, .L41+16
+ 2269 01a4 FEFFFFEB 		bl	uart0_puts
+ 146:../lab9-wav.c ****     uda1341ts_setvol( VOL_MAX );
+ 2270              		.loc 1 146 0
+ 2271 01a8 3F00A0E3 		mov	r0, #63
+ 2272 01ac FEFFFFEB 		bl	uda1341ts_setvol
+ 147:../lab9-wav.c **** 
+ 148:../lab9-wav.c ****     /************************************/
+ 149:../lab9-wav.c **** 
+ 150:../lab9-wav.c ****     uart0_puts( "  - Grabacion: hable mientras los 7 segmentos estén encendidos...\n    " );
+ 2273              		.loc 1 150 0
+ 2274 01b0 EC049FE5 		ldr	r0, .L41+52
+ 2275 01b4 FEFFFFEB 		bl	uart0_puts
+ 151:../lab9-wav.c ****     segs_putchar( 8 );
+ 2276              		.loc 1 151 0
+ 2277 01b8 0800A0E3 		mov	r0, #8
+ 2278 01bc FEFFFFEB 		bl	segs_putchar
+ 152:../lab9-wav.c ****     iis_rec( REC_BUFFER, REC_SIZE );
+ 2279              		.loc 1 152 0
+ 2280 01c0 C706A0E3 		mov	r0, #208666624
+ 2281 01c4 C4149FE5 		ldr	r1, .L41+32
+ 2282 01c8 FEFFFFEB 		bl	iis_rec
+ 153:../lab9-wav.c ****     while( iis_status() )
+ 2283              		.loc 1 153 0
+ 2284 01cc 0000A0E1 		mov	r0, r0	@ nop
+ 2285              	.L9:
+ 2286              		.loc 1 153 0 is_stmt 0 discriminator 1
+ 2287 01d0 FEFFFFEB 		bl	iis_status
+ 2288 01d4 0030A0E1 		mov	r3, r0
+ 2289 01d8 000053E3 		cmp	r3, #0
+ 2290 01dc FBFFFF1A 		bne	.L9
+ 154:../lab9-wav.c ****     {
+ 155:../lab9-wav.c ****        // sw_delay_ms( 500 );
+ 156:../lab9-wav.c ****        // uart0_putchar( '.' );
+ 157:../lab9-wav.c ****     }
+ 158:../lab9-wav.c ****     segs_off();
+ 2291              		.loc 1 158 0 is_stmt 1
+ 2292 01e0 FEFFFFEB 		bl	segs_off
+ 159:../lab9-wav.c ****     uart0_puts( " OK\n" );
+ 2293              		.loc 1 159 0
+ 2294 01e4 B4049FE5 		ldr	r0, .L41+48
+ 2295 01e8 FEFFFFEB 		bl	uart0_puts
+ 160:../lab9-wav.c ****     uart0_puts( "  - Reproducción de grabación: escuche...\n    " );
+ 2296              		.loc 1 160 0
+ 2297 01ec B4049FE5 		ldr	r0, .L41+56
+ 2298 01f0 FEFFFFEB 		bl	uart0_puts
+ 161:../lab9-wav.c ****     iis_play( REC_BUFFER, REC_SIZE, OFF );
+ 2299              		.loc 1 161 0
+ 2300 01f4 C706A0E3 		mov	r0, #208666624
+ 2301 01f8 90149FE5 		ldr	r1, .L41+32
+ 2302 01fc 0020A0E3 		mov	r2, #0
+ 2303 0200 FEFFFFEB 		bl	iis_play
+ 162:../lab9-wav.c ****     while( iis_status() )
+ 2304              		.loc 1 162 0
+ 2305 0204 0000A0E1 		mov	r0, r0	@ nop
+ 2306              	.L10:
+ 2307              		.loc 1 162 0 is_stmt 0 discriminator 1
+ 2308 0208 FEFFFFEB 		bl	iis_status
+ 2309 020c 0030A0E1 		mov	r3, r0
+ 2310 0210 000053E3 		cmp	r3, #0
+ 2311 0214 FBFFFF1A 		bne	.L10
+ 163:../lab9-wav.c ****     {
+ 164:../lab9-wav.c ****         //sw_delay_ms( 500 );
+ 165:../lab9-wav.c ****         //uart0_putchar( '.' );
+ 166:../lab9-wav.c ****     }
+ 167:../lab9-wav.c ****     uart0_puts( " OK\n" );
+ 2312              		.loc 1 167 0 is_stmt 1
+ 2313 0218 80049FE5 		ldr	r0, .L41+48
+ 2314 021c FEFFFFEB 		bl	uart0_puts
+ 168:../lab9-wav.c **** 
+ 169:../lab9-wav.c ****     /************************************/
+ 170:../lab9-wav.c **** 
+ 171:../lab9-wav.c ****     uart0_puts( "  - Reproducción continua: escuche...\n" );
+ 2315              		.loc 1 171 0
+ 2316 0220 84049FE5 		ldr	r0, .L41+60
+ 2317 0224 FEFFFFEB 		bl	uart0_puts
+ 172:../lab9-wav.c ****     uart0_puts( "    (para finalizar presione el pulsador derecho)\n    " );
+ 2318              		.loc 1 172 0
+ 2319 0228 80049FE5 		ldr	r0, .L41+64
+ 2320 022c FEFFFFEB 		bl	uart0_puts
+ 173:../lab9-wav.c ****     uda1341ts_setvol( VOL_MED );
+ 2321              		.loc 1 173 0
+ 2322 0230 2000A0E3 		mov	r0, #32
+ 2323 0234 FEFFFFEB 		bl	uda1341ts_setvol
+ 174:../lab9-wav.c ****     iis_play( NOKIATUNE, NOKIATUNE_SIZE, ON );
+ 2324              		.loc 1 174 0
+ 2325 0238 38049FE5 		ldr	r0, .L41+8
+ 2326 023c 38149FE5 		ldr	r1, .L41+12
+ 2327 0240 0120A0E3 		mov	r2, #1
+ 2328 0244 FEFFFFEB 		bl	iis_play
+ 175:../lab9-wav.c ****     while( !pb_status( PB_RIGHT ) )
+ 2329              		.loc 1 175 0
+ 2330 0248 010000EA 		b	.L11
+ 2331              	.L12:
+ 176:../lab9-wav.c ****     {
+ 177:../lab9-wav.c ****         //sw_delay_ms( 500 );
+ 178:../lab9-wav.c ****         uart0_putchar( '.' );
+ 2332              		.loc 1 178 0
+ 2333 024c 2E00A0E3 		mov	r0, #46
+ 2334 0250 FEFFFFEB 		bl	uart0_putchar
+ 2335              	.L11:
+ 175:../lab9-wav.c ****     while( !pb_status( PB_RIGHT ) )
+ 2336              		.loc 1 175 0 discriminator 1
+ 2337 0254 8000A0E3 		mov	r0, #128
+ 2338 0258 FEFFFFEB 		bl	pb_status
+ 2339 025c 0030A0E1 		mov	r3, r0
+ 2340 0260 000053E3 		cmp	r3, #0
+ 2341 0264 F8FFFF0A 		beq	.L12
+ 179:../lab9-wav.c ****     }
+ 180:../lab9-wav.c ****     pb_wait_keyup( PB_RIGHT );
+ 2342              		.loc 1 180 0
+ 2343 0268 8000A0E3 		mov	r0, #128
+ 2344 026c FEFFFFEB 		bl	pb_wait_keyup
+ 181:../lab9-wav.c ****     iis_pause();
+ 2345              		.loc 1 181 0
+ 2346 0270 FEFFFFEB 		bl	iis_pause
+ 182:../lab9-wav.c ****     uart0_puts( " OK\n" );
+ 2347              		.loc 1 182 0
+ 2348 0274 24049FE5 		ldr	r0, .L41+48
+ 2349 0278 FEFFFFEB 		bl	uart0_puts
+ 183:../lab9-wav.c **** 
+ 184:../lab9-wav.c ****     /************************************/
+ 185:../lab9-wav.c **** 
+ 186:../lab9-wav.c ****     uart0_puts( "  - Reproducción continua con pause: escuche...\n" );
+ 2350              		.loc 1 186 0
+ 2351 027c 30049FE5 		ldr	r0, .L41+68
+ 2352 0280 FEFFFFEB 		bl	uart0_puts
+ 187:../lab9-wav.c ****     uart0_puts( "    (para finalizar presione el pulsador derecho)\n" );
+ 2353              		.loc 1 187 0
+ 2354 0284 2C049FE5 		ldr	r0, .L41+72
+ 2355 0288 FEFFFFEB 		bl	uart0_puts
+ 188:../lab9-wav.c ****     uart0_puts( "    (para parar/continuar presione el pulsador izquierdo)\n" );
+ 2356              		.loc 1 188 0
+ 2357 028c 28049FE5 		ldr	r0, .L41+76
+ 2358 0290 FEFFFFEB 		bl	uart0_puts
+ 189:../lab9-wav.c ****     iis_play( NOKIATUNE, NOKIATUNE_SIZE, ON );
+ 2359              		.loc 1 189 0
+ 2360 0294 DC039FE5 		ldr	r0, .L41+8
+ 2361 0298 DC139FE5 		ldr	r1, .L41+12
+ 2362 029c 0120A0E3 		mov	r2, #1
+ 2363 02a0 FEFFFFEB 		bl	iis_play
+ 190:../lab9-wav.c ****     flag = FALSE;
+ 2364              		.loc 1 190 0
+ 2365 02a4 0030A0E3 		mov	r3, #0
+ 2366 02a8 0E304BE5 		strb	r3, [fp, #-14]
+ 2367              	.L16:
+ 191:../lab9-wav.c ****     do
+ 192:../lab9-wav.c ****     {
+ 193:../lab9-wav.c ****         pb = pb_getchar();
+ 2368              		.loc 1 193 0
+ 2369 02ac FEFFFFEB 		bl	pb_getchar
+ 2370 02b0 0030A0E1 		mov	r3, r0
+ 2371 02b4 0F304BE5 		strb	r3, [fp, #-15]
+ 194:../lab9-wav.c ****         if( pb == PB_LEFT )
+ 2372              		.loc 1 194 0
+ 2373 02b8 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 2374 02bc 400053E3 		cmp	r3, #64
+ 2375 02c0 0E00001A 		bne	.L13
+ 195:../lab9-wav.c ****         {
+ 196:../lab9-wav.c ****             if( flag )
+ 2376              		.loc 1 196 0
+ 2377 02c4 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 2378 02c8 000053E3 		cmp	r3, #0
+ 2379 02cc 0300000A 		beq	.L14
+ 197:../lab9-wav.c ****             {
+ 198:../lab9-wav.c ****                 iis_continue();
+ 2380              		.loc 1 198 0
+ 2381 02d0 FEFFFFEB 		bl	iis_continue
+ 199:../lab9-wav.c ****                 uart0_puts( "    PLAY\n" );
+ 2382              		.loc 1 199 0
+ 2383 02d4 E4039FE5 		ldr	r0, .L41+80
+ 2384 02d8 FEFFFFEB 		bl	uart0_puts
+ 2385 02dc 020000EA 		b	.L15
+ 2386              	.L14:
+ 200:../lab9-wav.c ****             }
+ 201:../lab9-wav.c ****             else
+ 202:../lab9-wav.c ****             {
+ 203:../lab9-wav.c ****                 iis_pause();
+ 2387              		.loc 1 203 0
+ 2388 02e0 FEFFFFEB 		bl	iis_pause
+ 204:../lab9-wav.c ****                 uart0_puts( "    PAUSE\n" );
+ 2389              		.loc 1 204 0
+ 2390 02e4 D8039FE5 		ldr	r0, .L41+84
+ 2391 02e8 FEFFFFEB 		bl	uart0_puts
+ 2392              	.L15:
+ 205:../lab9-wav.c ****             }
+ 206:../lab9-wav.c ****             flag = !flag;
+ 2393              		.loc 1 206 0
+ 2394 02ec 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 2395 02f0 000053E3 		cmp	r3, #0
+ 2396 02f4 0030A013 		movne	r3, #0
+ 2397 02f8 0130A003 		moveq	r3, #1
+ 2398 02fc 0E304BE5 		strb	r3, [fp, #-14]
+ 2399              	.L13:
+ 207:../lab9-wav.c ****         };
+ 208:../lab9-wav.c ****     } while( pb != PB_RIGHT );
+ 2400              		.loc 1 208 0
+ 2401 0300 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 2402 0304 800053E3 		cmp	r3, #128
+ 2403 0308 E7FFFF1A 		bne	.L16
+ 209:../lab9-wav.c ****     iis_pause();
+ 2404              		.loc 1 209 0
+ 2405 030c FEFFFFEB 		bl	iis_pause
+ 210:../lab9-wav.c ****     uart0_puts( "    ...OK\n" );
+ 2406              		.loc 1 210 0
+ 2407 0310 B0039FE5 		ldr	r0, .L41+88
+ 2408 0314 FEFFFFEB 		bl	uart0_puts
+ 211:../lab9-wav.c **** 
+ 212:../lab9-wav.c ****     /************************************/
+ 213:../lab9-wav.c **** 
+ 214:../lab9-wav.c ****     uart0_puts( "  - Reproducción continua con mute: escuche...\n" );
+ 2409              		.loc 1 214 0
+ 2410 0318 AC039FE5 		ldr	r0, .L41+92
+ 2411 031c FEFFFFEB 		bl	uart0_puts
+ 215:../lab9-wav.c ****     uart0_puts( "    (para finalizar presione el pulsador derecho)\n" );
+ 2412              		.loc 1 215 0
+ 2413 0320 90039FE5 		ldr	r0, .L41+72
+ 2414 0324 FEFFFFEB 		bl	uart0_puts
+ 216:../lab9-wav.c ****     uart0_puts( "    (para activar/desactivar el mute presione el pulsador izquierdo)\n" );
+ 2415              		.loc 1 216 0
+ 2416 0328 A0039FE5 		ldr	r0, .L41+96
+ 2417 032c FEFFFFEB 		bl	uart0_puts
+ 217:../lab9-wav.c ****     iis_play( NOKIATUNE, NOKIATUNE_SIZE, ON );
+ 2418              		.loc 1 217 0
+ 2419 0330 40039FE5 		ldr	r0, .L41+8
+ 2420 0334 40139FE5 		ldr	r1, .L41+12
+ 2421 0338 0120A0E3 		mov	r2, #1
+ 2422 033c FEFFFFEB 		bl	iis_play
+ 218:../lab9-wav.c ****     flag = FALSE;
+ 2423              		.loc 1 218 0
+ 2424 0340 0030A0E3 		mov	r3, #0
+ 2425 0344 0E304BE5 		strb	r3, [fp, #-14]
+ 2426              	.L20:
+ 219:../lab9-wav.c ****     do
+ 220:../lab9-wav.c ****     {
+ 221:../lab9-wav.c ****         pb = pb_getchar();
+ 2427              		.loc 1 221 0
+ 2428 0348 FEFFFFEB 		bl	pb_getchar
+ 2429 034c 0030A0E1 		mov	r3, r0
+ 2430 0350 0F304BE5 		strb	r3, [fp, #-15]
+ 222:../lab9-wav.c ****         if( pb == PB_LEFT )
+ 2431              		.loc 1 222 0
+ 2432 0354 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 2433 0358 400053E3 		cmp	r3, #64
+ 2434 035c 1000001A 		bne	.L17
+ 223:../lab9-wav.c ****         {
+ 224:../lab9-wav.c ****             if( flag )
+ 2435              		.loc 1 224 0
+ 2436 0360 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 2437 0364 000053E3 		cmp	r3, #0
+ 2438 0368 0400000A 		beq	.L18
+ 225:../lab9-wav.c ****             {
+ 226:../lab9-wav.c ****                 uda1341ts_mute( MUTE_OFF );
+ 2439              		.loc 1 226 0
+ 2440 036c 0000A0E3 		mov	r0, #0
+ 2441 0370 FEFFFFEB 		bl	uda1341ts_mute
+ 227:../lab9-wav.c ****                 uart0_puts( "    MUTE OFF\n" );
+ 2442              		.loc 1 227 0
+ 2443 0374 58039FE5 		ldr	r0, .L41+100
+ 2444 0378 FEFFFFEB 		bl	uart0_puts
+ 2445 037c 030000EA 		b	.L19
+ 2446              	.L18:
+ 228:../lab9-wav.c ****             }
+ 229:../lab9-wav.c ****             else
+ 230:../lab9-wav.c ****             {
+ 231:../lab9-wav.c ****                 uda1341ts_mute( MUTE_ON );
+ 2447              		.loc 1 231 0
+ 2448 0380 0100A0E3 		mov	r0, #1
+ 2449 0384 FEFFFFEB 		bl	uda1341ts_mute
+ 232:../lab9-wav.c ****                 uart0_puts( "    MUTE ON\n" );
+ 2450              		.loc 1 232 0
+ 2451 0388 48039FE5 		ldr	r0, .L41+104
+ 2452 038c FEFFFFEB 		bl	uart0_puts
+ 2453              	.L19:
+ 233:../lab9-wav.c ****             }
+ 234:../lab9-wav.c ****             flag = !flag;
+ 2454              		.loc 1 234 0
+ 2455 0390 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 2456 0394 000053E3 		cmp	r3, #0
+ 2457 0398 0030A013 		movne	r3, #0
+ 2458 039c 0130A003 		moveq	r3, #1
+ 2459 03a0 0E304BE5 		strb	r3, [fp, #-14]
+ 2460              	.L17:
+ 235:../lab9-wav.c ****         };
+ 236:../lab9-wav.c ****     } while( pb != PB_RIGHT );
+ 2461              		.loc 1 236 0
+ 2462 03a4 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 2463 03a8 800053E3 		cmp	r3, #128
+ 2464 03ac E5FFFF1A 		bne	.L20
+ 237:../lab9-wav.c ****     iis_pause();
+ 2465              		.loc 1 237 0
+ 2466 03b0 FEFFFFEB 		bl	iis_pause
+ 238:../lab9-wav.c ****     uart0_puts( "    ...OK\n" );
+ 2467              		.loc 1 238 0
+ 2468 03b4 0C039FE5 		ldr	r0, .L41+88
+ 2469 03b8 FEFFFFEB 		bl	uart0_puts
+ 239:../lab9-wav.c **** 
+ 240:../lab9-wav.c ****     /************************************/
+ 241:../lab9-wav.c **** 
+ 242:../lab9-wav.c ****     uart0_puts( "  - Reproduccion libre de sonido: pulse el teclado y escuche...\n" );
+ 2470              		.loc 1 242 0
+ 2471 03bc 18039FE5 		ldr	r0, .L41+108
+ 2472 03c0 FEFFFFEB 		bl	uart0_puts
+ 2473              	.L40:
+ 243:../lab9-wav.c ****     while( 1 )
+ 244:../lab9-wav.c ****         switch( keypad_getchar() )
+ 2474              		.loc 1 244 0
+ 2475 03c4 FEFFFFEB 		bl	keypad_getchar
+ 2476 03c8 0030A0E1 		mov	r3, r0
+ 2477 03cc 0F0053E3 		cmp	r3, #15
+ 2478 03d0 03F19F97 		ldrls	pc, [pc, r3, asl #2]
+ 2479 03d4 A30000EA 		b	.L21
+ 2480              	.L38:
+ 2481 03d8 18040000 		.word	.L22
+ 2482 03dc 2C040000 		.word	.L23
+ 2483 03e0 40040000 		.word	.L24
+ 2484 03e4 54040000 		.word	.L25
+ 2485 03e8 68040000 		.word	.L26
+ 2486 03ec 7C040000 		.word	.L27
+ 2487 03f0 90040000 		.word	.L28
+ 2488 03f4 A4040000 		.word	.L29
+ 2489 03f8 E8040000 		.word	.L30
+ 2490 03fc FC040000 		.word	.L31
+ 2491 0400 10050000 		.word	.L32
+ 2492 0404 24050000 		.word	.L33
+ 2493 0408 68050000 		.word	.L34
+ 2494 040c 7C050000 		.word	.L35
+ 2495 0410 90050000 		.word	.L36
+ 2496 0414 A4050000 		.word	.L37
+ 2497              	.L22:
+ 245:../lab9-wav.c ****         {
+ 246:../lab9-wav.c ****             case KEYPAD_KEY0:
+ 247:../lab9-wav.c ****                 iis_play( DTMF1, DTMF_SIZE, OFF );
+ 2498              		.loc 1 247 0
+ 2499 0418 68029FE5 		ldr	r0, .L41+24
+ 2500 041c 191CA0E3 		mov	r1, #6400
+ 2501 0420 0020A0E3 		mov	r2, #0
+ 2502 0424 FEFFFFEB 		bl	iis_play
+ 248:../lab9-wav.c ****                 break;
+ 2503              		.loc 1 248 0
+ 2504 0428 8F0000EA 		b	.L39
+ 2505              	.L23:
+ 249:../lab9-wav.c ****             case KEYPAD_KEY1:
+ 250:../lab9-wav.c ****                 iis_play( DTMF2, DTMF_SIZE, OFF );
+ 2506              		.loc 1 250 0
+ 2507 042c AC029FE5 		ldr	r0, .L41+112
+ 2508 0430 191CA0E3 		mov	r1, #6400
+ 2509 0434 0020A0E3 		mov	r2, #0
+ 2510 0438 FEFFFFEB 		bl	iis_play
+ 251:../lab9-wav.c ****                 break;
+ 2511              		.loc 1 251 0
+ 2512 043c 8A0000EA 		b	.L39
+ 2513              	.L24:
+ 252:../lab9-wav.c ****             case KEYPAD_KEY2:
+ 253:../lab9-wav.c ****                 iis_play( DTMF3, DTMF_SIZE, OFF );
+ 2514              		.loc 1 253 0
+ 2515 0440 9C029FE5 		ldr	r0, .L41+116
+ 2516 0444 191CA0E3 		mov	r1, #6400
+ 2517 0448 0020A0E3 		mov	r2, #0
+ 2518 044c FEFFFFEB 		bl	iis_play
+ 254:../lab9-wav.c ****                 break;
+ 2519              		.loc 1 254 0
+ 2520 0450 850000EA 		b	.L39
+ 2521              	.L25:
+ 255:../lab9-wav.c ****             case KEYPAD_KEY3:
+ 256:../lab9-wav.c ****                 iis_play( INVITACION, INVITACION_SIZE, OFF );
+ 2522              		.loc 1 256 0
+ 2523 0454 8C029FE5 		ldr	r0, .L41+120
+ 2524 0458 7D1AA0E3 		mov	r1, #512000
+ 2525 045c 0020A0E3 		mov	r2, #0
+ 2526 0460 FEFFFFEB 		bl	iis_play
+ 257:../lab9-wav.c ****                 break;
+ 2527              		.loc 1 257 0
+ 2528 0464 800000EA 		b	.L39
+ 2529              	.L26:
+ 258:../lab9-wav.c ****             case KEYPAD_KEY4:
+ 259:../lab9-wav.c ****                 iis_play( DTMF4, DTMF_SIZE, OFF );
+ 2530              		.loc 1 259 0
+ 2531 0468 7C029FE5 		ldr	r0, .L41+124
+ 2532 046c 191CA0E3 		mov	r1, #6400
+ 2533 0470 0020A0E3 		mov	r2, #0
+ 2534 0474 FEFFFFEB 		bl	iis_play
+ 260:../lab9-wav.c ****                 break;        
+ 2535              		.loc 1 260 0
+ 2536 0478 7B0000EA 		b	.L39
+ 2537              	.L27:
+ 261:../lab9-wav.c ****             case KEYPAD_KEY5:
+ 262:../lab9-wav.c ****                 iis_play( DTMF5, DTMF_SIZE, OFF);
+ 2538              		.loc 1 262 0
+ 2539 047c 6C029FE5 		ldr	r0, .L41+128
+ 2540 0480 191CA0E3 		mov	r1, #6400
+ 2541 0484 0020A0E3 		mov	r2, #0
+ 2542 0488 FEFFFFEB 		bl	iis_play
+ 263:../lab9-wav.c ****                 break;
+ 2543              		.loc 1 263 0
+ 2544 048c 760000EA 		b	.L39
+ 2545              	.L28:
+ 264:../lab9-wav.c ****             case KEYPAD_KEY6:
+ 265:../lab9-wav.c ****                 iis_play( DTMF6, DTMF_SIZE, OFF );
+ 2546              		.loc 1 265 0
+ 2547 0490 5C029FE5 		ldr	r0, .L41+132
+ 2548 0494 191CA0E3 		mov	r1, #6400
+ 2549 0498 0020A0E3 		mov	r2, #0
+ 2550 049c FEFFFFEB 		bl	iis_play
+ 266:../lab9-wav.c ****                 break;
+ 2551              		.loc 1 266 0
+ 2552 04a0 710000EA 		b	.L39
+ 2553              	.L29:
+ 267:../lab9-wav.c ****             case KEYPAD_KEY7:
+ 268:../lab9-wav.c ****                 iis_play( LLAMADA, LLAMADA_SIZE, OFF );
+ 2554              		.loc 1 268 0
+ 2555 04a4 4C029FE5 		ldr	r0, .L41+136
+ 2556 04a8 4C129FE5 		ldr	r1, .L41+140
+ 2557 04ac 0020A0E3 		mov	r2, #0
+ 2558 04b0 FEFFFFEB 		bl	iis_play
+ 269:../lab9-wav.c ****                 iis_play( LLAMADA, LLAMADA_SIZE, OFF );
+ 2559              		.loc 1 269 0
+ 2560 04b4 3C029FE5 		ldr	r0, .L41+136
+ 2561 04b8 3C129FE5 		ldr	r1, .L41+140
+ 2562 04bc 0020A0E3 		mov	r2, #0
+ 2563 04c0 FEFFFFEB 		bl	iis_play
+ 270:../lab9-wav.c ****                 iis_play( LLAMADA, LLAMADA_SIZE, OFF );
+ 2564              		.loc 1 270 0
+ 2565 04c4 2C029FE5 		ldr	r0, .L41+136
+ 2566 04c8 2C129FE5 		ldr	r1, .L41+140
+ 2567 04cc 0020A0E3 		mov	r2, #0
+ 2568 04d0 FEFFFFEB 		bl	iis_play
+ 271:../lab9-wav.c ****                 iis_play( LLAMADA, LLAMADA_SIZE, OFF );
+ 2569              		.loc 1 271 0
+ 2570 04d4 1C029FE5 		ldr	r0, .L41+136
+ 2571 04d8 1C129FE5 		ldr	r1, .L41+140
+ 2572 04dc 0020A0E3 		mov	r2, #0
+ 2573 04e0 FEFFFFEB 		bl	iis_play
+ 272:../lab9-wav.c ****                 break;
+ 2574              		.loc 1 272 0
+ 2575 04e4 600000EA 		b	.L39
+ 2576              	.L30:
+ 273:../lab9-wav.c ****             case KEYPAD_KEY8:
+ 274:../lab9-wav.c ****                 iis_play( DTMF7, DTMF_SIZE, OFF );
+ 2577              		.loc 1 274 0
+ 2578 04e8 10029FE5 		ldr	r0, .L41+144
+ 2579 04ec 191CA0E3 		mov	r1, #6400
+ 2580 04f0 0020A0E3 		mov	r2, #0
+ 2581 04f4 FEFFFFEB 		bl	iis_play
+ 275:../lab9-wav.c ****                 break;
+ 2582              		.loc 1 275 0
+ 2583 04f8 5B0000EA 		b	.L39
+ 2584              	.L31:
+ 276:../lab9-wav.c ****             case KEYPAD_KEY9:
+ 277:../lab9-wav.c ****                 iis_play( DTMF8, DTMF_SIZE, OFF );
+ 2585              		.loc 1 277 0
+ 2586 04fc 00029FE5 		ldr	r0, .L41+148
+ 2587 0500 191CA0E3 		mov	r1, #6400
+ 2588 0504 0020A0E3 		mov	r2, #0
+ 2589 0508 FEFFFFEB 		bl	iis_play
+ 278:../lab9-wav.c ****                 break;    
+ 2590              		.loc 1 278 0
+ 2591 050c 560000EA 		b	.L39
+ 2592              	.L32:
+ 279:../lab9-wav.c ****             case KEYPAD_KEYA:
+ 280:../lab9-wav.c ****                 iis_play( DTMF9, DTMF_SIZE, OFF );
+ 2593              		.loc 1 280 0
+ 2594 0510 F0019FE5 		ldr	r0, .L41+152
+ 2595 0514 191CA0E3 		mov	r1, #6400
+ 2596 0518 0020A0E3 		mov	r2, #0
+ 2597 051c FEFFFFEB 		bl	iis_play
+ 281:../lab9-wav.c ****                 break;
+ 2598              		.loc 1 281 0
+ 2599 0520 510000EA 		b	.L39
+ 2600              	.L33:
+ 282:../lab9-wav.c ****             case KEYPAD_KEYB:
+ 283:../lab9-wav.c ****                 iis_play( CONGESTION, CONGESTION_SIZE, OFF );
+ 2601              		.loc 1 283 0
+ 2602 0524 E0019FE5 		ldr	r0, .L41+156
+ 2603 0528 191AA0E3 		mov	r1, #102400
+ 2604 052c 0020A0E3 		mov	r2, #0
+ 2605 0530 FEFFFFEB 		bl	iis_play
+ 284:../lab9-wav.c ****                 iis_play( CONGESTION, CONGESTION_SIZE, OFF);
+ 2606              		.loc 1 284 0
+ 2607 0534 D0019FE5 		ldr	r0, .L41+156
+ 2608 0538 191AA0E3 		mov	r1, #102400
+ 2609 053c 0020A0E3 		mov	r2, #0
+ 2610 0540 FEFFFFEB 		bl	iis_play
+ 285:../lab9-wav.c ****                 iis_play( CONGESTION, CONGESTION_SIZE, OFF );
+ 2611              		.loc 1 285 0
+ 2612 0544 C0019FE5 		ldr	r0, .L41+156
+ 2613 0548 191AA0E3 		mov	r1, #102400
+ 2614 054c 0020A0E3 		mov	r2, #0
+ 2615 0550 FEFFFFEB 		bl	iis_play
+ 286:../lab9-wav.c ****                 iis_play( CONGESTION, CONGESTION_SIZE, OFF );
+ 2616              		.loc 1 286 0
+ 2617 0554 B0019FE5 		ldr	r0, .L41+156
+ 2618 0558 191AA0E3 		mov	r1, #102400
+ 2619 055c 0020A0E3 		mov	r2, #0
+ 2620 0560 FEFFFFEB 		bl	iis_play
+ 287:../lab9-wav.c ****                 break;
+ 2621              		.loc 1 287 0
+ 2622 0564 400000EA 		b	.L39
+ 2623              	.L34:
+ 288:../lab9-wav.c ****             case KEYPAD_KEYC:
+ 289:../lab9-wav.c ****                 iis_play( DTMFSTAR, DTMF_SIZE, OFF );
+ 2624              		.loc 1 289 0
+ 2625 0568 A0019FE5 		ldr	r0, .L41+160
+ 2626 056c 191CA0E3 		mov	r1, #6400
+ 2627 0570 0020A0E3 		mov	r2, #0
+ 2628 0574 FEFFFFEB 		bl	iis_play
+ 290:../lab9-wav.c ****                 break;
+ 2629              		.loc 1 290 0
+ 2630 0578 3B0000EA 		b	.L39
+ 2631              	.L35:
+ 291:../lab9-wav.c ****             case KEYPAD_KEYD:
+ 292:../lab9-wav.c ****                 iis_play( DTMF0, DTMF_SIZE, OFF );
+ 2632              		.loc 1 292 0
+ 2633 057c 3105A0E3 		mov	r0, #205520896
+ 2634 0580 191CA0E3 		mov	r1, #6400
+ 2635 0584 0020A0E3 		mov	r2, #0
+ 2636 0588 FEFFFFEB 		bl	iis_play
+ 293:../lab9-wav.c ****                 break;
+ 2637              		.loc 1 293 0
+ 2638 058c 360000EA 		b	.L39
+ 2639              	.L36:
+ 294:../lab9-wav.c ****             case KEYPAD_KEYE:
+ 295:../lab9-wav.c ****                 iis_play( DTMFSHARP, DTMF_SIZE, OFF );
+ 2640              		.loc 1 295 0
+ 2641 0590 7C019FE5 		ldr	r0, .L41+164
+ 2642 0594 191CA0E3 		mov	r1, #6400
+ 2643 0598 0020A0E3 		mov	r2, #0
+ 2644 059c FEFFFFEB 		bl	iis_play
+ 296:../lab9-wav.c ****                 break;
+ 2645              		.loc 1 296 0
+ 2646 05a0 310000EA 		b	.L39
+ 2647              	.L37:
+ 297:../lab9-wav.c ****             case KEYPAD_KEYF:
+ 298:../lab9-wav.c ****                 iis_play( OCUPADO, OCUPADO_SIZE, OFF );
+ 2648              		.loc 1 298 0
+ 2649 05a4 6C019FE5 		ldr	r0, .L41+168
+ 2650 05a8 191BA0E3 		mov	r1, #25600
+ 2651 05ac 0020A0E3 		mov	r2, #0
+ 2652 05b0 FEFFFFEB 		bl	iis_play
+ 299:../lab9-wav.c ****                 iis_play( OCUPADO, OCUPADO_SIZE, OFF );
+ 2653              		.loc 1 299 0
+ 2654 05b4 5C019FE5 		ldr	r0, .L41+168
+ 2655 05b8 191BA0E3 		mov	r1, #25600
+ 2656 05bc 0020A0E3 		mov	r2, #0
+ 2657 05c0 FEFFFFEB 		bl	iis_play
+ 300:../lab9-wav.c ****                 iis_play( OCUPADO, OCUPADO_SIZE, OFF );
+ 2658              		.loc 1 300 0
+ 2659 05c4 4C019FE5 		ldr	r0, .L41+168
+ 2660 05c8 191BA0E3 		mov	r1, #25600
+ 2661 05cc 0020A0E3 		mov	r2, #0
+ 2662 05d0 FEFFFFEB 		bl	iis_play
+ 301:../lab9-wav.c ****                 iis_play( OCUPADO, OCUPADO_SIZE, OFF );
+ 2663              		.loc 1 301 0
+ 2664 05d4 3C019FE5 		ldr	r0, .L41+168
+ 2665 05d8 191BA0E3 		mov	r1, #25600
+ 2666 05dc 0020A0E3 		mov	r2, #0
+ 2667 05e0 FEFFFFEB 		bl	iis_play
+ 302:../lab9-wav.c ****                 iis_play( OCUPADO, OCUPADO_SIZE, OFF );
+ 2668              		.loc 1 302 0
+ 2669 05e4 2C019FE5 		ldr	r0, .L41+168
+ 2670 05e8 191BA0E3 		mov	r1, #25600
+ 2671 05ec 0020A0E3 		mov	r2, #0
+ 2672 05f0 FEFFFFEB 		bl	iis_play
+ 303:../lab9-wav.c ****                 iis_play( OCUPADO, OCUPADO_SIZE, OFF );
+ 2673              		.loc 1 303 0
+ 2674 05f4 1C019FE5 		ldr	r0, .L41+168
+ 2675 05f8 191BA0E3 		mov	r1, #25600
+ 2676 05fc 0020A0E3 		mov	r2, #0
+ 2677 0600 FEFFFFEB 		bl	iis_play
+ 304:../lab9-wav.c ****                 iis_play( OCUPADO, OCUPADO_SIZE, OFF );
+ 2678              		.loc 1 304 0
+ 2679 0604 0C019FE5 		ldr	r0, .L41+168
+ 2680 0608 191BA0E3 		mov	r1, #25600
+ 2681 060c 0020A0E3 		mov	r2, #0
+ 2682 0610 FEFFFFEB 		bl	iis_play
+ 305:../lab9-wav.c ****                 iis_play( OCUPADO, OCUPADO_SIZE, OFF );
+ 2683              		.loc 1 305 0
+ 2684 0614 FC009FE5 		ldr	r0, .L41+168
+ 2685 0618 191BA0E3 		mov	r1, #25600
+ 2686 061c 0020A0E3 		mov	r2, #0
+ 2687 0620 FEFFFFEB 		bl	iis_play
+ 306:../lab9-wav.c ****                 iis_play( OCUPADO, OCUPADO_SIZE, OFF );
+ 2688              		.loc 1 306 0
+ 2689 0624 EC009FE5 		ldr	r0, .L41+168
+ 2690 0628 191BA0E3 		mov	r1, #25600
+ 2691 062c 0020A0E3 		mov	r2, #0
+ 2692 0630 FEFFFFEB 		bl	iis_play
+ 307:../lab9-wav.c ****                 iis_play( OCUPADO, OCUPADO_SIZE, OFF );
+ 2693              		.loc 1 307 0
+ 2694 0634 DC009FE5 		ldr	r0, .L41+168
+ 2695 0638 191BA0E3 		mov	r1, #25600
+ 2696 063c 0020A0E3 		mov	r2, #0
+ 2697 0640 FEFFFFEB 		bl	iis_play
+ 308:../lab9-wav.c ****                 iis_play( OCUPADO, OCUPADO_SIZE, OFF );
+ 2698              		.loc 1 308 0
+ 2699 0644 CC009FE5 		ldr	r0, .L41+168
+ 2700 0648 191BA0E3 		mov	r1, #25600
+ 2701 064c 0020A0E3 		mov	r2, #0
+ 2702 0650 FEFFFFEB 		bl	iis_play
+ 309:../lab9-wav.c ****                 iis_play( OCUPADO, OCUPADO_SIZE, OFF );
+ 2703              		.loc 1 309 0
+ 2704 0654 BC009FE5 		ldr	r0, .L41+168
+ 2705 0658 191BA0E3 		mov	r1, #25600
+ 2706 065c 0020A0E3 		mov	r2, #0
+ 2707 0660 FEFFFFEB 		bl	iis_play
+ 310:../lab9-wav.c ****                 break;            
+ 2708              		.loc 1 310 0
+ 2709 0664 000000EA 		b	.L39
+ 2710              	.L21:
+ 311:../lab9-wav.c ****             default:
+ 312:../lab9-wav.c ****                 break;
+ 2711              		.loc 1 312 0
+ 2712 0668 0000A0E1 		mov	r0, r0	@ nop
+ 2713              	.L39:
+ 313:../lab9-wav.c ****         };       
+ 2714              		.loc 1 313 0
+ 2715 066c 54FFFFEA 		b	.L40
+ 2716              	.L42:
+ 2717              		.align	2
+ 2718              	.L41:
+ 2719 0670 00000000 		.word	.LC0
+ 2720 0674 4C000000 		.word	.LC1
+ 2721 0678 00A0410C 		.word	205627392
+ 2722 067c 005F0500 		.word	352000
+ 2723 0680 7C000000 		.word	.LC2
+ 2724 0684 80000000 		.word	.LC3
+ 2725 0688 0020400C 		.word	205529088
+ 2726 068c B4000000 		.word	.LC4
+ 2727 0690 00E20400 		.word	320000
+ 2728 0694 F8000000 		.word	.LC5
+ 2729 0698 24010000 		.word	.LC6
+ 2730 069c 6C010000 		.word	.LC7
+ 2731 06a0 A0010000 		.word	.LC8
+ 2732 06a4 A8010000 		.word	.LC9
+ 2733 06a8 F0010000 		.word	.LC10
+ 2734 06ac 20020000 		.word	.LC11
+ 2735 06b0 48020000 		.word	.LC12
+ 2736 06b4 80020000 		.word	.LC13
+ 2737 06b8 B4020000 		.word	.LC14
+ 2738 06bc E8020000 		.word	.LC15
+ 2739 06c0 24030000 		.word	.LC16
+ 2740 06c4 30030000 		.word	.LC17
+ 2741 06c8 3C030000 		.word	.LC18
+ 2742 06cc 48030000 		.word	.LC19
+ 2743 06d0 78030000 		.word	.LC20
+ 2744 06d4 C0030000 		.word	.LC21
+ 2745 06d8 D0030000 		.word	.LC22
+ 2746 06dc E0030000 		.word	.LC23
+ 2747 06e0 0040400C 		.word	205537280
+ 2748 06e4 0060400C 		.word	205545472
+ 2749 06e8 00A0470C 		.word	206020608
+ 2750 06ec 0080400C 		.word	205553664
+ 2751 06f0 00A0400C 		.word	205561856
+ 2752 06f4 00C0400C 		.word	205570048
+ 2753 06f8 00A04F0C 		.word	206544896
+ 2754 06fc 00650400 		.word	288000
+ 2755 0700 00E0400C 		.word	205578240
+ 2756 0704 0000410C 		.word	205586432
+ 2757 0708 0020410C 		.word	205594624
+ 2758 070c 00A0540C 		.word	206872576
+ 2759 0710 0040410C 		.word	205602816
+ 2760 0714 0080410C 		.word	205619200
+ 2761 0718 00A0560C 		.word	207003648
+ 2762              		.cfi_endproc
+ 2763              	.LFE0:
+ 2765              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 lab9-wav.c
+C:\Users\Muadi\AppData\Local\Temp\ccIguvk2.s:2008   .rodata:00000000 $d
+C:\Users\Muadi\AppData\Local\Temp\ccIguvk2.s:2095   .text:00000000 $a
+C:\Users\Muadi\AppData\Local\Temp\ccIguvk2.s:2098   .text:00000000 main
+C:\Users\Muadi\AppData\Local\Temp\ccIguvk2.s:2481   .text:000003d8 $d
+C:\Users\Muadi\AppData\Local\Temp\ccIguvk2.s:2499   .text:00000418 $a
+C:\Users\Muadi\AppData\Local\Temp\ccIguvk2.s:2719   .text:00000670 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+sys_init
+uart0_init
+segs_init
+keypad_init
+uda1341ts_init
+uart0_puts
+iis_init
+uda1341ts_setvol
+iis_play
+segs_putchar
+iis_rec
+segs_off
+iis_status
+uart0_putchar
+pb_status
+pb_wait_keyup
+iis_pause
+pb_getchar
+iis_continue
+uda1341ts_mute
+keypad_getchar

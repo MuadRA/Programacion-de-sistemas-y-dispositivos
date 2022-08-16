@@ -1,0 +1,1381 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"ts.c"
+  21              	.Ltext0:
+  22              		.file 1 "../src/ts.c"
+ 1978              		.align	1
+ 1979              	Vxmin:
+ 1980 0000 0000     		.space	2
+ 1981              		.align	1
+ 1982              	Vxmax:
+ 1983 0002 0000     		.space	2
+ 1984              		.align	1
+ 1985              	Vymin:
+ 1986 0004 0000     		.space	2
+ 1987              		.align	1
+ 1988              	Vymax:
+ 1989 0006 0000     		.space	2
+ 1990              	state:
+ 1991 0008 00       		.space	1
+ 1992 0009 00       		.text
+ 1993              		.align	2
+ 1994              		.global	ts_init
+ 1996              	ts_init:
+ 1997              	.LFB0:
+   1:../src/ts.c   **** #include <s3c44b0x.h>
+   2:../src/ts.c   **** #include <s3cev40.h>
+   3:../src/ts.c   **** #include <timers.h>
+   4:../src/ts.c   **** #include <adc.h>
+   5:../src/ts.c   **** #include <lcd.h>
+   6:../src/ts.c   **** #include <ts.h>
+   7:../src/ts.c   **** 
+   8:../src/ts.c   **** #define PX_ERROR    (5)
+   9:../src/ts.c   **** 
+  10:../src/ts.c   **** static uint16 Vxmin = 0;
+  11:../src/ts.c   **** static uint16 Vxmax = 0;
+  12:../src/ts.c   **** static uint16 Vymin = 0;
+  13:../src/ts.c   **** static uint16 Vymax = 0;
+  14:../src/ts.c   **** 
+  15:../src/ts.c   **** static uint8 state;
+  16:../src/ts.c   **** 
+  17:../src/ts.c   **** extern void isr_TS_dummy( void );
+  18:../src/ts.c   **** 
+  19:../src/ts.c   **** static void ts_scan( uint16 *Vx, uint16 *Vy );
+  20:../src/ts.c   **** static void ts_calibrate( void );
+  21:../src/ts.c   **** static void ts_sample2coord( uint16 Vx, uint16 Vy, uint16 *x, uint16 *y );
+  22:../src/ts.c   **** 
+  23:../src/ts.c   **** void ts_init( void )
+  24:../src/ts.c   **** {
+ 1998              		.loc 1 24 0
+ 1999              		.cfi_startproc
+ 2000              		@ Function supports interworking.
+ 2001              		@ args = 0, pretend = 0, frame = 0
+ 2002              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2003 0000 0DC0A0E1 		mov	ip, sp
+ 2004              	.LCFI0:
+ 2005              		.cfi_def_cfa_register 12
+ 2006 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2007 0008 04B04CE2 		sub	fp, ip, #4
+ 2008              		.cfi_offset 14, -8
+ 2009              		.cfi_offset 13, -12
+ 2010              		.cfi_offset 11, -16
+ 2011              	.LCFI1:
+ 2012              		.cfi_def_cfa 11, 4
+  25:../src/ts.c   ****     lcd_init();
+ 2013              		.loc 1 25 0
+ 2014 000c FEFFFFEB 		bl	lcd_init
+  26:../src/ts.c   ****     adc_init();
+ 2015              		.loc 1 26 0
+ 2016 0010 FEFFFFEB 		bl	adc_init
+  27:../src/ts.c   ****     PDATE |= ((1<<5) | (1<<4) | (1<<7));
+ 2017              		.loc 1 27 0
+ 2018 0014 38309FE5 		ldr	r3, .L2
+ 2019 0018 34209FE5 		ldr	r2, .L2
+ 2020 001c 002092E5 		ldr	r2, [r2, #0]
+ 2021 0020 B02082E3 		orr	r2, r2, #176
+ 2022 0024 002083E5 		str	r2, [r3, #0]
+  28:../src/ts.c   ****     PDATE &= ~(1<<6);
+ 2023              		.loc 1 28 0
+ 2024 0028 24309FE5 		ldr	r3, .L2
+ 2025 002c 20209FE5 		ldr	r2, .L2
+ 2026 0030 002092E5 		ldr	r2, [r2, #0]
+ 2027 0034 4020C2E3 		bic	r2, r2, #64
+ 2028 0038 002083E5 		str	r2, [r3, #0]
+  29:../src/ts.c   ****     ts_on();
+ 2029              		.loc 1 29 0
+ 2030 003c FEFFFFEB 		bl	ts_on
+  30:../src/ts.c   ****     ts_calibrate();
+ 2031              		.loc 1 30 0
+ 2032 0040 240000EB 		bl	ts_calibrate
+  31:../src/ts.c   ****     ts_off();
+ 2033              		.loc 1 31 0
+ 2034 0044 FEFFFFEB 		bl	ts_off
+  32:../src/ts.c   **** }
+ 2035              		.loc 1 32 0
+ 2036 0048 0CD04BE2 		sub	sp, fp, #12
+ 2037 004c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2038 0050 1EFF2FE1 		bx	lr
+ 2039              	.L3:
+ 2040              		.align	2
+ 2041              	.L2:
+ 2042 0054 2C00D201 		.word	30539820
+ 2043              		.cfi_endproc
+ 2044              	.LFE0:
+ 2046              		.align	2
+ 2047              		.global	ts_on
+ 2049              	ts_on:
+ 2050              	.LFB1:
+  33:../src/ts.c   **** 
+  34:../src/ts.c   **** void ts_on( void )
+  35:../src/ts.c   **** {
+ 2051              		.loc 1 35 0
+ 2052              		.cfi_startproc
+ 2053              		@ Function supports interworking.
+ 2054              		@ args = 0, pretend = 0, frame = 0
+ 2055              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2056 0058 0DC0A0E1 		mov	ip, sp
+ 2057              	.LCFI2:
+ 2058              		.cfi_def_cfa_register 12
+ 2059 005c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2060 0060 04B04CE2 		sub	fp, ip, #4
+ 2061              		.cfi_offset 14, -8
+ 2062              		.cfi_offset 13, -12
+ 2063              		.cfi_offset 11, -16
+ 2064              	.LCFI3:
+ 2065              		.cfi_def_cfa 11, 4
+  36:../src/ts.c   **** 	adc_on();
+ 2066              		.loc 1 36 0
+ 2067 0064 FEFFFFEB 		bl	adc_on
+  37:../src/ts.c   **** 	state = TS_ON;
+ 2068              		.loc 1 37 0
+ 2069 0068 10309FE5 		ldr	r3, .L5
+ 2070 006c 0020A0E3 		mov	r2, #0
+ 2071 0070 0020C3E5 		strb	r2, [r3, #0]
+  38:../src/ts.c   **** }
+ 2072              		.loc 1 38 0
+ 2073 0074 0CD04BE2 		sub	sp, fp, #12
+ 2074 0078 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2075 007c 1EFF2FE1 		bx	lr
+ 2076              	.L6:
+ 2077              		.align	2
+ 2078              	.L5:
+ 2079 0080 08000000 		.word	state
+ 2080              		.cfi_endproc
+ 2081              	.LFE1:
+ 2083              		.align	2
+ 2084              		.global	ts_off
+ 2086              	ts_off:
+ 2087              	.LFB2:
+  39:../src/ts.c   **** 
+  40:../src/ts.c   **** void ts_off( void )
+  41:../src/ts.c   **** {
+ 2088              		.loc 1 41 0
+ 2089              		.cfi_startproc
+ 2090              		@ Function supports interworking.
+ 2091              		@ args = 0, pretend = 0, frame = 0
+ 2092              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2093 0084 0DC0A0E1 		mov	ip, sp
+ 2094              	.LCFI4:
+ 2095              		.cfi_def_cfa_register 12
+ 2096 0088 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2097 008c 04B04CE2 		sub	fp, ip, #4
+ 2098              		.cfi_offset 14, -8
+ 2099              		.cfi_offset 13, -12
+ 2100              		.cfi_offset 11, -16
+ 2101              	.LCFI5:
+ 2102              		.cfi_def_cfa 11, 4
+  42:../src/ts.c   **** 	adc_off();
+ 2103              		.loc 1 42 0
+ 2104 0090 FEFFFFEB 		bl	adc_off
+  43:../src/ts.c   **** 	state = TS_OFF;
+ 2105              		.loc 1 43 0
+ 2106 0094 10309FE5 		ldr	r3, .L8
+ 2107 0098 0120A0E3 		mov	r2, #1
+ 2108 009c 0020C3E5 		strb	r2, [r3, #0]
+  44:../src/ts.c   **** }
+ 2109              		.loc 1 44 0
+ 2110 00a0 0CD04BE2 		sub	sp, fp, #12
+ 2111 00a4 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2112 00a8 1EFF2FE1 		bx	lr
+ 2113              	.L9:
+ 2114              		.align	2
+ 2115              	.L8:
+ 2116 00ac 08000000 		.word	state
+ 2117              		.cfi_endproc
+ 2118              	.LFE2:
+ 2120              		.align	2
+ 2121              		.global	ts_status
+ 2123              	ts_status:
+ 2124              	.LFB3:
+  45:../src/ts.c   **** 
+  46:../src/ts.c   **** uint8 ts_status( void )
+  47:../src/ts.c   **** {
+ 2125              		.loc 1 47 0
+ 2126              		.cfi_startproc
+ 2127              		@ Function supports interworking.
+ 2128              		@ args = 0, pretend = 0, frame = 0
+ 2129              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2130 00b0 0DC0A0E1 		mov	ip, sp
+ 2131              	.LCFI6:
+ 2132              		.cfi_def_cfa_register 12
+ 2133 00b4 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2134 00b8 04B04CE2 		sub	fp, ip, #4
+ 2135              		.cfi_offset 14, -8
+ 2136              		.cfi_offset 13, -12
+ 2137              		.cfi_offset 11, -16
+ 2138              	.LCFI7:
+ 2139              		.cfi_def_cfa 11, 4
+  48:../src/ts.c   **** 	return state;
+ 2140              		.loc 1 48 0
+ 2141 00bc 10309FE5 		ldr	r3, .L11
+ 2142 00c0 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+  49:../src/ts.c   **** }
+ 2143              		.loc 1 49 0
+ 2144 00c4 0300A0E1 		mov	r0, r3
+ 2145 00c8 0CD04BE2 		sub	sp, fp, #12
+ 2146 00cc 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2147 00d0 1EFF2FE1 		bx	lr
+ 2148              	.L12:
+ 2149              		.align	2
+ 2150              	.L11:
+ 2151 00d4 08000000 		.word	state
+ 2152              		.cfi_endproc
+ 2153              	.LFE3:
+ 2155              		.align	2
+ 2157              	ts_calibrate:
+ 2158              	.LFB4:
+  50:../src/ts.c   **** 
+  51:../src/ts.c   **** static void ts_calibrate( void )
+  52:../src/ts.c   **** {
+ 2159              		.loc 1 52 0
+ 2160              		.cfi_startproc
+ 2161              		@ Function supports interworking.
+ 2162              		@ args = 0, pretend = 0, frame = 8
+ 2163              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2164 00d8 0DC0A0E1 		mov	ip, sp
+ 2165              	.LCFI8:
+ 2166              		.cfi_def_cfa_register 12
+ 2167 00dc 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2168 00e0 04B04CE2 		sub	fp, ip, #4
+ 2169              		.cfi_offset 14, -8
+ 2170              		.cfi_offset 13, -12
+ 2171              		.cfi_offset 11, -16
+ 2172              	.LCFI9:
+ 2173              		.cfi_def_cfa 11, 4
+ 2174 00e4 08D04DE2 		sub	sp, sp, #8
+  53:../src/ts.c   ****     uint16 x, y;
+  54:../src/ts.c   ****     uint16 Vx, Vy;
+  55:../src/ts.c   ****     
+  56:../src/ts.c   **** 
+  57:../src/ts.c   ****     lcd_on();
+ 2175              		.loc 1 57 0
+ 2176 00e8 FEFFFFEB 		bl	lcd_on
+ 2177              	.L20:
+  58:../src/ts.c   **** 
+  59:../src/ts.c   ****     do {
+  60:../src/ts.c   ****     	lcd_clear();
+ 2178              		.loc 1 60 0
+ 2179 00ec FEFFFFEB 		bl	lcd_clear
+  61:../src/ts.c   ****     	lcd_putpixel(0,0,BLACK);
+ 2180              		.loc 1 61 0
+ 2181 00f0 0000A0E3 		mov	r0, #0
+ 2182 00f4 0010A0E3 		mov	r1, #0
+ 2183 00f8 0F20A0E3 		mov	r2, #15
+ 2184 00fc FEFFFFEB 		bl	lcd_putpixel
+  62:../src/ts.c   ****     	lcd_putpixel(0,1,BLACK);
+ 2185              		.loc 1 62 0
+ 2186 0100 0000A0E3 		mov	r0, #0
+ 2187 0104 0110A0E3 		mov	r1, #1
+ 2188 0108 0F20A0E3 		mov	r2, #15
+ 2189 010c FEFFFFEB 		bl	lcd_putpixel
+  63:../src/ts.c   ****     	lcd_putpixel(0,3,BLACK);
+ 2190              		.loc 1 63 0
+ 2191 0110 0000A0E3 		mov	r0, #0
+ 2192 0114 0310A0E3 		mov	r1, #3
+ 2193 0118 0F20A0E3 		mov	r2, #15
+ 2194 011c FEFFFFEB 		bl	lcd_putpixel
+  64:../src/ts.c   ****     	lcd_putpixel(1,0,BLACK);
+ 2195              		.loc 1 64 0
+ 2196 0120 0100A0E3 		mov	r0, #1
+ 2197 0124 0010A0E3 		mov	r1, #0
+ 2198 0128 0F20A0E3 		mov	r2, #15
+ 2199 012c FEFFFFEB 		bl	lcd_putpixel
+  65:../src/ts.c   ****     	lcd_putpixel(1,1,BLACK);
+ 2200              		.loc 1 65 0
+ 2201 0130 0100A0E3 		mov	r0, #1
+ 2202 0134 0110A0E3 		mov	r1, #1
+ 2203 0138 0F20A0E3 		mov	r2, #15
+ 2204 013c FEFFFFEB 		bl	lcd_putpixel
+  66:../src/ts.c   ****     	lcd_putpixel(1,2,BLACK);
+ 2205              		.loc 1 66 0
+ 2206 0140 0100A0E3 		mov	r0, #1
+ 2207 0144 0210A0E3 		mov	r1, #2
+ 2208 0148 0F20A0E3 		mov	r2, #15
+ 2209 014c FEFFFFEB 		bl	lcd_putpixel
+  67:../src/ts.c   ****     	lcd_putpixel(1,3,BLACK);
+ 2210              		.loc 1 67 0
+ 2211 0150 0100A0E3 		mov	r0, #1
+ 2212 0154 0310A0E3 		mov	r1, #3
+ 2213 0158 0F20A0E3 		mov	r2, #15
+ 2214 015c FEFFFFEB 		bl	lcd_putpixel
+  68:../src/ts.c   **** 
+  69:../src/ts.c   ****         while((PDATG  & (1 << 2)));
+ 2215              		.loc 1 69 0
+ 2216 0160 0000A0E1 		mov	r0, r0	@ nop
+ 2217              	.L14:
+ 2218              		.loc 1 69 0 is_stmt 0 discriminator 1
+ 2219 0164 F0319FE5 		ldr	r3, .L21
+ 2220 0168 003093E5 		ldr	r3, [r3, #0]
+ 2221 016c 043003E2 		and	r3, r3, #4
+ 2222 0170 000053E3 		cmp	r3, #0
+ 2223 0174 FAFFFF1A 		bne	.L14
+  70:../src/ts.c   ****         sw_delay_ms( TS_DOWN_DELAY );
+ 2224              		.loc 1 70 0 is_stmt 1
+ 2225 0178 1E00A0E3 		mov	r0, #30
+ 2226 017c FEFFFFEB 		bl	sw_delay_ms
+  71:../src/ts.c   ****         ts_scan( &Vxmin, &Vymax );
+ 2227              		.loc 1 71 0
+ 2228 0180 D8019FE5 		ldr	r0, .L21+4
+ 2229 0184 D8119FE5 		ldr	r1, .L21+8
+ 2230 0188 2D0100EB 		bl	ts_scan
+  72:../src/ts.c   ****         while(!(PDATG & (1 << 2)));
+ 2231              		.loc 1 72 0
+ 2232 018c 0000A0E1 		mov	r0, r0	@ nop
+ 2233              	.L15:
+ 2234              		.loc 1 72 0 is_stmt 0 discriminator 1
+ 2235 0190 C4319FE5 		ldr	r3, .L21
+ 2236 0194 003093E5 		ldr	r3, [r3, #0]
+ 2237 0198 043003E2 		and	r3, r3, #4
+ 2238 019c 000053E3 		cmp	r3, #0
+ 2239 01a0 FAFFFF0A 		beq	.L15
+  73:../src/ts.c   ****         sw_delay_ms( TS_UP_DELAY );
+ 2240              		.loc 1 73 0 is_stmt 1
+ 2241 01a4 6400A0E3 		mov	r0, #100
+ 2242 01a8 FEFFFFEB 		bl	sw_delay_ms
+  74:../src/ts.c   **** 
+  75:../src/ts.c   ****         lcd_putpixel(319,239, BLACK);
+ 2243              		.loc 1 75 0
+ 2244 01ac B4019FE5 		ldr	r0, .L21+12
+ 2245 01b0 EF10A0E3 		mov	r1, #239
+ 2246 01b4 0F20A0E3 		mov	r2, #15
+ 2247 01b8 FEFFFFEB 		bl	lcd_putpixel
+  76:../src/ts.c   ****         lcd_putpixel(318,239, BLACK);
+ 2248              		.loc 1 76 0
+ 2249 01bc A8019FE5 		ldr	r0, .L21+16
+ 2250 01c0 EF10A0E3 		mov	r1, #239
+ 2251 01c4 0F20A0E3 		mov	r2, #15
+ 2252 01c8 FEFFFFEB 		bl	lcd_putpixel
+  77:../src/ts.c   ****         lcd_putpixel(317,239, BLACK);
+ 2253              		.loc 1 77 0
+ 2254 01cc 9C019FE5 		ldr	r0, .L21+20
+ 2255 01d0 EF10A0E3 		mov	r1, #239
+ 2256 01d4 0F20A0E3 		mov	r2, #15
+ 2257 01d8 FEFFFFEB 		bl	lcd_putpixel
+  78:../src/ts.c   ****         lcd_putpixel(319,238, BLACK);
+ 2258              		.loc 1 78 0
+ 2259 01dc 84019FE5 		ldr	r0, .L21+12
+ 2260 01e0 EE10A0E3 		mov	r1, #238
+ 2261 01e4 0F20A0E3 		mov	r2, #15
+ 2262 01e8 FEFFFFEB 		bl	lcd_putpixel
+  79:../src/ts.c   ****         lcd_putpixel(319,237, BLACK);
+ 2263              		.loc 1 79 0
+ 2264 01ec 74019FE5 		ldr	r0, .L21+12
+ 2265 01f0 ED10A0E3 		mov	r1, #237
+ 2266 01f4 0F20A0E3 		mov	r2, #15
+ 2267 01f8 FEFFFFEB 		bl	lcd_putpixel
+  80:../src/ts.c   ****         lcd_putpixel(318,238, BLACK);
+ 2268              		.loc 1 80 0
+ 2269 01fc 68019FE5 		ldr	r0, .L21+16
+ 2270 0200 EE10A0E3 		mov	r1, #238
+ 2271 0204 0F20A0E3 		mov	r2, #15
+ 2272 0208 FEFFFFEB 		bl	lcd_putpixel
+  81:../src/ts.c   **** 
+  82:../src/ts.c   ****         while((PDATG  & (1 << 2)));
+ 2273              		.loc 1 82 0
+ 2274 020c 0000A0E1 		mov	r0, r0	@ nop
+ 2275              	.L16:
+ 2276              		.loc 1 82 0 is_stmt 0 discriminator 1
+ 2277 0210 44319FE5 		ldr	r3, .L21
+ 2278 0214 003093E5 		ldr	r3, [r3, #0]
+ 2279 0218 043003E2 		and	r3, r3, #4
+ 2280 021c 000053E3 		cmp	r3, #0
+ 2281 0220 FAFFFF1A 		bne	.L16
+  83:../src/ts.c   ****         sw_delay_ms( TS_DOWN_DELAY );
+ 2282              		.loc 1 83 0 is_stmt 1
+ 2283 0224 1E00A0E3 		mov	r0, #30
+ 2284 0228 FEFFFFEB 		bl	sw_delay_ms
+  84:../src/ts.c   ****         ts_scan( &Vxmax, &Vymin );
+ 2285              		.loc 1 84 0
+ 2286 022c 40019FE5 		ldr	r0, .L21+24
+ 2287 0230 40119FE5 		ldr	r1, .L21+28
+ 2288 0234 020100EB 		bl	ts_scan
+  85:../src/ts.c   ****         while(!(PDATG  & (1 << 2)));
+ 2289              		.loc 1 85 0
+ 2290 0238 0000A0E1 		mov	r0, r0	@ nop
+ 2291              	.L17:
+ 2292              		.loc 1 85 0 is_stmt 0 discriminator 1
+ 2293 023c 18319FE5 		ldr	r3, .L21
+ 2294 0240 003093E5 		ldr	r3, [r3, #0]
+ 2295 0244 043003E2 		and	r3, r3, #4
+ 2296 0248 000053E3 		cmp	r3, #0
+ 2297 024c FAFFFF0A 		beq	.L17
+  86:../src/ts.c   ****         sw_delay_ms( TS_UP_DELAY );
+ 2298              		.loc 1 86 0 is_stmt 1
+ 2299 0250 6400A0E3 		mov	r0, #100
+ 2300 0254 FEFFFFEB 		bl	sw_delay_ms
+  87:../src/ts.c   **** 
+  88:../src/ts.c   ****         lcd_putpixel(160,120, BLACK);
+ 2301              		.loc 1 88 0
+ 2302 0258 A000A0E3 		mov	r0, #160
+ 2303 025c 7810A0E3 		mov	r1, #120
+ 2304 0260 0F20A0E3 		mov	r2, #15
+ 2305 0264 FEFFFFEB 		bl	lcd_putpixel
+  89:../src/ts.c   ****         lcd_putpixel(161,120,BLACK);
+ 2306              		.loc 1 89 0
+ 2307 0268 A100A0E3 		mov	r0, #161
+ 2308 026c 7810A0E3 		mov	r1, #120
+ 2309 0270 0F20A0E3 		mov	r2, #15
+ 2310 0274 FEFFFFEB 		bl	lcd_putpixel
+  90:../src/ts.c   ****         lcd_putpixel(159,120, BLACK);
+ 2311              		.loc 1 90 0
+ 2312 0278 9F00A0E3 		mov	r0, #159
+ 2313 027c 7810A0E3 		mov	r1, #120
+ 2314 0280 0F20A0E3 		mov	r2, #15
+ 2315 0284 FEFFFFEB 		bl	lcd_putpixel
+  91:../src/ts.c   ****         lcd_putpixel(159,119, BLACK);
+ 2316              		.loc 1 91 0
+ 2317 0288 9F00A0E3 		mov	r0, #159
+ 2318 028c 7710A0E3 		mov	r1, #119
+ 2319 0290 0F20A0E3 		mov	r2, #15
+ 2320 0294 FEFFFFEB 		bl	lcd_putpixel
+  92:../src/ts.c   ****         lcd_putpixel(161,119, BLACK);
+ 2321              		.loc 1 92 0
+ 2322 0298 A100A0E3 		mov	r0, #161
+ 2323 029c 7710A0E3 		mov	r1, #119
+ 2324 02a0 0F20A0E3 		mov	r2, #15
+ 2325 02a4 FEFFFFEB 		bl	lcd_putpixel
+  93:../src/ts.c   ****         lcd_putpixel(160,119, BLACK);
+ 2326              		.loc 1 93 0
+ 2327 02a8 A000A0E3 		mov	r0, #160
+ 2328 02ac 7710A0E3 		mov	r1, #119
+ 2329 02b0 0F20A0E3 		mov	r2, #15
+ 2330 02b4 FEFFFFEB 		bl	lcd_putpixel
+  94:../src/ts.c   **** 
+  95:../src/ts.c   ****         while((PDATG  & (1 << 2)));
+ 2331              		.loc 1 95 0
+ 2332 02b8 0000A0E1 		mov	r0, r0	@ nop
+ 2333              	.L18:
+ 2334              		.loc 1 95 0 is_stmt 0 discriminator 1
+ 2335 02bc 98309FE5 		ldr	r3, .L21
+ 2336 02c0 003093E5 		ldr	r3, [r3, #0]
+ 2337 02c4 043003E2 		and	r3, r3, #4
+ 2338 02c8 000053E3 		cmp	r3, #0
+ 2339 02cc FAFFFF1A 		bne	.L18
+  96:../src/ts.c   ****         sw_delay_ms( TS_DOWN_DELAY );
+ 2340              		.loc 1 96 0 is_stmt 1
+ 2341 02d0 1E00A0E3 		mov	r0, #30
+ 2342 02d4 FEFFFFEB 		bl	sw_delay_ms
+  97:../src/ts.c   ****         ts_scan( &Vx, &Vy );
+ 2343              		.loc 1 97 0
+ 2344 02d8 12204BE2 		sub	r2, fp, #18
+ 2345 02dc 14304BE2 		sub	r3, fp, #20
+ 2346 02e0 0200A0E1 		mov	r0, r2
+ 2347 02e4 0310A0E1 		mov	r1, r3
+ 2348 02e8 D50000EB 		bl	ts_scan
+  98:../src/ts.c   ****         while(!(PDATG  & (1 << 2)));
+ 2349              		.loc 1 98 0
+ 2350 02ec 0000A0E1 		mov	r0, r0	@ nop
+ 2351              	.L19:
+ 2352              		.loc 1 98 0 is_stmt 0 discriminator 1
+ 2353 02f0 64309FE5 		ldr	r3, .L21
+ 2354 02f4 003093E5 		ldr	r3, [r3, #0]
+ 2355 02f8 043003E2 		and	r3, r3, #4
+ 2356 02fc 000053E3 		cmp	r3, #0
+ 2357 0300 FAFFFF0A 		beq	.L19
+  99:../src/ts.c   ****         sw_delay_ms( TS_UP_DELAY );
+ 2358              		.loc 1 99 0 is_stmt 1
+ 2359 0304 6400A0E3 		mov	r0, #100
+ 2360 0308 FEFFFFEB 		bl	sw_delay_ms
+ 100:../src/ts.c   ****         ts_sample2coord( Vx, Vy, &x, &y );
+ 2361              		.loc 1 100 0
+ 2362 030c B2015BE1 		ldrh	r0, [fp, #-18]
+ 2363 0310 B4115BE1 		ldrh	r1, [fp, #-20]
+ 2364 0314 0E204BE2 		sub	r2, fp, #14
+ 2365 0318 10304BE2 		sub	r3, fp, #16
+ 2366 031c 020100EB 		bl	ts_sample2coord
+ 101:../src/ts.c   **** 
+ 102:../src/ts.c   ****     
+ 103:../src/ts.c   ****     } while(
+ 104:../src/ts.c   ****     		(x > 160+PX_ERROR) || (x < 160-PX_ERROR)
+ 2367              		.loc 1 104 0
+ 2368 0320 BE305BE1 		ldrh	r3, [fp, #-14]
+ 105:../src/ts.c   ****     		|| (y > 120+PX_ERROR) || (y < 120-PX_ERROR)
+ 106:../src/ts.c   ****     		);
+ 2369              		.loc 1 106 0
+ 2370 0324 A50053E3 		cmp	r3, #165
+ 2371 0328 6FFFFF8A 		bhi	.L20
+ 104:../src/ts.c   ****     		(x > 160+PX_ERROR) || (x < 160-PX_ERROR)
+ 2372              		.loc 1 104 0
+ 2373 032c BE305BE1 		ldrh	r3, [fp, #-14]
+ 2374 0330 9A0053E3 		cmp	r3, #154
+ 2375 0334 6CFFFF9A 		bls	.L20
+ 105:../src/ts.c   ****     		|| (y > 120+PX_ERROR) || (y < 120-PX_ERROR)
+ 2376              		.loc 1 105 0
+ 2377 0338 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2378 033c 7D0053E3 		cmp	r3, #125
+ 2379 0340 69FFFF8A 		bhi	.L20
+ 105:../src/ts.c   ****     		|| (y > 120+PX_ERROR) || (y < 120-PX_ERROR)
+ 2380              		.loc 1 105 0 is_stmt 0 discriminator 1
+ 2381 0344 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2382 0348 720053E3 		cmp	r3, #114
+ 2383 034c 66FFFF9A 		bls	.L20
+ 107:../src/ts.c   **** 
+ 108:../src/ts.c   ****     
+ 109:../src/ts.c   **** }
+ 2384              		.loc 1 109 0 is_stmt 1
+ 2385 0350 0CD04BE2 		sub	sp, fp, #12
+ 2386 0354 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2387 0358 1EFF2FE1 		bx	lr
+ 2388              	.L22:
+ 2389              		.align	2
+ 2390              	.L21:
+ 2391 035c 4400D201 		.word	30539844
+ 2392 0360 00000000 		.word	Vxmin
+ 2393 0364 06000000 		.word	Vymax
+ 2394 0368 3F010000 		.word	319
+ 2395 036c 3E010000 		.word	318
+ 2396 0370 3D010000 		.word	317
+ 2397 0374 02000000 		.word	Vxmax
+ 2398 0378 04000000 		.word	Vymin
+ 2399              		.cfi_endproc
+ 2400              	.LFE4:
+ 2402              		.align	2
+ 2403              		.global	ts_wait_down
+ 2405              	ts_wait_down:
+ 2406              	.LFB5:
+ 110:../src/ts.c   **** 
+ 111:../src/ts.c   **** void ts_wait_down( void )
+ 112:../src/ts.c   **** {
+ 2407              		.loc 1 112 0
+ 2408              		.cfi_startproc
+ 2409              		@ Function supports interworking.
+ 2410              		@ args = 0, pretend = 0, frame = 0
+ 2411              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2412 037c 0DC0A0E1 		mov	ip, sp
+ 2413              	.LCFI10:
+ 2414              		.cfi_def_cfa_register 12
+ 2415 0380 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2416 0384 04B04CE2 		sub	fp, ip, #4
+ 2417              		.cfi_offset 14, -8
+ 2418              		.cfi_offset 13, -12
+ 2419              		.cfi_offset 11, -16
+ 2420              	.LCFI11:
+ 2421              		.cfi_def_cfa 11, 4
+ 113:../src/ts.c   **** 	 while((PDATG  & (1 << 2)));
+ 2422              		.loc 1 113 0
+ 2423 0388 0000A0E1 		mov	r0, r0	@ nop
+ 2424              	.L24:
+ 2425              		.loc 1 113 0 is_stmt 0 discriminator 1
+ 2426 038c 20309FE5 		ldr	r3, .L25
+ 2427 0390 003093E5 		ldr	r3, [r3, #0]
+ 2428 0394 043003E2 		and	r3, r3, #4
+ 2429 0398 000053E3 		cmp	r3, #0
+ 2430 039c FAFFFF1A 		bne	.L24
+ 114:../src/ts.c   **** 	 sw_delay_ms( TS_DOWN_DELAY );
+ 2431              		.loc 1 114 0 is_stmt 1
+ 2432 03a0 1E00A0E3 		mov	r0, #30
+ 2433 03a4 FEFFFFEB 		bl	sw_delay_ms
+ 115:../src/ts.c   **** }
+ 2434              		.loc 1 115 0
+ 2435 03a8 0CD04BE2 		sub	sp, fp, #12
+ 2436 03ac 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2437 03b0 1EFF2FE1 		bx	lr
+ 2438              	.L26:
+ 2439              		.align	2
+ 2440              	.L25:
+ 2441 03b4 4400D201 		.word	30539844
+ 2442              		.cfi_endproc
+ 2443              	.LFE5:
+ 2445              		.align	2
+ 2446              		.global	ts_wait_up
+ 2448              	ts_wait_up:
+ 2449              	.LFB6:
+ 116:../src/ts.c   **** 
+ 117:../src/ts.c   **** void ts_wait_up( void )
+ 118:../src/ts.c   **** {
+ 2450              		.loc 1 118 0
+ 2451              		.cfi_startproc
+ 2452              		@ Function supports interworking.
+ 2453              		@ args = 0, pretend = 0, frame = 0
+ 2454              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2455 03b8 0DC0A0E1 		mov	ip, sp
+ 2456              	.LCFI12:
+ 2457              		.cfi_def_cfa_register 12
+ 2458 03bc 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2459 03c0 04B04CE2 		sub	fp, ip, #4
+ 2460              		.cfi_offset 14, -8
+ 2461              		.cfi_offset 13, -12
+ 2462              		.cfi_offset 11, -16
+ 2463              	.LCFI13:
+ 2464              		.cfi_def_cfa 11, 4
+ 119:../src/ts.c   **** 	while((PDATG & (1 << 2)));
+ 2465              		.loc 1 119 0
+ 2466 03c4 0000A0E1 		mov	r0, r0	@ nop
+ 2467              	.L28:
+ 2468              		.loc 1 119 0 is_stmt 0 discriminator 1
+ 2469 03c8 40309FE5 		ldr	r3, .L30
+ 2470 03cc 003093E5 		ldr	r3, [r3, #0]
+ 2471 03d0 043003E2 		and	r3, r3, #4
+ 2472 03d4 000053E3 		cmp	r3, #0
+ 2473 03d8 FAFFFF1A 		bne	.L28
+ 120:../src/ts.c   ****     sw_delay_ms( TS_DOWN_DELAY );
+ 2474              		.loc 1 120 0 is_stmt 1
+ 2475 03dc 1E00A0E3 		mov	r0, #30
+ 2476 03e0 FEFFFFEB 		bl	sw_delay_ms
+ 121:../src/ts.c   ****     while(!(PDATG & (1 << 2)));
+ 2477              		.loc 1 121 0
+ 2478 03e4 0000A0E1 		mov	r0, r0	@ nop
+ 2479              	.L29:
+ 2480              		.loc 1 121 0 is_stmt 0 discriminator 1
+ 2481 03e8 20309FE5 		ldr	r3, .L30
+ 2482 03ec 003093E5 		ldr	r3, [r3, #0]
+ 2483 03f0 043003E2 		and	r3, r3, #4
+ 2484 03f4 000053E3 		cmp	r3, #0
+ 2485 03f8 FAFFFF0A 		beq	.L29
+ 122:../src/ts.c   ****     sw_delay_ms( TS_UP_DELAY );
+ 2486              		.loc 1 122 0 is_stmt 1
+ 2487 03fc 6400A0E3 		mov	r0, #100
+ 2488 0400 FEFFFFEB 		bl	sw_delay_ms
+ 123:../src/ts.c   **** }
+ 2489              		.loc 1 123 0
+ 2490 0404 0CD04BE2 		sub	sp, fp, #12
+ 2491 0408 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2492 040c 1EFF2FE1 		bx	lr
+ 2493              	.L31:
+ 2494              		.align	2
+ 2495              	.L30:
+ 2496 0410 4400D201 		.word	30539844
+ 2497              		.cfi_endproc
+ 2498              	.LFE6:
+ 2500              		.align	2
+ 2501              		.global	ts_getpos
+ 2503              	ts_getpos:
+ 2504              	.LFB7:
+ 124:../src/ts.c   **** 
+ 125:../src/ts.c   **** void ts_getpos( uint16 *x, uint16 *y )
+ 126:../src/ts.c   **** {
+ 2505              		.loc 1 126 0
+ 2506              		.cfi_startproc
+ 2507              		@ Function supports interworking.
+ 2508              		@ args = 0, pretend = 0, frame = 16
+ 2509              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2510 0414 0DC0A0E1 		mov	ip, sp
+ 2511              	.LCFI14:
+ 2512              		.cfi_def_cfa_register 12
+ 2513 0418 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2514 041c 04B04CE2 		sub	fp, ip, #4
+ 2515              		.cfi_offset 14, -8
+ 2516              		.cfi_offset 13, -12
+ 2517              		.cfi_offset 11, -16
+ 2518              	.LCFI15:
+ 2519              		.cfi_def_cfa 11, 4
+ 2520 0420 10D04DE2 		sub	sp, sp, #16
+ 2521 0424 18000BE5 		str	r0, [fp, #-24]
+ 2522 0428 1C100BE5 		str	r1, [fp, #-28]
+ 127:../src/ts.c   **** 	uint16 aux1 = 0;
+ 2523              		.loc 1 127 0
+ 2524 042c 0030A0E3 		mov	r3, #0
+ 2525 0430 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 128:../src/ts.c   **** 	uint16 aux2 = 0;
+ 2526              		.loc 1 128 0
+ 2527 0434 0030A0E3 		mov	r3, #0
+ 2528 0438 B0314BE1 		strh	r3, [fp, #-16]	@ movhi
+ 129:../src/ts.c   **** 
+ 130:../src/ts.c   **** 	while((PDATG  & (1 << 2)));
+ 2529              		.loc 1 130 0
+ 2530 043c 0000A0E1 		mov	r0, r0	@ nop
+ 2531              	.L33:
+ 2532              		.loc 1 130 0 is_stmt 0 discriminator 1
+ 2533 0440 70309FE5 		ldr	r3, .L35
+ 2534 0444 003093E5 		ldr	r3, [r3, #0]
+ 2535 0448 043003E2 		and	r3, r3, #4
+ 2536 044c 000053E3 		cmp	r3, #0
+ 2537 0450 FAFFFF1A 		bne	.L33
+ 131:../src/ts.c   **** 	sw_delay_ms( TS_DOWN_DELAY );
+ 2538              		.loc 1 131 0 is_stmt 1
+ 2539 0454 1E00A0E3 		mov	r0, #30
+ 2540 0458 FEFFFFEB 		bl	sw_delay_ms
+ 132:../src/ts.c   **** 	ts_scan( &aux1, &aux2 );
+ 2541              		.loc 1 132 0
+ 2542 045c 0E204BE2 		sub	r2, fp, #14
+ 2543 0460 10304BE2 		sub	r3, fp, #16
+ 2544 0464 0200A0E1 		mov	r0, r2
+ 2545 0468 0310A0E1 		mov	r1, r3
+ 2546 046c 740000EB 		bl	ts_scan
+ 133:../src/ts.c   **** 	while(!(PDATG & (1 << 2)));
+ 2547              		.loc 1 133 0
+ 2548 0470 0000A0E1 		mov	r0, r0	@ nop
+ 2549              	.L34:
+ 2550              		.loc 1 133 0 is_stmt 0 discriminator 1
+ 2551 0474 3C309FE5 		ldr	r3, .L35
+ 2552 0478 003093E5 		ldr	r3, [r3, #0]
+ 2553 047c 043003E2 		and	r3, r3, #4
+ 2554 0480 000053E3 		cmp	r3, #0
+ 2555 0484 FAFFFF0A 		beq	.L34
+ 134:../src/ts.c   **** 	sw_delay_ms( TS_UP_DELAY );
+ 2556              		.loc 1 134 0 is_stmt 1
+ 2557 0488 6400A0E3 		mov	r0, #100
+ 2558 048c FEFFFFEB 		bl	sw_delay_ms
+ 135:../src/ts.c   **** 
+ 136:../src/ts.c   **** 	ts_sample2coord( aux1, aux2, x, y );
+ 2559              		.loc 1 136 0
+ 2560 0490 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2561 0494 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2562 0498 0200A0E1 		mov	r0, r2
+ 2563 049c 0310A0E1 		mov	r1, r3
+ 2564 04a0 18201BE5 		ldr	r2, [fp, #-24]
+ 2565 04a4 1C301BE5 		ldr	r3, [fp, #-28]
+ 2566 04a8 9F0000EB 		bl	ts_sample2coord
+ 137:../src/ts.c   **** }
+ 2567              		.loc 1 137 0
+ 2568 04ac 0CD04BE2 		sub	sp, fp, #12
+ 2569 04b0 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2570 04b4 1EFF2FE1 		bx	lr
+ 2571              	.L36:
+ 2572              		.align	2
+ 2573              	.L35:
+ 2574 04b8 4400D201 		.word	30539844
+ 2575              		.cfi_endproc
+ 2576              	.LFE7:
+ 2578              		.align	2
+ 2579              		.global	ts_getpostime
+ 2581              	ts_getpostime:
+ 2582              	.LFB8:
+ 138:../src/ts.c   **** 
+ 139:../src/ts.c   **** void ts_getpostime( uint16 *x, uint16 *y, uint16 *ms )
+ 140:../src/ts.c   **** {
+ 2583              		.loc 1 140 0
+ 2584              		.cfi_startproc
+ 2585              		@ Function supports interworking.
+ 2586              		@ args = 0, pretend = 0, frame = 24
+ 2587              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2588 04bc 0DC0A0E1 		mov	ip, sp
+ 2589              	.LCFI16:
+ 2590              		.cfi_def_cfa_register 12
+ 2591 04c0 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2592 04c4 04B04CE2 		sub	fp, ip, #4
+ 2593              		.cfi_offset 14, -8
+ 2594              		.cfi_offset 13, -12
+ 2595              		.cfi_offset 11, -16
+ 2596              	.LCFI17:
+ 2597              		.cfi_def_cfa 11, 4
+ 2598 04c8 18D04DE2 		sub	sp, sp, #24
+ 2599 04cc 18000BE5 		str	r0, [fp, #-24]
+ 2600 04d0 1C100BE5 		str	r1, [fp, #-28]
+ 2601 04d4 20200BE5 		str	r2, [fp, #-32]
+ 141:../src/ts.c   **** 	uint16 Vx = 0;
+ 2602              		.loc 1 141 0
+ 2603 04d8 0030A0E3 		mov	r3, #0
+ 2604 04dc BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 142:../src/ts.c   **** 	uint16 Vy = 0;
+ 2605              		.loc 1 142 0
+ 2606 04e0 0030A0E3 		mov	r3, #0
+ 2607 04e4 B0314BE1 		strh	r3, [fp, #-16]	@ movhi
+ 143:../src/ts.c   **** 
+ 144:../src/ts.c   **** 
+ 145:../src/ts.c   **** 	timer3_start();
+ 2608              		.loc 1 145 0
+ 2609 04e8 FEFFFFEB 		bl	timer3_start
+ 146:../src/ts.c   **** 	/*ts_getpos(x,y);
+ 147:../src/ts.c   **** 	*ms = timer3_stop( );
+ 148:../src/ts.c   **** 	*/
+ 149:../src/ts.c   **** 
+ 150:../src/ts.c   **** 	while((PDATG & (1 << 2)));
+ 2610              		.loc 1 150 0
+ 2611 04ec 0000A0E1 		mov	r0, r0	@ nop
+ 2612              	.L38:
+ 2613              		.loc 1 150 0 is_stmt 0 discriminator 1
+ 2614 04f0 9C309FE5 		ldr	r3, .L40
+ 2615 04f4 003093E5 		ldr	r3, [r3, #0]
+ 2616 04f8 043003E2 		and	r3, r3, #4
+ 2617 04fc 000053E3 		cmp	r3, #0
+ 2618 0500 FAFFFF1A 		bne	.L38
+ 151:../src/ts.c   **** 	timer3_start();
+ 2619              		.loc 1 151 0 is_stmt 1
+ 2620 0504 FEFFFFEB 		bl	timer3_start
+ 152:../src/ts.c   **** 	sw_delay_ms( TS_DOWN_DELAY );
+ 2621              		.loc 1 152 0
+ 2622 0508 1E00A0E3 		mov	r0, #30
+ 2623 050c FEFFFFEB 		bl	sw_delay_ms
+ 153:../src/ts.c   **** 	ts_scan( &Vx, &Vy );
+ 2624              		.loc 1 153 0
+ 2625 0510 0E204BE2 		sub	r2, fp, #14
+ 2626 0514 10304BE2 		sub	r3, fp, #16
+ 2627 0518 0200A0E1 		mov	r0, r2
+ 2628 051c 0310A0E1 		mov	r1, r3
+ 2629 0520 470000EB 		bl	ts_scan
+ 154:../src/ts.c   **** 
+ 155:../src/ts.c   **** 	while(!(PDATG & (1 << 2)));
+ 2630              		.loc 1 155 0
+ 2631 0524 0000A0E1 		mov	r0, r0	@ nop
+ 2632              	.L39:
+ 2633              		.loc 1 155 0 is_stmt 0 discriminator 1
+ 2634 0528 64309FE5 		ldr	r3, .L40
+ 2635 052c 003093E5 		ldr	r3, [r3, #0]
+ 2636 0530 043003E2 		and	r3, r3, #4
+ 2637 0534 000053E3 		cmp	r3, #0
+ 2638 0538 FAFFFF0A 		beq	.L39
+ 156:../src/ts.c   **** 	*ms = timer3_stop() / 10;
+ 2639              		.loc 1 156 0 is_stmt 1
+ 2640 053c FEFFFFEB 		bl	timer3_stop
+ 2641 0540 0030A0E1 		mov	r3, r0
+ 2642 0544 0320A0E1 		mov	r2, r3
+ 2643 0548 48309FE5 		ldr	r3, .L40+4
+ 2644 054c 921383E0 		umull	r1, r3, r2, r3
+ 2645 0550 A331A0E1 		mov	r3, r3, lsr #3
+ 2646 0554 0338A0E1 		mov	r3, r3, asl #16
+ 2647 0558 2328A0E1 		mov	r2, r3, lsr #16
+ 2648 055c 20301BE5 		ldr	r3, [fp, #-32]
+ 2649 0560 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 157:../src/ts.c   **** 	sw_delay_ms( TS_UP_DELAY );
+ 2650              		.loc 1 157 0
+ 2651 0564 6400A0E3 		mov	r0, #100
+ 2652 0568 FEFFFFEB 		bl	sw_delay_ms
+ 158:../src/ts.c   **** 
+ 159:../src/ts.c   **** 	ts_sample2coord( Vx, Vy, x, y );
+ 2653              		.loc 1 159 0
+ 2654 056c BE205BE1 		ldrh	r2, [fp, #-14]
+ 2655 0570 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2656 0574 0200A0E1 		mov	r0, r2
+ 2657 0578 0310A0E1 		mov	r1, r3
+ 2658 057c 18201BE5 		ldr	r2, [fp, #-24]
+ 2659 0580 1C301BE5 		ldr	r3, [fp, #-28]
+ 2660 0584 680000EB 		bl	ts_sample2coord
+ 160:../src/ts.c   **** }
+ 2661              		.loc 1 160 0
+ 2662 0588 0CD04BE2 		sub	sp, fp, #12
+ 2663 058c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2664 0590 1EFF2FE1 		bx	lr
+ 2665              	.L41:
+ 2666              		.align	2
+ 2667              	.L40:
+ 2668 0594 4400D201 		.word	30539844
+ 2669 0598 CDCCCCCC 		.word	-858993459
+ 2670              		.cfi_endproc
+ 2671              	.LFE8:
+ 2673              		.align	2
+ 2674              		.global	ts_timeout_getpos
+ 2676              	ts_timeout_getpos:
+ 2677              	.LFB9:
+ 161:../src/ts.c   **** 
+ 162:../src/ts.c   **** uint8 ts_timeout_getpos( uint16 *x, uint16 *y, uint16 ms )
+ 163:../src/ts.c   **** {
+ 2678              		.loc 1 163 0
+ 2679              		.cfi_startproc
+ 2680              		@ Function supports interworking.
+ 2681              		@ args = 0, pretend = 0, frame = 16
+ 2682              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2683 059c 0DC0A0E1 		mov	ip, sp
+ 2684              	.LCFI18:
+ 2685              		.cfi_def_cfa_register 12
+ 2686 05a0 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2687 05a4 04B04CE2 		sub	fp, ip, #4
+ 2688              		.cfi_offset 14, -8
+ 2689              		.cfi_offset 13, -12
+ 2690              		.cfi_offset 11, -16
+ 2691              	.LCFI19:
+ 2692              		.cfi_def_cfa 11, 4
+ 2693 05a8 10D04DE2 		sub	sp, sp, #16
+ 2694 05ac 10000BE5 		str	r0, [fp, #-16]
+ 2695 05b0 14100BE5 		str	r1, [fp, #-20]
+ 2696 05b4 0230A0E1 		mov	r3, r2
+ 2697 05b8 B6314BE1 		strh	r3, [fp, #-22]	@ movhi
+ 164:../src/ts.c   **** 	timer3_start_timeout(ms);
+ 2698              		.loc 1 164 0
+ 2699 05bc B6315BE1 		ldrh	r3, [fp, #-22]
+ 2700 05c0 0300A0E1 		mov	r0, r3
+ 2701 05c4 FEFFFFEB 		bl	timer3_start_timeout
+ 165:../src/ts.c   **** 	while((PCONG  & (3 << 4)) != 0x0);
+ 2702              		.loc 1 165 0
+ 2703 05c8 0000A0E1 		mov	r0, r0	@ nop
+ 2704              	.L43:
+ 2705              		.loc 1 165 0 is_stmt 0 discriminator 1
+ 2706 05cc 6C309FE5 		ldr	r3, .L47
+ 2707 05d0 003093E5 		ldr	r3, [r3, #0]
+ 2708 05d4 303003E2 		and	r3, r3, #48
+ 2709 05d8 000053E3 		cmp	r3, #0
+ 2710 05dc FAFFFF1A 		bne	.L43
+ 166:../src/ts.c   **** 	if(!timer3_timeout( ))
+ 2711              		.loc 1 166 0 is_stmt 1
+ 2712 05e0 FEFFFFEB 		bl	timer3_timeout
+ 2713 05e4 0030A0E1 		mov	r3, r0
+ 2714 05e8 000053E3 		cmp	r3, #0
+ 2715 05ec 0100001A 		bne	.L44
+ 167:../src/ts.c   **** 			 return TS_TIMEOUT;
+ 2716              		.loc 1 167 0
+ 2717 05f0 FE30A0E3 		mov	r3, #254
+ 2718 05f4 0D0000EA 		b	.L45
+ 2719              	.L44:
+ 168:../src/ts.c   **** 	else{
+ 169:../src/ts.c   **** 		sw_delay_ms( TS_DOWN_DELAY );
+ 2720              		.loc 1 169 0
+ 2721 05f8 1E00A0E3 		mov	r0, #30
+ 2722 05fc FEFFFFEB 		bl	sw_delay_ms
+ 170:../src/ts.c   **** 		ts_scan( x, y );
+ 2723              		.loc 1 170 0
+ 2724 0600 10001BE5 		ldr	r0, [fp, #-16]
+ 2725 0604 14101BE5 		ldr	r1, [fp, #-20]
+ 2726 0608 0D0000EB 		bl	ts_scan
+ 171:../src/ts.c   **** 
+ 172:../src/ts.c   **** 		while((PCONG  & (3 << 4)) != 0x1 << 4);
+ 2727              		.loc 1 172 0
+ 2728 060c 0000A0E1 		mov	r0, r0	@ nop
+ 2729              	.L46:
+ 2730              		.loc 1 172 0 is_stmt 0 discriminator 1
+ 2731 0610 28309FE5 		ldr	r3, .L47
+ 2732 0614 003093E5 		ldr	r3, [r3, #0]
+ 2733 0618 303003E2 		and	r3, r3, #48
+ 2734 061c 100053E3 		cmp	r3, #16
+ 2735 0620 FAFFFF1A 		bne	.L46
+ 173:../src/ts.c   **** 		sw_delay_ms( TS_UP_DELAY );
+ 2736              		.loc 1 173 0 is_stmt 1
+ 2737 0624 6400A0E3 		mov	r0, #100
+ 2738 0628 FEFFFFEB 		bl	sw_delay_ms
+ 174:../src/ts.c   **** 		return TS_OK;
+ 2739              		.loc 1 174 0
+ 2740 062c 0130A0E3 		mov	r3, #1
+ 2741              	.L45:
+ 175:../src/ts.c   **** 	}
+ 176:../src/ts.c   **** }
+ 2742              		.loc 1 176 0
+ 2743 0630 0300A0E1 		mov	r0, r3
+ 2744 0634 0CD04BE2 		sub	sp, fp, #12
+ 2745 0638 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2746 063c 1EFF2FE1 		bx	lr
+ 2747              	.L48:
+ 2748              		.align	2
+ 2749              	.L47:
+ 2750 0640 4000D201 		.word	30539840
+ 2751              		.cfi_endproc
+ 2752              	.LFE9:
+ 2754              		.align	2
+ 2756              	ts_scan:
+ 2757              	.LFB10:
+ 177:../src/ts.c   **** 
+ 178:../src/ts.c   **** static void ts_scan( uint16 *Vx, uint16 *Vy )
+ 179:../src/ts.c   **** {
+ 2758              		.loc 1 179 0
+ 2759              		.cfi_startproc
+ 2760              		@ Function supports interworking.
+ 2761              		@ args = 0, pretend = 0, frame = 8
+ 2762              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2763 0644 0DC0A0E1 		mov	ip, sp
+ 2764              	.LCFI20:
+ 2765              		.cfi_def_cfa_register 12
+ 2766 0648 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2767 064c 04B04CE2 		sub	fp, ip, #4
+ 2768              		.cfi_offset 14, -8
+ 2769              		.cfi_offset 13, -12
+ 2770              		.cfi_offset 11, -16
+ 2771              	.LCFI21:
+ 2772              		.cfi_def_cfa 11, 4
+ 2773 0650 08D04DE2 		sub	sp, sp, #8
+ 2774 0654 10000BE5 		str	r0, [fp, #-16]
+ 2775 0658 14100BE5 		str	r1, [fp, #-20]
+ 180:../src/ts.c   ****     
+ 181:../src/ts.c   ****     PDATE &= ~((1<<7) | (1<<4));
+ 2776              		.loc 1 181 0
+ 2777 065c C4309FE5 		ldr	r3, .L50
+ 2778 0660 C0209FE5 		ldr	r2, .L50
+ 2779 0664 002092E5 		ldr	r2, [r2, #0]
+ 2780 0668 9020C2E3 		bic	r2, r2, #144
+ 2781 066c 002083E5 		str	r2, [r3, #0]
+ 182:../src/ts.c   ****     PDATE |= ((1<<6)| (1<<5));
+ 2782              		.loc 1 182 0
+ 2783 0670 B0309FE5 		ldr	r3, .L50
+ 2784 0674 AC209FE5 		ldr	r2, .L50
+ 2785 0678 002092E5 		ldr	r2, [r2, #0]
+ 2786 067c 602082E3 		orr	r2, r2, #96
+ 2787 0680 002083E5 		str	r2, [r3, #0]
+ 183:../src/ts.c   ****     *Vx = adc_getSample(ADC_AIN1);
+ 2788              		.loc 1 183 0
+ 2789 0684 0100A0E3 		mov	r0, #1
+ 2790 0688 FEFFFFEB 		bl	adc_getSample
+ 2791 068c 0030A0E1 		mov	r3, r0
+ 2792 0690 0320A0E1 		mov	r2, r3
+ 2793 0694 10301BE5 		ldr	r3, [fp, #-16]
+ 2794 0698 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 184:../src/ts.c   ****     sw_delay_ms( 1 );
+ 2795              		.loc 1 184 0
+ 2796 069c 0100A0E3 		mov	r0, #1
+ 2797 06a0 FEFFFFEB 		bl	sw_delay_ms
+ 185:../src/ts.c   **** 
+ 186:../src/ts.c   ****     PDATE |= ((1<<7) | (1<<4));
+ 2798              		.loc 1 186 0
+ 2799 06a4 7C309FE5 		ldr	r3, .L50
+ 2800 06a8 78209FE5 		ldr	r2, .L50
+ 2801 06ac 002092E5 		ldr	r2, [r2, #0]
+ 2802 06b0 902082E3 		orr	r2, r2, #144
+ 2803 06b4 002083E5 		str	r2, [r3, #0]
+ 187:../src/ts.c   ****     PDATE &= ~((1<<6)| (1<<5));
+ 2804              		.loc 1 187 0
+ 2805 06b8 68309FE5 		ldr	r3, .L50
+ 2806 06bc 64209FE5 		ldr	r2, .L50
+ 2807 06c0 002092E5 		ldr	r2, [r2, #0]
+ 2808 06c4 6020C2E3 		bic	r2, r2, #96
+ 2809 06c8 002083E5 		str	r2, [r3, #0]
+ 188:../src/ts.c   ****     *Vy = adc_getSample(ADC_AIN0);
+ 2810              		.loc 1 188 0
+ 2811 06cc 0000A0E3 		mov	r0, #0
+ 2812 06d0 FEFFFFEB 		bl	adc_getSample
+ 2813 06d4 0030A0E1 		mov	r3, r0
+ 2814 06d8 0320A0E1 		mov	r2, r3
+ 2815 06dc 14301BE5 		ldr	r3, [fp, #-20]
+ 2816 06e0 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 189:../src/ts.c   ****     sw_delay_ms( 1 );
+ 2817              		.loc 1 189 0
+ 2818 06e4 0100A0E3 		mov	r0, #1
+ 2819 06e8 FEFFFFEB 		bl	sw_delay_ms
+ 190:../src/ts.c   **** 
+ 191:../src/ts.c   ****     PDATE |= ((1<<5) | (1<<4) | (1<<7));
+ 2820              		.loc 1 191 0
+ 2821 06ec 34309FE5 		ldr	r3, .L50
+ 2822 06f0 30209FE5 		ldr	r2, .L50
+ 2823 06f4 002092E5 		ldr	r2, [r2, #0]
+ 2824 06f8 B02082E3 		orr	r2, r2, #176
+ 2825 06fc 002083E5 		str	r2, [r3, #0]
+ 192:../src/ts.c   ****     PDATE &= ~(1<<6);
+ 2826              		.loc 1 192 0
+ 2827 0700 20309FE5 		ldr	r3, .L50
+ 2828 0704 1C209FE5 		ldr	r2, .L50
+ 2829 0708 002092E5 		ldr	r2, [r2, #0]
+ 2830 070c 4020C2E3 		bic	r2, r2, #64
+ 2831 0710 002083E5 		str	r2, [r3, #0]
+ 193:../src/ts.c   ****     sw_delay_ms( 1 );
+ 2832              		.loc 1 193 0
+ 2833 0714 0100A0E3 		mov	r0, #1
+ 2834 0718 FEFFFFEB 		bl	sw_delay_ms
+ 194:../src/ts.c   **** }
+ 2835              		.loc 1 194 0
+ 2836 071c 0CD04BE2 		sub	sp, fp, #12
+ 2837 0720 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2838 0724 1EFF2FE1 		bx	lr
+ 2839              	.L51:
+ 2840              		.align	2
+ 2841              	.L50:
+ 2842 0728 2C00D201 		.word	30539820
+ 2843              		.cfi_endproc
+ 2844              	.LFE10:
+ 2846              		.global	__aeabi_idiv
+ 2847              		.align	2
+ 2849              	ts_sample2coord:
+ 2850              	.LFB11:
+ 195:../src/ts.c   **** 
+ 196:../src/ts.c   **** static void ts_sample2coord( uint16 Vx, uint16 Vy, uint16 *x, uint16 *y )
+ 197:../src/ts.c   **** {
+ 2851              		.loc 1 197 0
+ 2852              		.cfi_startproc
+ 2853              		@ Function supports interworking.
+ 2854              		@ args = 0, pretend = 0, frame = 16
+ 2855              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2856 072c 0DC0A0E1 		mov	ip, sp
+ 2857              	.LCFI22:
+ 2858              		.cfi_def_cfa_register 12
+ 2859 0730 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2860 0734 04B04CE2 		sub	fp, ip, #4
+ 2861              		.cfi_offset 14, -8
+ 2862              		.cfi_offset 13, -12
+ 2863              		.cfi_offset 11, -16
+ 2864              	.LCFI23:
+ 2865              		.cfi_def_cfa 11, 4
+ 2866 0738 10D04DE2 		sub	sp, sp, #16
+ 2867 073c 14200BE5 		str	r2, [fp, #-20]
+ 2868 0740 18300BE5 		str	r3, [fp, #-24]
+ 2869 0744 BE004BE1 		strh	r0, [fp, #-14]	@ movhi
+ 2870 0748 B0114BE1 		strh	r1, [fp, #-16]	@ movhi
+ 198:../src/ts.c   ****     if( Vx < Vxmin )
+ 2871              		.loc 1 198 0
+ 2872 074c 58319FE5 		ldr	r3, .L59
+ 2873 0750 B030D3E1 		ldrh	r3, [r3, #0]
+ 2874 0754 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2875 0758 030052E1 		cmp	r2, r3
+ 2876 075c 0300002A 		bcs	.L53
+ 199:../src/ts.c   ****         *x = 0;
+ 2877              		.loc 1 199 0
+ 2878 0760 14301BE5 		ldr	r3, [fp, #-20]
+ 2879 0764 0020A0E3 		mov	r2, #0
+ 2880 0768 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 2881 076c 1F0000EA 		b	.L54
+ 2882              	.L53:
+ 200:../src/ts.c   ****     else if( Vx > Vxmax )
+ 2883              		.loc 1 200 0
+ 2884 0770 38319FE5 		ldr	r3, .L59+4
+ 2885 0774 B030D3E1 		ldrh	r3, [r3, #0]
+ 2886 0778 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2887 077c 030052E1 		cmp	r2, r3
+ 2888 0780 0300009A 		bls	.L55
+ 201:../src/ts.c   ****         *x = 319;
+ 2889              		.loc 1 201 0
+ 2890 0784 14301BE5 		ldr	r3, [fp, #-20]
+ 2891 0788 24219FE5 		ldr	r2, .L59+8
+ 2892 078c B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 2893 0790 160000EA 		b	.L54
+ 2894              	.L55:
+ 202:../src/ts.c   ****     else 
+ 203:../src/ts.c   ****         *x = (320*(Vx-Vxmin)) / (Vxmax-Vxmin);
+ 2895              		.loc 1 203 0
+ 2896 0794 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2897 0798 0C319FE5 		ldr	r3, .L59
+ 2898 079c B030D3E1 		ldrh	r3, [r3, #0]
+ 2899 07a0 022063E0 		rsb	r2, r3, r2
+ 2900 07a4 0230A0E1 		mov	r3, r2
+ 2901 07a8 0331A0E1 		mov	r3, r3, asl #2
+ 2902 07ac 023083E0 		add	r3, r3, r2
+ 2903 07b0 0333A0E1 		mov	r3, r3, asl #6
+ 2904 07b4 0320A0E1 		mov	r2, r3
+ 2905 07b8 F0309FE5 		ldr	r3, .L59+4
+ 2906 07bc B030D3E1 		ldrh	r3, [r3, #0]
+ 2907 07c0 0310A0E1 		mov	r1, r3
+ 2908 07c4 E0309FE5 		ldr	r3, .L59
+ 2909 07c8 B030D3E1 		ldrh	r3, [r3, #0]
+ 2910 07cc 013063E0 		rsb	r3, r3, r1
+ 2911 07d0 0200A0E1 		mov	r0, r2
+ 2912 07d4 0310A0E1 		mov	r1, r3
+ 2913 07d8 FEFFFFEB 		bl	__aeabi_idiv
+ 2914 07dc 0030A0E1 		mov	r3, r0
+ 2915 07e0 0338A0E1 		mov	r3, r3, asl #16
+ 2916 07e4 2328A0E1 		mov	r2, r3, lsr #16
+ 2917 07e8 14301BE5 		ldr	r3, [fp, #-20]
+ 2918 07ec B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 2919              	.L54:
+ 204:../src/ts.c   ****     if( Vy < Vymin )
+ 2920              		.loc 1 204 0
+ 2921 07f0 C0309FE5 		ldr	r3, .L59+12
+ 2922 07f4 B030D3E1 		ldrh	r3, [r3, #0]
+ 2923 07f8 B0215BE1 		ldrh	r2, [fp, #-16]
+ 2924 07fc 030052E1 		cmp	r2, r3
+ 2925 0800 0300002A 		bcs	.L56
+ 205:../src/ts.c   ****         *y = 239;
+ 2926              		.loc 1 205 0
+ 2927 0804 18301BE5 		ldr	r3, [fp, #-24]
+ 2928 0808 EF20A0E3 		mov	r2, #239
+ 2929 080c B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 2930 0810 220000EA 		b	.L52
+ 2931              	.L56:
+ 206:../src/ts.c   ****     else if( Vy > Vymax )
+ 2932              		.loc 1 206 0
+ 2933 0814 A0309FE5 		ldr	r3, .L59+16
+ 2934 0818 B030D3E1 		ldrh	r3, [r3, #0]
+ 2935 081c B0215BE1 		ldrh	r2, [fp, #-16]
+ 2936 0820 030052E1 		cmp	r2, r3
+ 2937 0824 0300009A 		bls	.L58
+ 207:../src/ts.c   ****         *y = 0;
+ 2938              		.loc 1 207 0
+ 2939 0828 18301BE5 		ldr	r3, [fp, #-24]
+ 2940 082c 0020A0E3 		mov	r2, #0
+ 2941 0830 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 2942 0834 190000EA 		b	.L52
+ 2943              	.L58:
+ 208:../src/ts.c   ****     else
+ 209:../src/ts.c   ****     *y = (239) - (240*(Vy-Vymin)/(Vymax-Vymin));
+ 2944              		.loc 1 209 0
+ 2945 0838 B0215BE1 		ldrh	r2, [fp, #-16]
+ 2946 083c 74309FE5 		ldr	r3, .L59+12
+ 2947 0840 B030D3E1 		ldrh	r3, [r3, #0]
+ 2948 0844 022063E0 		rsb	r2, r3, r2
+ 2949 0848 0230A0E1 		mov	r3, r2
+ 2950 084c 0332A0E1 		mov	r3, r3, asl #4
+ 2951 0850 033062E0 		rsb	r3, r2, r3
+ 2952 0854 0332A0E1 		mov	r3, r3, asl #4
+ 2953 0858 0320A0E1 		mov	r2, r3
+ 2954 085c 58309FE5 		ldr	r3, .L59+16
+ 2955 0860 B030D3E1 		ldrh	r3, [r3, #0]
+ 2956 0864 0310A0E1 		mov	r1, r3
+ 2957 0868 48309FE5 		ldr	r3, .L59+12
+ 2958 086c B030D3E1 		ldrh	r3, [r3, #0]
+ 2959 0870 013063E0 		rsb	r3, r3, r1
+ 2960 0874 0200A0E1 		mov	r0, r2
+ 2961 0878 0310A0E1 		mov	r1, r3
+ 2962 087c FEFFFFEB 		bl	__aeabi_idiv
+ 2963 0880 0030A0E1 		mov	r3, r0
+ 2964 0884 0338A0E1 		mov	r3, r3, asl #16
+ 2965 0888 2338A0E1 		mov	r3, r3, lsr #16
+ 2966 088c EF3063E2 		rsb	r3, r3, #239
+ 2967 0890 0338A0E1 		mov	r3, r3, asl #16
+ 2968 0894 2328A0E1 		mov	r2, r3, lsr #16
+ 2969 0898 18301BE5 		ldr	r3, [fp, #-24]
+ 2970 089c B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 2971              	.L52:
+ 210:../src/ts.c   **** }
+ 2972              		.loc 1 210 0
+ 2973 08a0 0CD04BE2 		sub	sp, fp, #12
+ 2974 08a4 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2975 08a8 1EFF2FE1 		bx	lr
+ 2976              	.L60:
+ 2977              		.align	2
+ 2978              	.L59:
+ 2979 08ac 00000000 		.word	Vxmin
+ 2980 08b0 02000000 		.word	Vxmax
+ 2981 08b4 3F010000 		.word	319
+ 2982 08b8 04000000 		.word	Vymin
+ 2983 08bc 06000000 		.word	Vymax
+ 2984              		.cfi_endproc
+ 2985              	.LFE11:
+ 2987              		.align	2
+ 2988              		.global	ts_open
+ 2990              	ts_open:
+ 2991              	.LFB12:
+ 211:../src/ts.c   **** 
+ 212:../src/ts.c   **** void ts_open( void (*isr)(void) )
+ 213:../src/ts.c   **** {
+ 2992              		.loc 1 213 0
+ 2993              		.cfi_startproc
+ 2994              		@ Function supports interworking.
+ 2995              		@ args = 0, pretend = 0, frame = 8
+ 2996              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2997 08c0 0DC0A0E1 		mov	ip, sp
+ 2998              	.LCFI24:
+ 2999              		.cfi_def_cfa_register 12
+ 3000 08c4 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3001 08c8 04B04CE2 		sub	fp, ip, #4
+ 3002              		.cfi_offset 14, -8
+ 3003              		.cfi_offset 13, -12
+ 3004              		.cfi_offset 11, -16
+ 3005              	.LCFI25:
+ 3006              		.cfi_def_cfa 11, 4
+ 3007 08cc 08D04DE2 		sub	sp, sp, #8
+ 3008 08d0 10000BE5 		str	r0, [fp, #-16]
+ 214:../src/ts.c   **** 	pISR_TS = (uint32) isr;
+ 3009              		.loc 1 214 0
+ 3010 08d4 30309FE5 		ldr	r3, .L62
+ 3011 08d8 10201BE5 		ldr	r2, [fp, #-16]
+ 3012 08dc 002083E5 		str	r2, [r3, #0]
+ 215:../src/ts.c   **** 	I_ISPC = BIT_EINT4567;
+ 3013              		.loc 1 215 0
+ 3014 08e0 28309FE5 		ldr	r3, .L62+4
+ 3015 08e4 0226A0E3 		mov	r2, #2097152
+ 3016 08e8 002083E5 		str	r2, [r3, #0]
+ 216:../src/ts.c   **** 	INTMSK &= ~(BIT_GLOBAL | BIT_EINT4567);
+ 3017              		.loc 1 216 0
+ 3018 08ec 20309FE5 		ldr	r3, .L62+8
+ 3019 08f0 1C209FE5 		ldr	r2, .L62+8
+ 3020 08f4 002092E5 		ldr	r2, [r2, #0]
+ 3021 08f8 4226C2E3 		bic	r2, r2, #69206016
+ 3022 08fc 002083E5 		str	r2, [r3, #0]
+ 217:../src/ts.c   **** }
+ 3023              		.loc 1 217 0
+ 3024 0900 0CD04BE2 		sub	sp, fp, #12
+ 3025 0904 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3026 0908 1EFF2FE1 		bx	lr
+ 3027              	.L63:
+ 3028              		.align	2
+ 3029              	.L62:
+ 3030 090c 7CFF7F0C 		.word	209715068
+ 3031 0910 2400E001 		.word	31457316
+ 3032 0914 0C00E001 		.word	31457292
+ 3033              		.cfi_endproc
+ 3034              	.LFE12:
+ 3036              		.align	2
+ 3037              		.global	ts_close
+ 3039              	ts_close:
+ 3040              	.LFB13:
+ 218:../src/ts.c   **** 
+ 219:../src/ts.c   **** void ts_close( void )
+ 220:../src/ts.c   **** {
+ 3041              		.loc 1 220 0
+ 3042              		.cfi_startproc
+ 3043              		@ Function supports interworking.
+ 3044              		@ args = 0, pretend = 0, frame = 0
+ 3045              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3046 0918 0DC0A0E1 		mov	ip, sp
+ 3047              	.LCFI26:
+ 3048              		.cfi_def_cfa_register 12
+ 3049 091c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3050 0920 04B04CE2 		sub	fp, ip, #4
+ 3051              		.cfi_offset 14, -8
+ 3052              		.cfi_offset 13, -12
+ 3053              		.cfi_offset 11, -16
+ 3054              	.LCFI27:
+ 3055              		.cfi_def_cfa 11, 4
+ 221:../src/ts.c   **** 	INTMSK   |= (BIT_GLOBAL | BIT_EINT4567);
+ 3056              		.loc 1 221 0
+ 3057 0924 24309FE5 		ldr	r3, .L65
+ 3058 0928 20209FE5 		ldr	r2, .L65
+ 3059 092c 002092E5 		ldr	r2, [r2, #0]
+ 3060 0930 422682E3 		orr	r2, r2, #69206016
+ 3061 0934 002083E5 		str	r2, [r3, #0]
+ 222:../src/ts.c   **** 	pISR_TS = (uint32)isr_TS_dummy;
+ 3062              		.loc 1 222 0
+ 3063 0938 14309FE5 		ldr	r3, .L65+4
+ 3064 093c 14209FE5 		ldr	r2, .L65+8
+ 3065 0940 002083E5 		str	r2, [r3, #0]
+ 223:../src/ts.c   **** }
+ 3066              		.loc 1 223 0
+ 3067 0944 0CD04BE2 		sub	sp, fp, #12
+ 3068 0948 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3069 094c 1EFF2FE1 		bx	lr
+ 3070              	.L66:
+ 3071              		.align	2
+ 3072              	.L65:
+ 3073 0950 0C00E001 		.word	31457292
+ 3074 0954 7CFF7F0C 		.word	209715068
+ 3075 0958 00000000 		.word	isr_TS_dummy
+ 3076              		.cfi_endproc
+ 3077              	.LFE13:
+ 3079              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 ts.c
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:1978   .bss:00000000 $d
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:1979   .bss:00000000 Vxmin
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:1982   .bss:00000002 Vxmax
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:1985   .bss:00000004 Vymin
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:1988   .bss:00000006 Vymax
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:1990   .bss:00000008 state
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:1993   .text:00000000 $a
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:1996   .text:00000000 ts_init
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2049   .text:00000058 ts_on
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2157   .text:000000d8 ts_calibrate
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2086   .text:00000084 ts_off
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2042   .text:00000054 $d
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2046   .text:00000058 $a
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2079   .text:00000080 $d
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2083   .text:00000084 $a
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2116   .text:000000ac $d
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2120   .text:000000b0 $a
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2123   .text:000000b0 ts_status
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2151   .text:000000d4 $d
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2155   .text:000000d8 $a
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2756   .text:00000644 ts_scan
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2849   .text:0000072c ts_sample2coord
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2391   .text:0000035c $d
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2402   .text:0000037c $a
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2405   .text:0000037c ts_wait_down
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2441   .text:000003b4 $d
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2445   .text:000003b8 $a
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2448   .text:000003b8 ts_wait_up
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2496   .text:00000410 $d
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2500   .text:00000414 $a
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2503   .text:00000414 ts_getpos
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2574   .text:000004b8 $d
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2578   .text:000004bc $a
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2581   .text:000004bc ts_getpostime
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2668   .text:00000594 $d
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2673   .text:0000059c $a
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2676   .text:0000059c ts_timeout_getpos
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2750   .text:00000640 $d
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2754   .text:00000644 $a
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2842   .text:00000728 $d
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2847   .text:0000072c $a
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2979   .text:000008ac $d
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2987   .text:000008c0 $a
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:2990   .text:000008c0 ts_open
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:3030   .text:0000090c $d
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:3036   .text:00000918 $a
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:3039   .text:00000918 ts_close
+C:\Users\Muadi\AppData\Local\Temp\ccDIXfCc.s:3073   .text:00000950 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+lcd_init
+adc_init
+adc_on
+adc_off
+lcd_on
+lcd_clear
+lcd_putpixel
+sw_delay_ms
+timer3_start
+timer3_stop
+timer3_start_timeout
+timer3_timeout
+adc_getSample
+__aeabi_idiv
+isr_TS_dummy

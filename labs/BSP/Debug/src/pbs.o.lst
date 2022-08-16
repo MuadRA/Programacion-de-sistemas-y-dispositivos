@@ -1,0 +1,837 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"pbs.c"
+  21              	.Ltext0:
+  22              		.file 1 "../src/pbs.c"
+ 1917              		.align	2
+ 1918              		.global	pbs_init
+ 1920              	pbs_init:
+ 1921              	.LFB0:
+   1:../src/pbs.c  **** 
+   2:../src/pbs.c  **** #include <s3c44b0x.h>
+   3:../src/pbs.c  **** #include <s3cev40.h>
+   4:../src/pbs.c  **** #include <pbs.h>
+   5:../src/pbs.c  **** #include <timers.h>
+   6:../src/pbs.c  **** 
+   7:../src/pbs.c  **** extern void isr_PB_dummy( void );
+   8:../src/pbs.c  **** 
+   9:../src/pbs.c  **** void pbs_init( void )
+  10:../src/pbs.c  **** {
+ 1922              		.loc 1 10 0
+ 1923              		.cfi_startproc
+ 1924              		@ Function supports interworking.
+ 1925              		@ args = 0, pretend = 0, frame = 0
+ 1926              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1927 0000 0DC0A0E1 		mov	ip, sp
+ 1928              	.LCFI0:
+ 1929              		.cfi_def_cfa_register 12
+ 1930 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1931 0008 04B04CE2 		sub	fp, ip, #4
+ 1932              		.cfi_offset 14, -8
+ 1933              		.cfi_offset 13, -12
+ 1934              		.cfi_offset 11, -16
+ 1935              	.LCFI1:
+ 1936              		.cfi_def_cfa 11, 4
+  11:../src/pbs.c  ****     timers_init();
+ 1937              		.loc 1 11 0
+ 1938 000c FEFFFFEB 		bl	timers_init
+  12:../src/pbs.c  **** }
+ 1939              		.loc 1 12 0
+ 1940 0010 0CD04BE2 		sub	sp, fp, #12
+ 1941 0014 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1942 0018 1EFF2FE1 		bx	lr
+ 1943              		.cfi_endproc
+ 1944              	.LFE0:
+ 1946              		.align	2
+ 1947              		.global	pb_scan
+ 1949              	pb_scan:
+ 1950              	.LFB1:
+  13:../src/pbs.c  **** 
+  14:../src/pbs.c  **** uint8 pb_scan( void )
+  15:../src/pbs.c  **** {
+ 1951              		.loc 1 15 0
+ 1952              		.cfi_startproc
+ 1953              		@ Function supports interworking.
+ 1954              		@ args = 0, pretend = 0, frame = 0
+ 1955              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1956 001c 0DC0A0E1 		mov	ip, sp
+ 1957              	.LCFI2:
+ 1958              		.cfi_def_cfa_register 12
+ 1959 0020 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1960 0024 04B04CE2 		sub	fp, ip, #4
+ 1961              		.cfi_offset 14, -8
+ 1962              		.cfi_offset 13, -12
+ 1963              		.cfi_offset 11, -16
+ 1964              	.LCFI3:
+ 1965              		.cfi_def_cfa 11, 4
+  16:../src/pbs.c  ****     if( pb_status(PB_LEFT) )
+ 1966              		.loc 1 16 0
+ 1967 0028 4000A0E3 		mov	r0, #64
+ 1968 002c FEFFFFEB 		bl	pb_status
+ 1969 0030 0030A0E1 		mov	r3, r0
+ 1970 0034 000053E3 		cmp	r3, #0
+ 1971 0038 0100000A 		beq	.L3
+  17:../src/pbs.c  ****     	return PB_LEFT;
+ 1972              		.loc 1 17 0
+ 1973 003c 4030A0E3 		mov	r3, #64
+ 1974 0040 070000EA 		b	.L4
+ 1975              	.L3:
+  18:../src/pbs.c  ****     else if( pb_status(PB_RIGHT) )
+ 1976              		.loc 1 18 0
+ 1977 0044 8000A0E3 		mov	r0, #128
+ 1978 0048 FEFFFFEB 		bl	pb_status
+ 1979 004c 0030A0E1 		mov	r3, r0
+ 1980 0050 000053E3 		cmp	r3, #0
+ 1981 0054 0100000A 		beq	.L5
+  19:../src/pbs.c  ****     	return PB_RIGHT;
+ 1982              		.loc 1 19 0
+ 1983 0058 8030A0E3 		mov	r3, #128
+ 1984 005c 000000EA 		b	.L4
+ 1985              	.L5:
+  20:../src/pbs.c  ****     else
+  21:../src/pbs.c  ****         return PB_FAILURE;
+ 1986              		.loc 1 21 0
+ 1987 0060 FF30A0E3 		mov	r3, #255
+ 1988              	.L4:
+  22:../src/pbs.c  **** }
+ 1989              		.loc 1 22 0
+ 1990 0064 0300A0E1 		mov	r0, r3
+ 1991 0068 0CD04BE2 		sub	sp, fp, #12
+ 1992 006c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1993 0070 1EFF2FE1 		bx	lr
+ 1994              		.cfi_endproc
+ 1995              	.LFE1:
+ 1997              		.align	2
+ 1998              		.global	pb_status
+ 2000              	pb_status:
+ 2001              	.LFB2:
+  23:../src/pbs.c  **** 
+  24:../src/pbs.c  **** uint8 pb_status( uint8 scancode )
+  25:../src/pbs.c  **** {
+ 2002              		.loc 1 25 0
+ 2003              		.cfi_startproc
+ 2004              		@ Function supports interworking.
+ 2005              		@ args = 0, pretend = 0, frame = 8
+ 2006              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2007 0074 0DC0A0E1 		mov	ip, sp
+ 2008              	.LCFI4:
+ 2009              		.cfi_def_cfa_register 12
+ 2010 0078 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2011 007c 04B04CE2 		sub	fp, ip, #4
+ 2012              		.cfi_offset 14, -8
+ 2013              		.cfi_offset 13, -12
+ 2014              		.cfi_offset 11, -16
+ 2015              	.LCFI5:
+ 2016              		.cfi_def_cfa 11, 4
+ 2017 0080 08D04DE2 		sub	sp, sp, #8
+ 2018 0084 0030A0E1 		mov	r3, r0
+ 2019 0088 0D304BE5 		strb	r3, [fp, #-13]
+  26:../src/pbs.c  **** 	if((scancode & PDATG) == 0) // devuelo 1 si está pulsado
+ 2020              		.loc 1 26 0
+ 2021 008c 0D205BE5 		ldrb	r2, [fp, #-13]	@ zero_extendqisi2
+ 2022 0090 28309FE5 		ldr	r3, .L9
+ 2023 0094 003093E5 		ldr	r3, [r3, #0]
+ 2024 0098 033002E0 		and	r3, r2, r3
+ 2025 009c 000053E3 		cmp	r3, #0
+ 2026 00a0 0100001A 		bne	.L7
+  27:../src/pbs.c  **** 		return 1;
+ 2027              		.loc 1 27 0
+ 2028 00a4 0130A0E3 		mov	r3, #1
+ 2029 00a8 000000EA 		b	.L8
+ 2030              	.L7:
+  28:../src/pbs.c  **** 	else // devuelvo 0 si no está pulsado
+  29:../src/pbs.c  **** 		return 0;
+ 2031              		.loc 1 29 0
+ 2032 00ac 0030A0E3 		mov	r3, #0
+ 2033              	.L8:
+  30:../src/pbs.c  **** }
+ 2034              		.loc 1 30 0
+ 2035 00b0 0300A0E1 		mov	r0, r3
+ 2036 00b4 0CD04BE2 		sub	sp, fp, #12
+ 2037 00b8 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2038 00bc 1EFF2FE1 		bx	lr
+ 2039              	.L10:
+ 2040              		.align	2
+ 2041              	.L9:
+ 2042 00c0 4400D201 		.word	30539844
+ 2043              		.cfi_endproc
+ 2044              	.LFE2:
+ 2046              		.align	2
+ 2047              		.global	pb_wait_keydown
+ 2049              	pb_wait_keydown:
+ 2050              	.LFB3:
+  31:../src/pbs.c  **** 
+  32:../src/pbs.c  **** void pb_wait_keydown( uint8 scancode )
+  33:../src/pbs.c  **** {
+ 2051              		.loc 1 33 0
+ 2052              		.cfi_startproc
+ 2053              		@ Function supports interworking.
+ 2054              		@ args = 0, pretend = 0, frame = 8
+ 2055              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2056 00c4 0DC0A0E1 		mov	ip, sp
+ 2057              	.LCFI6:
+ 2058              		.cfi_def_cfa_register 12
+ 2059 00c8 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2060 00cc 04B04CE2 		sub	fp, ip, #4
+ 2061              		.cfi_offset 14, -8
+ 2062              		.cfi_offset 13, -12
+ 2063              		.cfi_offset 11, -16
+ 2064              	.LCFI7:
+ 2065              		.cfi_def_cfa 11, 4
+ 2066 00d0 08D04DE2 		sub	sp, sp, #8
+ 2067 00d4 0030A0E1 		mov	r3, r0
+ 2068 00d8 0D304BE5 		strb	r3, [fp, #-13]
+  34:../src/pbs.c  **** 	while((PDATG & scancode) != 0); // espero a que se presione el boton indicado por el scancode(Left
+ 2069              		.loc 1 34 0
+ 2070 00dc 0000A0E1 		mov	r0, r0	@ nop
+ 2071              	.L12:
+ 2072              		.loc 1 34 0 is_stmt 0 discriminator 1
+ 2073 00e0 24309FE5 		ldr	r3, .L13
+ 2074 00e4 002093E5 		ldr	r2, [r3, #0]
+ 2075 00e8 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2076 00ec 033002E0 		and	r3, r2, r3
+ 2077 00f0 000053E3 		cmp	r3, #0
+ 2078 00f4 F9FFFF1A 		bne	.L12
+  35:../src/pbs.c  **** 	sw_delay_ms( PB_KEYDOWN_DELAY ); // espera SW(el timer 3 está ocupado) fin de rebotes
+ 2079              		.loc 1 35 0 is_stmt 1
+ 2080 00f8 1E00A0E3 		mov	r0, #30
+ 2081 00fc FEFFFFEB 		bl	sw_delay_ms
+  36:../src/pbs.c  **** }
+ 2082              		.loc 1 36 0
+ 2083 0100 0CD04BE2 		sub	sp, fp, #12
+ 2084 0104 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2085 0108 1EFF2FE1 		bx	lr
+ 2086              	.L14:
+ 2087              		.align	2
+ 2088              	.L13:
+ 2089 010c 4400D201 		.word	30539844
+ 2090              		.cfi_endproc
+ 2091              	.LFE3:
+ 2093              		.align	2
+ 2094              		.global	pb_wait_keyup
+ 2096              	pb_wait_keyup:
+ 2097              	.LFB4:
+  37:../src/pbs.c  **** 
+  38:../src/pbs.c  **** void pb_wait_keyup( uint8 scancode )
+  39:../src/pbs.c  **** {
+ 2098              		.loc 1 39 0
+ 2099              		.cfi_startproc
+ 2100              		@ Function supports interworking.
+ 2101              		@ args = 0, pretend = 0, frame = 8
+ 2102              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2103 0110 0DC0A0E1 		mov	ip, sp
+ 2104              	.LCFI8:
+ 2105              		.cfi_def_cfa_register 12
+ 2106 0114 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2107 0118 04B04CE2 		sub	fp, ip, #4
+ 2108              		.cfi_offset 14, -8
+ 2109              		.cfi_offset 13, -12
+ 2110              		.cfi_offset 11, -16
+ 2111              	.LCFI9:
+ 2112              		.cfi_def_cfa 11, 4
+ 2113 011c 08D04DE2 		sub	sp, sp, #8
+ 2114 0120 0030A0E1 		mov	r3, r0
+ 2115 0124 0D304BE5 		strb	r3, [fp, #-13]
+  40:../src/pbs.c  **** 	while((PDATG & scancode) != 0);// espero a que se presione el boton indicado por el scancode(Left 
+ 2116              		.loc 1 40 0
+ 2117 0128 0000A0E1 		mov	r0, r0	@ nop
+ 2118              	.L16:
+ 2119              		.loc 1 40 0 is_stmt 0 discriminator 1
+ 2120 012c 48309FE5 		ldr	r3, .L18
+ 2121 0130 002093E5 		ldr	r2, [r3, #0]
+ 2122 0134 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2123 0138 033002E0 		and	r3, r2, r3
+ 2124 013c 000053E3 		cmp	r3, #0
+ 2125 0140 F9FFFF1A 		bne	.L16
+  41:../src/pbs.c  **** 	sw_delay_ms( PB_KEYDOWN_DELAY );// espera SW(el timer 3 está ocupado) fin de rebotes
+ 2126              		.loc 1 41 0 is_stmt 1
+ 2127 0144 1E00A0E3 		mov	r0, #30
+ 2128 0148 FEFFFFEB 		bl	sw_delay_ms
+  42:../src/pbs.c  **** 	while((PDATG & scancode) == 0);// espero a que se depresione el boton indicado por el scancode(Lef
+ 2129              		.loc 1 42 0
+ 2130 014c 0000A0E1 		mov	r0, r0	@ nop
+ 2131              	.L17:
+ 2132              		.loc 1 42 0 is_stmt 0 discriminator 1
+ 2133 0150 24309FE5 		ldr	r3, .L18
+ 2134 0154 002093E5 		ldr	r2, [r3, #0]
+ 2135 0158 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2136 015c 033002E0 		and	r3, r2, r3
+ 2137 0160 000053E3 		cmp	r3, #0
+ 2138 0164 F9FFFF0A 		beq	.L17
+  43:../src/pbs.c  **** 	sw_delay_ms( PB_KEYUP_DELAY );// espera SW(el timer 3 está ocupado) fin de rebotes
+ 2139              		.loc 1 43 0 is_stmt 1
+ 2140 0168 6400A0E3 		mov	r0, #100
+ 2141 016c FEFFFFEB 		bl	sw_delay_ms
+  44:../src/pbs.c  **** }
+ 2142              		.loc 1 44 0
+ 2143 0170 0CD04BE2 		sub	sp, fp, #12
+ 2144 0174 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2145 0178 1EFF2FE1 		bx	lr
+ 2146              	.L19:
+ 2147              		.align	2
+ 2148              	.L18:
+ 2149 017c 4400D201 		.word	30539844
+ 2150              		.cfi_endproc
+ 2151              	.LFE4:
+ 2153              		.align	2
+ 2154              		.global	pb_wait_any_keydown
+ 2156              	pb_wait_any_keydown:
+ 2157              	.LFB5:
+  45:../src/pbs.c  **** 
+  46:../src/pbs.c  **** void pb_wait_any_keydown( void )
+  47:../src/pbs.c  **** {
+ 2158              		.loc 1 47 0
+ 2159              		.cfi_startproc
+ 2160              		@ Function supports interworking.
+ 2161              		@ args = 0, pretend = 0, frame = 0
+ 2162              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2163 0180 0DC0A0E1 		mov	ip, sp
+ 2164              	.LCFI10:
+ 2165              		.cfi_def_cfa_register 12
+ 2166 0184 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2167 0188 04B04CE2 		sub	fp, ip, #4
+ 2168              		.cfi_offset 14, -8
+ 2169              		.cfi_offset 13, -12
+ 2170              		.cfi_offset 11, -16
+ 2171              	.LCFI11:
+ 2172              		.cfi_def_cfa 11, 4
+  48:../src/pbs.c  **** 	while(((PDATG & 0x40) == 0x40) && ((PDATG & 0x80) == 0x80));// espero a que se pulse cualquier bot
+ 2173              		.loc 1 48 0
+ 2174 018c 0000A0E1 		mov	r0, r0	@ nop
+ 2175              	.L22:
+ 2176              		.loc 1 48 0 is_stmt 0 discriminator 1
+ 2177 0190 34309FE5 		ldr	r3, .L23
+ 2178 0194 003093E5 		ldr	r3, [r3, #0]
+ 2179 0198 403003E2 		and	r3, r3, #64
+ 2180 019c 000053E3 		cmp	r3, #0
+ 2181 01a0 0400000A 		beq	.L21
+ 2182              		.loc 1 48 0 discriminator 2
+ 2183 01a4 20309FE5 		ldr	r3, .L23
+ 2184 01a8 003093E5 		ldr	r3, [r3, #0]
+ 2185 01ac 803003E2 		and	r3, r3, #128
+ 2186 01b0 000053E3 		cmp	r3, #0
+ 2187 01b4 F5FFFF1A 		bne	.L22
+ 2188              	.L21:
+  49:../src/pbs.c  **** 	sw_delay_ms( PB_KEYDOWN_DELAY );// espera SW(el timer 3 está ocupado) fin de rebotes
+ 2189              		.loc 1 49 0 is_stmt 1
+ 2190 01b8 1E00A0E3 		mov	r0, #30
+ 2191 01bc FEFFFFEB 		bl	sw_delay_ms
+  50:../src/pbs.c  **** }
+ 2192              		.loc 1 50 0
+ 2193 01c0 0CD04BE2 		sub	sp, fp, #12
+ 2194 01c4 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2195 01c8 1EFF2FE1 		bx	lr
+ 2196              	.L24:
+ 2197              		.align	2
+ 2198              	.L23:
+ 2199 01cc 4400D201 		.word	30539844
+ 2200              		.cfi_endproc
+ 2201              	.LFE5:
+ 2203              		.align	2
+ 2204              		.global	pb_wait_any_keyup
+ 2206              	pb_wait_any_keyup:
+ 2207              	.LFB6:
+  51:../src/pbs.c  **** 
+  52:../src/pbs.c  **** void pb_wait_any_keyup( void )
+  53:../src/pbs.c  **** {
+ 2208              		.loc 1 53 0
+ 2209              		.cfi_startproc
+ 2210              		@ Function supports interworking.
+ 2211              		@ args = 0, pretend = 0, frame = 0
+ 2212              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2213 01d0 0DC0A0E1 		mov	ip, sp
+ 2214              	.LCFI12:
+ 2215              		.cfi_def_cfa_register 12
+ 2216 01d4 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2217 01d8 04B04CE2 		sub	fp, ip, #4
+ 2218              		.cfi_offset 14, -8
+ 2219              		.cfi_offset 13, -12
+ 2220              		.cfi_offset 11, -16
+ 2221              	.LCFI13:
+ 2222              		.cfi_def_cfa 11, 4
+  54:../src/pbs.c  **** 	while(((PDATG & 0x40) == 0x40) && ((PDATG & 0x80) == 0x80)); // espero cualquier presión
+ 2223              		.loc 1 54 0
+ 2224 01dc 0000A0E1 		mov	r0, r0	@ nop
+ 2225              	.L27:
+ 2226              		.loc 1 54 0 is_stmt 0 discriminator 1
+ 2227 01e0 68309FE5 		ldr	r3, .L30
+ 2228 01e4 003093E5 		ldr	r3, [r3, #0]
+ 2229 01e8 403003E2 		and	r3, r3, #64
+ 2230 01ec 000053E3 		cmp	r3, #0
+ 2231 01f0 0400000A 		beq	.L26
+ 2232              		.loc 1 54 0 discriminator 2
+ 2233 01f4 54309FE5 		ldr	r3, .L30
+ 2234 01f8 003093E5 		ldr	r3, [r3, #0]
+ 2235 01fc 803003E2 		and	r3, r3, #128
+ 2236 0200 000053E3 		cmp	r3, #0
+ 2237 0204 F5FFFF1A 		bne	.L27
+ 2238              	.L26:
+  55:../src/pbs.c  **** 	sw_delay_ms( PB_KEYDOWN_DELAY ); // eliminación de rebotes
+ 2239              		.loc 1 55 0 is_stmt 1
+ 2240 0208 1E00A0E3 		mov	r0, #30
+ 2241 020c FEFFFFEB 		bl	sw_delay_ms
+  56:../src/pbs.c  **** 	while(((PDATG & 0x40) == 0x00) && ((PDATG & 0x80) == 0x00)); // espero cualquier depresión
+ 2242              		.loc 1 56 0
+ 2243 0210 0000A0E1 		mov	r0, r0	@ nop
+ 2244              	.L29:
+ 2245              		.loc 1 56 0 is_stmt 0 discriminator 1
+ 2246 0214 34309FE5 		ldr	r3, .L30
+ 2247 0218 003093E5 		ldr	r3, [r3, #0]
+ 2248 021c 403003E2 		and	r3, r3, #64
+ 2249 0220 000053E3 		cmp	r3, #0
+ 2250 0224 0400001A 		bne	.L28
+ 2251              		.loc 1 56 0 discriminator 2
+ 2252 0228 20309FE5 		ldr	r3, .L30
+ 2253 022c 003093E5 		ldr	r3, [r3, #0]
+ 2254 0230 803003E2 		and	r3, r3, #128
+ 2255 0234 000053E3 		cmp	r3, #0
+ 2256 0238 F5FFFF0A 		beq	.L29
+ 2257              	.L28:
+  57:../src/pbs.c  **** 	sw_delay_ms( PB_KEYUP_DELAY ); // eliminación de rebotes
+ 2258              		.loc 1 57 0 is_stmt 1
+ 2259 023c 6400A0E3 		mov	r0, #100
+ 2260 0240 FEFFFFEB 		bl	sw_delay_ms
+  58:../src/pbs.c  **** }
+ 2261              		.loc 1 58 0
+ 2262 0244 0CD04BE2 		sub	sp, fp, #12
+ 2263 0248 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2264 024c 1EFF2FE1 		bx	lr
+ 2265              	.L31:
+ 2266              		.align	2
+ 2267              	.L30:
+ 2268 0250 4400D201 		.word	30539844
+ 2269              		.cfi_endproc
+ 2270              	.LFE6:
+ 2272              		.align	2
+ 2273              		.global	pb_getchar
+ 2275              	pb_getchar:
+ 2276              	.LFB7:
+  59:../src/pbs.c  **** 
+  60:../src/pbs.c  **** uint8 pb_getchar( void )
+  61:../src/pbs.c  **** {
+ 2277              		.loc 1 61 0
+ 2278              		.cfi_startproc
+ 2279              		@ Function supports interworking.
+ 2280              		@ args = 0, pretend = 0, frame = 8
+ 2281              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2282 0254 0DC0A0E1 		mov	ip, sp
+ 2283              	.LCFI14:
+ 2284              		.cfi_def_cfa_register 12
+ 2285 0258 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2286 025c 04B04CE2 		sub	fp, ip, #4
+ 2287              		.cfi_offset 14, -8
+ 2288              		.cfi_offset 13, -12
+ 2289              		.cfi_offset 11, -16
+ 2290              	.LCFI15:
+ 2291              		.cfi_def_cfa 11, 4
+ 2292 0260 08D04DE2 		sub	sp, sp, #8
+  62:../src/pbs.c  **** 	uint8 scancode;
+  63:../src/pbs.c  **** 
+  64:../src/pbs.c  **** 	pb_wait_any_keydown();
+ 2293              		.loc 1 64 0
+ 2294 0264 FEFFFFEB 		bl	pb_wait_any_keydown
+  65:../src/pbs.c  **** 	scancode = pb_scan();
+ 2295              		.loc 1 65 0
+ 2296 0268 FEFFFFEB 		bl	pb_scan
+ 2297 026c 0030A0E1 		mov	r3, r0
+ 2298 0270 0D304BE5 		strb	r3, [fp, #-13]
+  66:../src/pbs.c  **** 
+  67:../src/pbs.c  **** 	while((scancode & PDATG) == 0); // mientras esté pulsado
+ 2299              		.loc 1 67 0
+ 2300 0274 0000A0E1 		mov	r0, r0	@ nop
+ 2301              	.L33:
+ 2302              		.loc 1 67 0 is_stmt 0 discriminator 1
+ 2303 0278 0D205BE5 		ldrb	r2, [fp, #-13]	@ zero_extendqisi2
+ 2304 027c 28309FE5 		ldr	r3, .L34
+ 2305 0280 003093E5 		ldr	r3, [r3, #0]
+ 2306 0284 033002E0 		and	r3, r2, r3
+ 2307 0288 000053E3 		cmp	r3, #0
+ 2308 028c F9FFFF0A 		beq	.L33
+  68:../src/pbs.c  **** 	sw_delay_ms( PB_KEYUP_DELAY );
+ 2309              		.loc 1 68 0 is_stmt 1
+ 2310 0290 6400A0E3 		mov	r0, #100
+ 2311 0294 FEFFFFEB 		bl	sw_delay_ms
+  69:../src/pbs.c  **** 
+  70:../src/pbs.c  **** 	return scancode;
+ 2312              		.loc 1 70 0
+ 2313 0298 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+  71:../src/pbs.c  **** }
+ 2314              		.loc 1 71 0
+ 2315 029c 0300A0E1 		mov	r0, r3
+ 2316 02a0 0CD04BE2 		sub	sp, fp, #12
+ 2317 02a4 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2318 02a8 1EFF2FE1 		bx	lr
+ 2319              	.L35:
+ 2320              		.align	2
+ 2321              	.L34:
+ 2322 02ac 4400D201 		.word	30539844
+ 2323              		.cfi_endproc
+ 2324              	.LFE7:
+ 2326              		.align	2
+ 2327              		.global	pb_getchartime
+ 2329              	pb_getchartime:
+ 2330              	.LFB8:
+  72:../src/pbs.c  **** 
+  73:../src/pbs.c  **** uint8 pb_getchartime( uint16 *ms )
+  74:../src/pbs.c  **** {
+ 2331              		.loc 1 74 0
+ 2332              		.cfi_startproc
+ 2333              		@ Function supports interworking.
+ 2334              		@ args = 0, pretend = 0, frame = 16
+ 2335              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2336 02b0 0DC0A0E1 		mov	ip, sp
+ 2337              	.LCFI16:
+ 2338              		.cfi_def_cfa_register 12
+ 2339 02b4 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2340 02b8 04B04CE2 		sub	fp, ip, #4
+ 2341              		.cfi_offset 14, -8
+ 2342              		.cfi_offset 13, -12
+ 2343              		.cfi_offset 11, -16
+ 2344              	.LCFI17:
+ 2345              		.cfi_def_cfa 11, 4
+ 2346 02bc 10D04DE2 		sub	sp, sp, #16
+ 2347 02c0 18000BE5 		str	r0, [fp, #-24]
+  75:../src/pbs.c  ****     uint8 scancode;
+  76:../src/pbs.c  ****     
+  77:../src/pbs.c  ****     while( ((PDATG & 0x40) == 0x40) && ((PDATG & 0x80) == 0x80) );// esperar presión de cualquier p
+ 2348              		.loc 1 77 0
+ 2349 02c4 0000A0E1 		mov	r0, r0	@ nop
+ 2350              	.L38:
+ 2351              		.loc 1 77 0 is_stmt 0 discriminator 1
+ 2352 02c8 98309FE5 		ldr	r3, .L40
+ 2353 02cc 003093E5 		ldr	r3, [r3, #0]
+ 2354 02d0 403003E2 		and	r3, r3, #64
+ 2355 02d4 000053E3 		cmp	r3, #0
+ 2356 02d8 0400000A 		beq	.L37
+ 2357              		.loc 1 77 0 discriminator 2
+ 2358 02dc 84309FE5 		ldr	r3, .L40
+ 2359 02e0 003093E5 		ldr	r3, [r3, #0]
+ 2360 02e4 803003E2 		and	r3, r3, #128
+ 2361 02e8 000053E3 		cmp	r3, #0
+ 2362 02ec F5FFFF1A 		bne	.L38
+ 2363              	.L37:
+  78:../src/pbs.c  ****     timer3_start();// arranca el timer 3 (0,1ms de resolución)
+ 2364              		.loc 1 78 0 is_stmt 1
+ 2365 02f0 FEFFFFEB 		bl	timer3_start
+  79:../src/pbs.c  ****     sw_delay_ms( PB_KEYDOWN_DELAY ); // espera SW(el timer 3 está ocupado) fin de rebotes
+ 2366              		.loc 1 79 0
+ 2367 02f4 1E00A0E3 		mov	r0, #30
+ 2368 02f8 FEFFFFEB 		bl	sw_delay_ms
+  80:../src/pbs.c  ****     
+  81:../src/pbs.c  ****     scancode = pb_scan(); // obtiene el código del pulsador presionado
+ 2369              		.loc 1 81 0
+ 2370 02fc FEFFFFEB 		bl	pb_scan
+ 2371 0300 0030A0E1 		mov	r3, r0
+ 2372 0304 0D304BE5 		strb	r3, [fp, #-13]
+  82:../src/pbs.c  ****     
+  83:../src/pbs.c  ****     while( (scancode & PDATG) == 0 );// espera depresión del pulsador
+ 2373              		.loc 1 83 0
+ 2374 0308 0000A0E1 		mov	r0, r0	@ nop
+ 2375              	.L39:
+ 2376              		.loc 1 83 0 is_stmt 0 discriminator 1
+ 2377 030c 0D205BE5 		ldrb	r2, [fp, #-13]	@ zero_extendqisi2
+ 2378 0310 50309FE5 		ldr	r3, .L40
+ 2379 0314 003093E5 		ldr	r3, [r3, #0]
+ 2380 0318 033002E0 		and	r3, r2, r3
+ 2381 031c 000053E3 		cmp	r3, #0
+ 2382 0320 F9FFFF0A 		beq	.L39
+  84:../src/pbs.c  ****     *ms = timer3_stop() / 10; // detiene el timer 3 y calcula los ms
+ 2383              		.loc 1 84 0 is_stmt 1
+ 2384 0324 FEFFFFEB 		bl	timer3_stop
+ 2385 0328 0030A0E1 		mov	r3, r0
+ 2386 032c 0320A0E1 		mov	r2, r3
+ 2387 0330 34309FE5 		ldr	r3, .L40+4
+ 2388 0334 921383E0 		umull	r1, r3, r2, r3
+ 2389 0338 A331A0E1 		mov	r3, r3, lsr #3
+ 2390 033c 0338A0E1 		mov	r3, r3, asl #16
+ 2391 0340 2328A0E1 		mov	r2, r3, lsr #16
+ 2392 0344 18301BE5 		ldr	r3, [fp, #-24]
+ 2393 0348 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+  85:../src/pbs.c  ****     sw_delay_ms( PB_KEYUP_DELAY );// espera SW (el timer 3 está ocupado) fin de rebotes
+ 2394              		.loc 1 85 0
+ 2395 034c 6400A0E3 		mov	r0, #100
+ 2396 0350 FEFFFFEB 		bl	sw_delay_ms
+  86:../src/pbs.c  **** 
+  87:../src/pbs.c  ****     return scancode;//devuelve el código del pulsador presionado
+ 2397              		.loc 1 87 0
+ 2398 0354 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+  88:../src/pbs.c  **** }
+ 2399              		.loc 1 88 0
+ 2400 0358 0300A0E1 		mov	r0, r3
+ 2401 035c 0CD04BE2 		sub	sp, fp, #12
+ 2402 0360 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2403 0364 1EFF2FE1 		bx	lr
+ 2404              	.L41:
+ 2405              		.align	2
+ 2406              	.L40:
+ 2407 0368 4400D201 		.word	30539844
+ 2408 036c CDCCCCCC 		.word	-858993459
+ 2409              		.cfi_endproc
+ 2410              	.LFE8:
+ 2412              		.align	2
+ 2413              		.global	pb_timeout_getchar
+ 2415              	pb_timeout_getchar:
+ 2416              	.LFB9:
+  89:../src/pbs.c  **** 
+  90:../src/pbs.c  **** uint8 pb_timeout_getchar( uint16 ms )
+  91:../src/pbs.c  **** {
+ 2417              		.loc 1 91 0
+ 2418              		.cfi_startproc
+ 2419              		@ Function supports interworking.
+ 2420              		@ args = 0, pretend = 0, frame = 16
+ 2421              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2422 0370 0DC0A0E1 		mov	ip, sp
+ 2423              	.LCFI18:
+ 2424              		.cfi_def_cfa_register 12
+ 2425 0374 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2426 0378 04B04CE2 		sub	fp, ip, #4
+ 2427              		.cfi_offset 14, -8
+ 2428              		.cfi_offset 13, -12
+ 2429              		.cfi_offset 11, -16
+ 2430              	.LCFI19:
+ 2431              		.cfi_def_cfa 11, 4
+ 2432 037c 10D04DE2 		sub	sp, sp, #16
+ 2433 0380 0030A0E1 		mov	r3, r0
+ 2434 0384 B6314BE1 		strh	r3, [fp, #-22]	@ movhi
+  92:../src/pbs.c  **** 	uint8 scancode;
+  93:../src/pbs.c  **** 	timer3_start_timeout(ms);
+ 2435              		.loc 1 93 0
+ 2436 0388 B6315BE1 		ldrh	r3, [fp, #-22]
+ 2437 038c 0300A0E1 		mov	r0, r3
+ 2438 0390 FEFFFFEB 		bl	timer3_start_timeout
+  94:../src/pbs.c  **** 	while(timer3_timeout() && ((PDATG & 0x40) == 0x40) && ((PDATG & 0x80) == 0x80));
+ 2439              		.loc 1 94 0
+ 2440 0394 0000A0E1 		mov	r0, r0	@ nop
+ 2441              	.L44:
+ 2442              		.loc 1 94 0 is_stmt 0 discriminator 1
+ 2443 0398 FEFFFFEB 		bl	timer3_timeout
+ 2444 039c 0030A0E1 		mov	r3, r0
+ 2445 03a0 000053E3 		cmp	r3, #0
+ 2446 03a4 0900000A 		beq	.L43
+ 2447              		.loc 1 94 0 discriminator 2
+ 2448 03a8 84309FE5 		ldr	r3, .L48
+ 2449 03ac 003093E5 		ldr	r3, [r3, #0]
+ 2450 03b0 403003E2 		and	r3, r3, #64
+ 2451 03b4 000053E3 		cmp	r3, #0
+ 2452 03b8 0400000A 		beq	.L43
+ 2453              		.loc 1 94 0 discriminator 1
+ 2454 03bc 70309FE5 		ldr	r3, .L48
+ 2455 03c0 003093E5 		ldr	r3, [r3, #0]
+ 2456 03c4 803003E2 		and	r3, r3, #128
+ 2457 03c8 000053E3 		cmp	r3, #0
+ 2458 03cc F1FFFF1A 		bne	.L44
+ 2459              	.L43:
+  95:../src/pbs.c  **** 	if(!timer3_timeout()){
+ 2460              		.loc 1 95 0 is_stmt 1
+ 2461 03d0 FEFFFFEB 		bl	timer3_timeout
+ 2462 03d4 0030A0E1 		mov	r3, r0
+ 2463 03d8 000053E3 		cmp	r3, #0
+ 2464 03dc 0100001A 		bne	.L45
+  96:../src/pbs.c  **** 	    return PB_TIMEOUT;
+ 2465              		.loc 1 96 0
+ 2466 03e0 FE30A0E3 		mov	r3, #254
+ 2467 03e4 0E0000EA 		b	.L46
+ 2468              	.L45:
+  97:../src/pbs.c  **** 	}
+  98:../src/pbs.c  **** 	else{
+  99:../src/pbs.c  **** 		sw_delay_ms( PB_KEYDOWN_DELAY );
+ 2469              		.loc 1 99 0
+ 2470 03e8 1E00A0E3 		mov	r0, #30
+ 2471 03ec FEFFFFEB 		bl	sw_delay_ms
+ 100:../src/pbs.c  **** 	    scancode = pb_scan();
+ 2472              		.loc 1 100 0
+ 2473 03f0 FEFFFFEB 		bl	pb_scan
+ 2474 03f4 0030A0E1 		mov	r3, r0
+ 2475 03f8 0D304BE5 		strb	r3, [fp, #-13]
+ 101:../src/pbs.c  **** 	    while((scancode & PDATG) == 0);
+ 2476              		.loc 1 101 0
+ 2477 03fc 0000A0E1 		mov	r0, r0	@ nop
+ 2478              	.L47:
+ 2479              		.loc 1 101 0 is_stmt 0 discriminator 1
+ 2480 0400 0D205BE5 		ldrb	r2, [fp, #-13]	@ zero_extendqisi2
+ 2481 0404 28309FE5 		ldr	r3, .L48
+ 2482 0408 003093E5 		ldr	r3, [r3, #0]
+ 2483 040c 033002E0 		and	r3, r2, r3
+ 2484 0410 000053E3 		cmp	r3, #0
+ 2485 0414 F9FFFF0A 		beq	.L47
+ 102:../src/pbs.c  **** 	    sw_delay_ms( PB_KEYUP_DELAY );
+ 2486              		.loc 1 102 0 is_stmt 1
+ 2487 0418 6400A0E3 		mov	r0, #100
+ 2488 041c FEFFFFEB 		bl	sw_delay_ms
+ 103:../src/pbs.c  **** 	    return scancode;
+ 2489              		.loc 1 103 0
+ 2490 0420 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2491              	.L46:
+ 104:../src/pbs.c  **** 	}
+ 105:../src/pbs.c  **** }
+ 2492              		.loc 1 105 0
+ 2493 0424 0300A0E1 		mov	r0, r3
+ 2494 0428 0CD04BE2 		sub	sp, fp, #12
+ 2495 042c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2496 0430 1EFF2FE1 		bx	lr
+ 2497              	.L49:
+ 2498              		.align	2
+ 2499              	.L48:
+ 2500 0434 4400D201 		.word	30539844
+ 2501              		.cfi_endproc
+ 2502              	.LFE9:
+ 2504              		.align	2
+ 2505              		.global	pbs_open
+ 2507              	pbs_open:
+ 2508              	.LFB10:
+ 106:../src/pbs.c  **** 
+ 107:../src/pbs.c  **** void pbs_open( void (*isr)(void) )
+ 108:../src/pbs.c  **** {
+ 2509              		.loc 1 108 0
+ 2510              		.cfi_startproc
+ 2511              		@ Function supports interworking.
+ 2512              		@ args = 0, pretend = 0, frame = 8
+ 2513              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2514 0438 0DC0A0E1 		mov	ip, sp
+ 2515              	.LCFI20:
+ 2516              		.cfi_def_cfa_register 12
+ 2517 043c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2518 0440 04B04CE2 		sub	fp, ip, #4
+ 2519              		.cfi_offset 14, -8
+ 2520              		.cfi_offset 13, -12
+ 2521              		.cfi_offset 11, -16
+ 2522              	.LCFI21:
+ 2523              		.cfi_def_cfa 11, 4
+ 2524 0444 08D04DE2 		sub	sp, sp, #8
+ 2525 0448 10000BE5 		str	r0, [fp, #-16]
+ 109:../src/pbs.c  ****     pISR_PB   = (uint32) isr;
+ 2526              		.loc 1 109 0
+ 2527 044c 3C309FE5 		ldr	r3, .L51
+ 2528 0450 10201BE5 		ldr	r2, [fp, #-16]
+ 2529 0454 002083E5 		str	r2, [r3, #0]
+ 110:../src/pbs.c  ****     EXTINTPND = 0xf;
+ 2530              		.loc 1 110 0
+ 2531 0458 34309FE5 		ldr	r3, .L51+4
+ 2532 045c 0F20A0E3 		mov	r2, #15
+ 2533 0460 002083E5 		str	r2, [r3, #0]
+ 111:../src/pbs.c  ****     I_ISPC    = BIT_EINT4567;
+ 2534              		.loc 1 111 0
+ 2535 0464 2C309FE5 		ldr	r3, .L51+8
+ 2536 0468 0226A0E3 		mov	r2, #2097152
+ 2537 046c 002083E5 		str	r2, [r3, #0]
+ 112:../src/pbs.c  ****     INTMSK   &= ~(BIT_GLOBAL | BIT_EINT4567);
+ 2538              		.loc 1 112 0
+ 2539 0470 24309FE5 		ldr	r3, .L51+12
+ 2540 0474 20209FE5 		ldr	r2, .L51+12
+ 2541 0478 002092E5 		ldr	r2, [r2, #0]
+ 2542 047c 4226C2E3 		bic	r2, r2, #69206016
+ 2543 0480 002083E5 		str	r2, [r3, #0]
+ 113:../src/pbs.c  **** }
+ 2544              		.loc 1 113 0
+ 2545 0484 0CD04BE2 		sub	sp, fp, #12
+ 2546 0488 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2547 048c 1EFF2FE1 		bx	lr
+ 2548              	.L52:
+ 2549              		.align	2
+ 2550              	.L51:
+ 2551 0490 74FF7F0C 		.word	209715060
+ 2552 0494 5400D201 		.word	30539860
+ 2553 0498 2400E001 		.word	31457316
+ 2554 049c 0C00E001 		.word	31457292
+ 2555              		.cfi_endproc
+ 2556              	.LFE10:
+ 2558              		.align	2
+ 2559              		.global	pbs_close
+ 2561              	pbs_close:
+ 2562              	.LFB11:
+ 114:../src/pbs.c  **** 
+ 115:../src/pbs.c  **** void pbs_close( void )
+ 116:../src/pbs.c  **** {
+ 2563              		.loc 1 116 0
+ 2564              		.cfi_startproc
+ 2565              		@ Function supports interworking.
+ 2566              		@ args = 0, pretend = 0, frame = 0
+ 2567              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2568 04a0 0DC0A0E1 		mov	ip, sp
+ 2569              	.LCFI22:
+ 2570              		.cfi_def_cfa_register 12
+ 2571 04a4 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2572 04a8 04B04CE2 		sub	fp, ip, #4
+ 2573              		.cfi_offset 14, -8
+ 2574              		.cfi_offset 13, -12
+ 2575              		.cfi_offset 11, -16
+ 2576              	.LCFI23:
+ 2577              		.cfi_def_cfa 11, 4
+ 117:../src/pbs.c  **** 	INTMSK  |= BIT_EINT4567;
+ 2578              		.loc 1 117 0
+ 2579 04ac 24309FE5 		ldr	r3, .L54
+ 2580 04b0 20209FE5 		ldr	r2, .L54
+ 2581 04b4 002092E5 		ldr	r2, [r2, #0]
+ 2582 04b8 022682E3 		orr	r2, r2, #2097152
+ 2583 04bc 002083E5 		str	r2, [r3, #0]
+ 118:../src/pbs.c  **** 	pISR_PB  =(uint32) isr_PB_dummy;
+ 2584              		.loc 1 118 0
+ 2585 04c0 14309FE5 		ldr	r3, .L54+4
+ 2586 04c4 14209FE5 		ldr	r2, .L54+8
+ 2587 04c8 002083E5 		str	r2, [r3, #0]
+ 119:../src/pbs.c  **** }
+ 2588              		.loc 1 119 0
+ 2589 04cc 0CD04BE2 		sub	sp, fp, #12
+ 2590 04d0 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2591 04d4 1EFF2FE1 		bx	lr
+ 2592              	.L55:
+ 2593              		.align	2
+ 2594              	.L54:
+ 2595 04d8 0C00E001 		.word	31457292
+ 2596 04dc 74FF7F0C 		.word	209715060
+ 2597 04e0 00000000 		.word	isr_PB_dummy
+ 2598              		.cfi_endproc
+ 2599              	.LFE11:
+ 2601              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 pbs.c
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:1917   .text:00000000 $a
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:1920   .text:00000000 pbs_init
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:1949   .text:0000001c pb_scan
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2000   .text:00000074 pb_status
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2042   .text:000000c0 $d
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2046   .text:000000c4 $a
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2049   .text:000000c4 pb_wait_keydown
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2089   .text:0000010c $d
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2093   .text:00000110 $a
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2096   .text:00000110 pb_wait_keyup
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2149   .text:0000017c $d
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2153   .text:00000180 $a
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2156   .text:00000180 pb_wait_any_keydown
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2199   .text:000001cc $d
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2203   .text:000001d0 $a
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2206   .text:000001d0 pb_wait_any_keyup
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2268   .text:00000250 $d
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2272   .text:00000254 $a
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2275   .text:00000254 pb_getchar
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2322   .text:000002ac $d
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2326   .text:000002b0 $a
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2329   .text:000002b0 pb_getchartime
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2407   .text:00000368 $d
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2412   .text:00000370 $a
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2415   .text:00000370 pb_timeout_getchar
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2500   .text:00000434 $d
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2504   .text:00000438 $a
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2507   .text:00000438 pbs_open
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2551   .text:00000490 $d
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2558   .text:000004a0 $a
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2561   .text:000004a0 pbs_close
+C:\Users\Muadi\AppData\Local\Temp\ccPJBi1K.s:2595   .text:000004d8 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+timers_init
+sw_delay_ms
+timer3_start
+timer3_stop
+timer3_start_timeout
+timer3_timeout
+isr_PB_dummy
